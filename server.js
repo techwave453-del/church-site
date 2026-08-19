@@ -116,6 +116,20 @@ function requireAdmin(req, res, next) {
   if (!req.session.user) return res.status(401).json({ error: 'Unauthorized. Please log in.' });
   next();
 }
+function requireSameOrigin(req, res, next) {
+  const origin = req.get('Origin');
+  const host = req.get('Host');
+  if (!origin) return next();
+  try {
+    const originUrl = new URL(origin);
+    if (originUrl.host !== host || !['http:', 'https:'].includes(originUrl.protocol)) {
+      return res.status(403).json({ error: 'Cross-site request blocked.' });
+    }
+  } catch (_error) {
+    return res.status(403).json({ error: 'Invalid request origin.' });
+  }
+  next();
+}
 function parseStoredValue(value) {
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
@@ -145,7 +159,7 @@ function clearLoginAttempts(key) { loginAttempts.delete(key); }
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'aic-kitanga-admin' }));
 
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', requireSameOrigin, (req, res) => {
   const { username, password } = req.body || {};
   const key = loginKey(req);
   if (isRateLimited(key)) return res.status(429).json({ error: 'Too many login attempts. Please try again later.' });
@@ -162,7 +176,7 @@ app.post('/api/admin/login', (req, res) => {
   });
 });
 
-app.post('/api/admin/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
+app.post('/api/admin/logout', requireSameOrigin, (req, res) => req.session.destroy(() => res.json({ ok: true })));
 app.get('/api/admin/session', (req, res) => {
   if (!req.session.user) return res.status(401).json({ loggedIn: false });
   res.json({ loggedIn: true, user: req.session.user });
@@ -172,13 +186,13 @@ app.get('/api/site/content', (_req, res) => {
   db.prepare('SELECT key, value FROM site_content').all().forEach(({ key, value }) => { payload[key] = parseStoredValue(value); });
   res.json(mergeSiteContent(payload));
 });
-app.put('/api/site/content', requireAdmin, (req, res) => {
+app.put('/api/site/content', requireSameOrigin, requireAdmin, (req, res) => {
   const update = db.prepare('INSERT INTO site_content (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
   Object.entries(req.body || {}).forEach(([key, value]) => update.run(key, typeof value === 'string' ? value : JSON.stringify(value)));
   res.json({ ok: true });
 });
 app.get('/api/media', (_req, res) => res.json(db.prepare('SELECT id, title, type, category, description, url, created_at FROM media_items ORDER BY created_at DESC').all()));
-app.post('/api/media', requireAdmin, upload.single('file'), (req, res) => {
+app.post('/api/media', requireSameOrigin, requireAdmin, upload.single('file'), (req, res) => {
   const file = req.file;
   if (!file) return res.status(400).json({ error: 'Please select a file to upload.' });
   const { title, description, category, type } = req.body || {};
@@ -188,7 +202,7 @@ app.post('/api/media', requireAdmin, upload.single('file'), (req, res) => {
   const result = db.prepare('INSERT INTO media_items (title, type, category, description, url, file_path) VALUES (?, ?, ?, ?, ?, ?)').run(item.title, item.type, item.category, item.description, item.url, file.path);
   res.status(201).json({ id: result.lastInsertRowid, ...item });
 });
-app.delete('/api/media/:id', requireAdmin, (req, res) => {
+app.delete('/api/media/:id', requireSameOrigin, requireAdmin, (req, res) => {
   const item = db.prepare('SELECT * FROM media_items WHERE id = ?').get(Number(req.params.id));
   if (!item) return res.status(404).json({ error: 'Media item not found.' });
   if (item.file_path && fs.existsSync(item.file_path)) fs.unlinkSync(item.file_path);
