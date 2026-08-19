@@ -6,7 +6,7 @@ A full-featured church landing page with a React + Vite frontend and Express bac
 
 - **Landing Page**: Beautiful church landing page with video background, audio toggle, and gallery carousel
 - **Admin Panel**: Secure admin dashboard to manage site content, media uploads, and configuration
-- **Content Management**: Update church name, tagline, hero text, call-to-action, and media URLs
+- **Content Management**: Update church identity, hero content, About section, services, homepage links, membership classes, footer contacts, carousel slides, and media URLs
 - **Media Library**: Upload and manage images, videos, audio, and documents
 - **SQLite Database**: Persistent storage for admin users, site settings, and media metadata
 - **Responsive Design**: Mobile-first design that works on all devices
@@ -58,6 +58,44 @@ The app will be available at:
 
 **⚠️ Change these immediately in production!**
 
+## Admin Access After Deployment
+
+Build the frontend and start the Express production server:
+
+```bash
+npm run build
+npm start
+```
+
+The public site is available at your deployed domain, and the admin page is available at the same domain with `/admin` appended:
+
+```text
+https://your-domain.example/admin
+```
+
+The admin login uses the `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `SESSION_SECRET` environment variables. Keep the `data/` and `uploads/` directories on persistent server storage because they contain the SQLite database and uploaded files. GitHub Pages is not sufficient for this deployment because it cannot run the Express API, sessions, SQLite database, or uploads.
+
+### Render.com
+
+Create a **Web Service** connected to this repository with:
+
+```text
+Build Command: npm install && npm run build
+Start Command: npm start
+```
+
+Add a Render persistent disk mounted at `/var/data`, then add these environment variables:
+
+```text
+DATA_DIR=/var/data/site-data
+UPLOAD_DIR=/var/data/uploads
+ADMIN_USERNAME=choose-a-username
+ADMIN_PASSWORD=choose-a-long-password
+SESSION_SECRET=choose-a-long-random-secret
+```
+
+After deployment, open `https://your-service-name.onrender.com/admin`. The public site is at the same address without `/admin`. A persistent disk is required or the SQLite database and uploaded files may be lost when Render restarts or redeploys the service.
+
 ## Project Structure
 
 ```
@@ -89,11 +127,14 @@ The app will be available at:
 
 ## Configuration
 
-Edit `src/main.jsx` to customize:
-- Church name, tagline, and hero text
-- Default video and audio URLs
-- Gallery slides
-- CTA button text
+Use the admin page to customize the site after login. The Site tab includes:
+- Church name, tagline, hero text, CTA, and media URLs
+- About section headings and description
+- Service headings, names, times, and images
+- Homepage link titles, descriptions, destination URLs, and images
+- Membership headings, class names, registration URLs, and images
+- Footer tagline, phone, and email
+- Carousel slide type and source URLs
 
 ## Building for Production
 

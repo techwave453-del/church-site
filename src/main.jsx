@@ -1,9 +1,10 @@
 import React,{useEffect,useMemo,useRef,useState}from"react";
 import{createRoot}from"react-dom/client";
 import{ArrowRight,Globe,Menu,MessageCircle,Search,Volume2,VolumeX,X,Upload,Image,Video as VideoIcon,FileText,LogOut,Save,ShieldCheck}from"lucide-react";
+import{DEFAULT_SITE_CONTENT,mergeSiteContent}from"../site-config.js";
 import"./styles.css";
 
-const DEFAULT_CHURCH={name:"AIC Kitanga",tagline:"",title:"Welcome Home",subtitle:"A place of faith, family and transformation.",cta:"Enter Site",videoUrl:"https://www.pexels.com/download/video/12921271/",audioUrl:"https://youtu.be/9sE5kEnitqE?list=RD7eAvIYagrrs",fallbackImage:"https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785",slides:[{type:'image',src:'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp'},{type:'image',src:'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg'},{type:'image',src:'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785'},{type:'video',src:'/hero-video.mp4'}]};
+const DEFAULT_CHURCH={...DEFAULT_SITE_CONTENT,name:DEFAULT_SITE_CONTENT.churchName,slides:DEFAULT_SITE_CONTENT.gallery};
 
 function Video({videoUrl, fallbackImage}){
 	const bgRef = useRef(null);
@@ -71,6 +72,36 @@ function HeroCarousel({slides}){
 			})}
 		</div>
 	</section>
+}
+
+function ImageTile({item,className=''}){
+	return <a className={`imageTile ${className}`} href={item.url || '#'} onClick={e=>{if(!item.url || item.url==='#')e.preventDefault()}} style={{'--tile-image':`url("${item.image}")`}}><span className="tileContent"><strong>{item.title}</strong>{item.text && <small>{item.text}</small>}{item.time && <em>{item.time}</em>}</span></a>;
+}
+
+function HomeContent({church}){
+	const services = Array.isArray(church.services) ? church.services : DEFAULT_CHURCH.services;
+	const links = Array.isArray(church.links) ? church.links : DEFAULT_CHURCH.links;
+	const classes = Array.isArray(church.membershipClasses) ? church.membershipClasses : DEFAULT_CHURCH.membershipClasses;
+	return <div className="homeContent">
+		<section className="homeSection aboutSection" id="about">
+			<div className="sectionIntro"><span>{church.aboutEyebrow}</span><h2>{church.aboutTitle}</h2><i/></div>
+			<p>{church.aboutText}</p>
+		</section>
+		<section className="homeSection servicesSection" id="services">
+			<div className="sectionIntro centered"><span>{church.servicesEyebrow}</span><h2>{church.servicesTitle}</h2></div>
+			<div className="tileGrid servicesGrid">{services.map((item,index)=><ImageTile key={`${item.title}-${index}`} item={item} className="serviceTile"/>)}</div>
+		</section>
+		<section className="homeSection linksSection" id="connect">
+			<div className="tileGrid linksGrid">{links.map((item,index)=><ImageTile key={`${item.title}-${index}`} item={item} className="linkTile"/>)}</div>
+		</section>
+		<section className="homeSection familySection" id="membership">
+			<div className="sectionIntro centered"><span>{church.membershipEyebrow}</span><h2>{church.membershipTitle}</h2></div>
+			<div className="tileGrid classGrid">
+				{classes.map((item,index)=><div className="classTile" key={`${item.title}-${index}`} style={{'--tile-image':`url("${item.image}")`}}><strong>{item.title}</strong><a href={item.registrationUrl || '#'} onClick={e=>{if(!item.registrationUrl || item.registrationUrl==='#')e.preventDefault()}}>Register Now <ArrowRight size={16}/></a></div>)}
+			</div>
+		</section>
+		<footer className="siteFooter"><div><strong>{church.name}</strong><span>{church.footerTagline}</span></div><div><a href={`tel:${church.phone}`}>{church.phone}</a><a href={`mailto:${church.email}`}>{church.email}</a></div><small>&copy; {new Date().getFullYear()} {church.name}. All rights reserved.</small></footer>
+	</div>
 }
 
 function Drawer({open,close}){if(!open)return null;return <div className="drawer"><div className="drawerTop"><b></b><button className="close" onClick={close}><X/></button></div><nav>{["Home","About","Ministries","Sermons","Events","Give","Contact"].map(x=><a key={x} href={x==="Home"?"/home":"#"} onClick={close}>{x}</a>)}</nav></div>}
@@ -148,7 +179,7 @@ function LandingPage(){
 			<Video videoUrl={siteContent.videoUrl} fallbackImage={siteContent.fallbackImage}/>
 			{entered && <Header menu={()=>setMenu(true)} search={()=>setSearch(true)} church={siteContent}/>} 
 			{entered ? (
-				<HeroCarousel slides={slides}/>
+				<><HeroCarousel slides={slides}/><HomeContent church={siteContent}/></>
 			) : (
 				<section className="hero">
 					<span>{siteContent.tagline}</span>
@@ -185,7 +216,7 @@ function AdminPanel(){
 	const [loggedIn,setLoggedIn]=useState(false);
 	const [loginState,setLoginState]=useState({username:'admin',password:'admin123'});
 	const [loading,setLoading]=useState(true);
-	const [siteData,setSiteData]=useState({churchName:'AIC Kitanga',tagline:'',title:'Welcome Home',subtitle:'A place of faith, family and transformation.',cta:'Enter Site',videoUrl:'',audioUrl:'',fallbackImage:'',gallery:[]});
+	const [siteData,setSiteData]=useState(DEFAULT_SITE_CONTENT);
 	const [mediaItems,setMediaItems]=useState([]);
 	const [activeTab,setActiveTab]=useState('site');
 	const [notice,setNotice]=useState('');
@@ -210,17 +241,7 @@ function AdminPanel(){
 		const resp = await fetch('/api/site/content');
 		if(resp.ok){
 			const payload = await resp.json();
-			setSiteData({
-				churchName: payload.churchName || 'AIC Kitanga',
-				tagline: payload.tagline || '',
-				title: payload.title || 'Welcome Home',
-				subtitle: payload.subtitle || 'A place of faith, family and transformation.',
-				cta: payload.cta || 'Enter Site',
-				videoUrl: payload.videoUrl || '',
-				audioUrl: payload.audioUrl || '',
-				fallbackImage: payload.fallbackImage || '',
-				gallery: Array.isArray(payload.gallery) ? payload.gallery : []
-			});
+			setSiteData(mergeSiteContent(payload));
 		}
 	};
 
@@ -253,6 +274,7 @@ function AdminPanel(){
 	};
 
 	const handleChange = (key,value)=> setSiteData(prev => ({...prev,[key]:value}));
+	const handleArrayChange = (key,index,field,value)=> setSiteData(prev => ({...prev,[key]:prev[key].map((item,itemIndex)=>itemIndex===index?({...item,[field]:value}):item)}));
 
 	const handleSave = async ()=>{
 		const resp = await fetch('/api/site/content',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(siteData)});
@@ -379,6 +401,46 @@ function AdminPanel(){
 								<label><span>Background audio URL</span><input value={siteData.audioUrl} onChange={(e)=>handleChange('audioUrl',e.target.value)}/></label>
 								<label><span>Fallback image</span><input value={siteData.fallbackImage} onChange={(e)=>handleChange('fallbackImage',e.target.value)}/></label>
 							</div>
+						</div>
+
+						<div className="panel">
+							<h3>About section</h3>
+							<div className="field-grid">
+								<label><span>Eyebrow</span><input value={siteData.aboutEyebrow} onChange={(e)=>handleChange('aboutEyebrow',e.target.value)}/></label>
+								<label><span>Title</span><input value={siteData.aboutTitle} onChange={(e)=>handleChange('aboutTitle',e.target.value)}/></label>
+								<label><span>About text</span><textarea value={siteData.aboutText} onChange={(e)=>handleChange('aboutText',e.target.value)}/></label>
+							</div>
+						</div>
+
+						<div className="panel">
+							<h3>Services section</h3>
+							<div className="field-grid">
+								<label><span>Eyebrow</span><input value={siteData.servicesEyebrow} onChange={(e)=>handleChange('servicesEyebrow',e.target.value)}/></label>
+								<label><span>Title</span><input value={siteData.servicesTitle} onChange={(e)=>handleChange('servicesTitle',e.target.value)}/></label>
+							</div>
+							<div className="admin-repeat-list">{siteData.services.map((item,index)=><div className="admin-repeat-item" key={index}><strong>Service {index+1}</strong><label><span>Name</span><input value={item.title} onChange={(e)=>handleArrayChange('services',index,'title',e.target.value)}/></label><label><span>Time</span><input value={item.time} onChange={(e)=>handleArrayChange('services',index,'time',e.target.value)}/></label><label><span>Image URL</span><input value={item.image} onChange={(e)=>handleArrayChange('services',index,'image',e.target.value)}/></label></div>)}</div>
+						</div>
+
+						<div className="panel">
+							<h3>Homepage links</h3>
+							<div className="admin-repeat-list">{siteData.links.map((item,index)=><div className="admin-repeat-item" key={index}><strong>Link {index+1}</strong><label><span>Title</span><input value={item.title} onChange={(e)=>handleArrayChange('links',index,'title',e.target.value)}/></label><label><span>Description</span><input value={item.text} onChange={(e)=>handleArrayChange('links',index,'text',e.target.value)}/></label><label><span>Destination URL</span><input value={item.url} onChange={(e)=>handleArrayChange('links',index,'url',e.target.value)}/></label><label><span>Image URL</span><input value={item.image} onChange={(e)=>handleArrayChange('links',index,'image',e.target.value)}/></label></div>)}</div>
+						</div>
+
+						<div className="panel">
+							<h3>Membership and footer</h3>
+							<div className="field-grid">
+								<label><span>Membership eyebrow</span><input value={siteData.membershipEyebrow} onChange={(e)=>handleChange('membershipEyebrow',e.target.value)}/></label>
+								<label><span>Membership title</span><input value={siteData.membershipTitle} onChange={(e)=>handleChange('membershipTitle',e.target.value)}/></label>
+								<label><span>Footer tagline</span><input value={siteData.footerTagline} onChange={(e)=>handleChange('footerTagline',e.target.value)}/></label>
+								<label><span>Phone</span><input value={siteData.phone} onChange={(e)=>handleChange('phone',e.target.value)}/></label>
+								<label><span>Email</span><input type="email" value={siteData.email} onChange={(e)=>handleChange('email',e.target.value)}/></label>
+							</div>
+							<div className="admin-repeat-list">{siteData.membershipClasses.map((item,index)=><div className="admin-repeat-item" key={index}><strong>Class {index+1}</strong><label><span>Name</span><input value={item.title} onChange={(e)=>handleArrayChange('membershipClasses',index,'title',e.target.value)}/></label><label><span>Registration URL</span><input value={item.registrationUrl} onChange={(e)=>handleArrayChange('membershipClasses',index,'registrationUrl',e.target.value)}/></label><label><span>Image URL</span><input value={item.image} onChange={(e)=>handleArrayChange('membershipClasses',index,'image',e.target.value)}/></label></div>)}</div>
+						</div>
+
+						<div className="panel">
+							<h3>Carousel slides</h3>
+							<div className="admin-repeat-list">{siteData.gallery.map((item,index)=><div className="admin-repeat-item" key={index}><strong>Slide {index+1}</strong><label><span>Type</span><select value={item.type} onChange={(e)=>handleArrayChange('gallery',index,'type',e.target.value)}><option value="image">Image</option><option value="video">Video</option></select></label><label><span>Source URL</span><input value={item.src} onChange={(e)=>handleArrayChange('gallery',index,'src',e.target.value)}/></label></div>)}</div>
 						</div>
 					</section>
 				)}

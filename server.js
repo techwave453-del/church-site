@@ -10,8 +10,8 @@ import { DEFAULT_SITE_CONTENT, mergeSiteContent } from './site-config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dbDir = path.join(__dirname, 'data');
-const uploadDir = path.join(__dirname, 'uploads');
+const dbDir = process.env.DATA_DIR || path.join(__dirname, 'data');
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 
 fs.mkdirSync(dbDir, { recursive: true });
 fs.mkdirSync(uploadDir, { recursive: true });
