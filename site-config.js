@@ -1,26 +1,26 @@
 export const DEFAULT_SITE_CONTENT = {
   churchName: 'AIC Kitanga',
-  tagline: '',
+  tagline: 'Faith. Family. Transformation.',
   title: 'Welcome Home',
   subtitle: 'A place of faith, family and transformation.',
   cta: 'Enter Site',
   aboutEyebrow: 'Who We Are',
-  aboutTitle: 'About Us',
-  aboutText: "Dunamis International Gospel Centre is a dynamic Pentecostal Christian Church founded by the man of God, Dr. Pastor Paul Enenche. It is a big family of power, glory and the unfathomable flow of God's grace.",
+  aboutTitle: 'About AIC Kitanga',
+  aboutText: 'AIC Kitanga is a community where people gather to worship God, grow in faith, build meaningful relationships, and serve others. Everyone is welcome to find a place to belong and take their next step in faith.',
   servicesEyebrow: 'Join Us In Worship',
   servicesTitle: 'Service Times',
   links: [
-    { title: "I'm New Here", text: 'Discover church membership', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', url: '#' },
-    { title: 'Find a Branch', text: 'Connect with a church near you', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', url: '#' },
-    { title: 'Upcoming Programs', text: 'See what is happening next', image: 'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg', url: '#' },
-    { title: 'Testimonies', text: 'Celebrate what God has done', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', url: '#' },
-    { title: 'Download Center', text: 'Messages, resources and more', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', url: '#' }
+    { title: "I'm New Here", text: 'Find out how to visit and get connected', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', url: '#visit' },
+    { title: 'Find a Branch', text: 'Connect with the church community', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', url: '#visit' },
+    { title: 'Upcoming Programs', text: 'See our regular services and activities', image: 'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg', url: '#events' },
+    { title: 'Testimonies', text: 'Celebrate what God is doing in our community', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', url: '#media' },
+    { title: 'Resources', text: 'Messages, media and helpful resources', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', url: '#resources' }
   ],
-  membershipEyebrow: 'Join Our Family',
-  membershipTitle: 'Church Membership',
+  membershipEyebrow: 'Grow With Us',
+  membershipTitle: 'Faith & Membership Classes',
   membershipClasses: [
-    { title: 'Foundation Class', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', registrationUrl: '#' },
-    { title: 'Maturity Class', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', registrationUrl: '#' }
+    { title: 'Foundation Class', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', registrationUrl: '#contact' },
+    { title: 'Maturity Class', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', registrationUrl: '#contact' }
   ],
   footerTagline: 'A place of faith, family and transformation.',
   phone: '+254 700 000 000',
