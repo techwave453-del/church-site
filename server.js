@@ -73,7 +73,6 @@ initDatabase();
 const app = express();
 const port = process.env.PORT || 3001;
 if (isProduction) app.set('trust proxy', 1);
-
 app.disable('x-powered-by');
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -100,7 +99,7 @@ const storage = multer.diskStorage({
   }
 });
 const allowedMimeTypes = new Set([
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif',
   'video/mp4', 'video/webm', 'video/quicktime', 'audio/mpeg', 'audio/mp4',
   'audio/wav', 'audio/ogg', 'audio/webm', 'application/pdf'
 ]);
@@ -163,9 +162,7 @@ app.post('/api/admin/login', (req, res) => {
   });
 });
 
-app.post('/api/admin/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
-});
+app.post('/api/admin/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
 app.get('/api/admin/session', (req, res) => {
   if (!req.session.user) return res.status(401).json({ loggedIn: false });
   res.json({ loggedIn: true, user: req.session.user });
@@ -180,14 +177,15 @@ app.put('/api/site/content', requireAdmin, (req, res) => {
   Object.entries(req.body || {}).forEach(([key, value]) => update.run(key, typeof value === 'string' ? value : JSON.stringify(value)));
   res.json({ ok: true });
 });
-app.get('/api/media', (_req, res) => res.json(db.prepare('SELECT * FROM media_items ORDER BY created_at DESC').all()));
+app.get('/api/media', (_req, res) => res.json(db.prepare('SELECT id, title, type, category, description, url, created_at FROM media_items ORDER BY created_at DESC').all()));
 app.post('/api/media', requireAdmin, upload.single('file'), (req, res) => {
   const file = req.file;
   if (!file) return res.status(400).json({ error: 'Please select a file to upload.' });
   const { title, description, category, type } = req.body || {};
-  const mediaType = type || (file.mimetype.startsWith('video/') ? 'video' : file.mimetype.startsWith('audio/') ? 'audio' : file.mimetype === 'application/pdf' ? 'document' : 'image');
-  const item = { title: title || path.basename(file.originalname, path.extname(file.originalname)), description: description || '', category: category || 'general', type: mediaType, url: `/uploads/${file.filename}`, file_path: file.path };
-  const result = db.prepare('INSERT INTO media_items (title, type, category, description, url, file_path) VALUES (?, ?, ?, ?, ?, ?)').run(item.title, item.type, item.category, item.description, item.url, item.file_path);
+  const inferredType = file.mimetype.startsWith('video/') ? 'video' : file.mimetype.startsWith('audio/') ? 'audio' : file.mimetype === 'application/pdf' ? 'document' : 'image';
+  const mediaType = ['image', 'video', 'audio', 'document'].includes(type) ? type : inferredType;
+  const item = { title: title || path.basename(file.originalname, path.extname(file.originalname)), description: description || '', category: category || 'general', type: mediaType, url: `/uploads/${file.filename}` };
+  const result = db.prepare('INSERT INTO media_items (title, type, category, description, url, file_path) VALUES (?, ?, ?, ?, ?, ?)').run(item.title, item.type, item.category, item.description, item.url, file.path);
   res.status(201).json({ id: result.lastInsertRowid, ...item });
 });
 app.delete('/api/media/:id', requireAdmin, (req, res) => {
