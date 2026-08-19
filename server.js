@@ -10,8 +10,20 @@ import { DEFAULT_SITE_CONTENT, mergeSiteContent } from './site-config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const isProduction = process.env.NODE_ENV === 'production';
 const dbDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
+
+if (isProduction) {
+  const required = ['ADMIN_USERNAME', 'ADMIN_PASSWORD', 'SESSION_SECRET'];
+  const missing = required.filter((name) => !process.env[name]);
+  if (missing.length) {
+    throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
+  }
+  if (process.env.SESSION_SECRET.length < 32) {
+    throw new Error('SESSION_SECRET must be at least 32 characters in production.');
+  }
+}
 
 fs.mkdirSync(dbDir, { recursive: true });
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -55,8 +67,10 @@ function initDatabase() {
     );
   `);
 
-  const username = process.env.ADMIN_USERNAME || 'admin';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const username = process.env.ADMIN_USERNAME || (isProduction ? null : 'admin');
+  const password = process.env.ADMIN_PASSWORD || (isProduction ? null : 'admin123');
+  if (!username || !password) throw new Error('Admin credentials are required.');
+
   const row = db.prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
 
   if (!row) {
@@ -85,10 +99,15 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'aic-kitanga-admin-secret',
+    secret: process.env.SESSION_SECRET || 'development-only-session-secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 12 }
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 12,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProduction
+    }
   })
 );
 
