@@ -95,8 +95,11 @@ initDatabase();
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Render and other reverse proxies terminate TLS before forwarding requests.
+if (isProduction) app.set('trust proxy', 1);
+
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'development-only-session-secret',
@@ -114,13 +117,29 @@ app.use(
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || 'file');
+    const ext = path.extname(file.originalname || 'file').toLowerCase();
     const safeName = `${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`;
     cb(null, safeName);
   }
 });
 
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const allowedMimeTypes = new Set([
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
+  'video/mp4', 'video/webm', 'video/quicktime',
+  'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm',
+  'application/pdf'
+]);
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!allowedMimeTypes.has(file.mimetype)) {
+      return cb(new Error('Unsupported file type. Upload an image, video, audio file, or PDF.'));
+    }
+    cb(null, true);
+  }
+});
 
 app.use('/uploads', express.static(uploadDir));
 
@@ -211,7 +230,7 @@ app.post('/api/media', requireAdmin, upload.single('file'), (req, res) => {
     return res.status(400).json({ error: 'Please select a file to upload.' });
   }
 
-  const mediaType = type || (file.mimetype.startsWith('video/') ? 'video' : file.mimetype.startsWith('audio/') ? 'audio' : 'image');
+  const mediaType = type || (file.mimetype.startsWith('video/') ? 'video' : file.mimetype.startsWith('audio/') ? 'audio' : file.mimetype === 'application/pdf' ? 'document' : 'image');
   const item = {
     title: title || path.basename(file.originalname, path.extname(file.originalname)),
     description: description || '',
@@ -268,6 +287,14 @@ app.use((req, res, next) => {
 
   const htmlPath = fs.existsSync(indexPath) ? indexPath : path.join(__dirname, 'index.html');
   res.sendFile(htmlPath);
+});
+
+app.use((err, _req, res, _next) => {
+  if (err instanceof multer.MulterError || err?.message?.startsWith('Unsupported file type')) {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error.' });
 });
 
 app.listen(port, () => {
