@@ -1,4 +1,4 @@
-# AIC Kitanga Church Site
+# AIC Kitanga Church Landing Site
 
 A full-featured church landing page with a React + Vite frontend and Express backend featuring an admin panel with SQLite database for content management.
 
@@ -113,5 +113,5 @@ This creates a production-optimized build in the `dist/` folder.
 
 ## License
 
-© 2026 Kitanga Church. All rights reserved.
+© 2026 AIC Kitanga. All rights reserved.
 

@@ -1,5 +1,5 @@
 export const DEFAULT_SITE_CONTENT = {
-  churchName: 'AIC KITANGA',
+  churchName: 'AIC Kitanga',
   tagline: '',
   title: 'Welcome Home',
   subtitle: 'A place of faith, family and transformation.',

@@ -85,7 +85,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'dunamis-admin-secret',
+    secret: process.env.SESSION_SECRET || 'aic-kitanga-admin-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 12 }
@@ -127,7 +127,7 @@ function parseStoredValue(value) {
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'dunamis-admin' });
+  res.json({ ok: true, service: 'aic-kitanga-admin' });
 });
 
 app.post('/api/admin/login', (req, res) => {
@@ -252,5 +252,5 @@ app.use((req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Dunamis admin server running on http://localhost:${port}`);
+  console.log(`AIC Kitanga admin server running on http://localhost:${port}`);
 });
