@@ -1,18 +1,9 @@
-// Keep background audio silent when the visitor enters the site.
-// The entry button is a user gesture, so browsers allow the muted audio to start here.
+// Background audio must NOT start automatically.
+// It only starts after the visitor explicitly unmutes it with the sound control.
 document.addEventListener("click", event => {
   const enterButton = event.target.closest?.(".enter");
   if (!enterButton) return;
 
-  setTimeout(() => {
-    const audio = document.querySelector("audio[aria-hidden='true']");
-    if (audio) {
-      audio.muted = true;
-      audio.play().catch(() => {});
-    }
-
-    document.querySelectorAll(".sound").forEach(button => {
-      button.style.display = "none";
-    });
-  }, 0);
+  // The audio control is handled by BackgroundAudio in main.jsx.
+  // Do not call play() here: entering the site must remain silent.
 });
