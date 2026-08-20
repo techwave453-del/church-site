@@ -1,12 +1,12 @@
 export const DEFAULT_SITE_CONTENT = {
-  churchName: 'AIC Kitanga',
-  tagline: 'Faith. Family. Transformation.',
+  churchName: 'Kingdom Fellowship Christian Church',
+  tagline: 'Revealing Christ to Nations',
   title: 'Welcome Home',
-  subtitle: 'A place of faith, family and transformation.',
+  subtitle: 'A place of faith, fellowship, worship and transformation.',
   cta: 'Enter Site',
   aboutEyebrow: 'Who We Are',
-  aboutTitle: 'About AIC Kitanga',
-  aboutText: 'AIC Kitanga is a community where people gather to worship God, grow in faith, build meaningful relationships, and serve others. Everyone is welcome to find a place to belong and take their next step in faith.',
+  aboutTitle: 'About Kingdom Fellowship Christian Church',
+  aboutText: 'Kingdom Fellowship Christian Church is a community committed to revealing Christ to nations through worship, fellowship, the Word of God, prayer, service and the transforming power of the Gospel. Everyone is welcome to find a place to belong and grow in faith.',
   servicesEyebrow: 'Join Us In Worship',
   servicesTitle: 'Service Times',
   links: [
@@ -22,7 +22,7 @@ export const DEFAULT_SITE_CONTENT = {
     { title: 'Foundation Class', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785', registrationUrl: '#contact' },
     { title: 'Maturity Class', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp', registrationUrl: '#contact' }
   ],
-  footerTagline: 'A place of faith, family and transformation.',
+  footerTagline: 'Revealing Christ to Nations',
   phone: '+254 700 000 000',
   email: 'hello@aickitanga.org',
   services: [
