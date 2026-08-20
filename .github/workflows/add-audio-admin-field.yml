@@ -1,0 +1,41 @@
+name: Add audio admin field
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message != 'Add background audio URL field to admin panel'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add audio URL field
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('admin.html')
+          s = p.read_text()
+          old = '<div><label>Video URL</label><input id="videoUrl"></div><div><label>Fallback image URL</label><input id="fallbackImage"></div>'
+          new = '<div><label>Video URL</label><input id="videoUrl"></div><div><label>Background Audio URL</label><input id="audioUrl" placeholder="YouTube or direct .mp3/.wav URL"></div><div><label>Fallback image URL</label><input id="fallbackImage"></div>'
+          if old not in s:
+              raise SystemExit('Media / Hero fields pattern not found')
+          s = s.replace(old, new, 1)
+          old = "['churchName','tagline','title','subtitle','cta','phone','email','footerTagline','aboutEyebrow','aboutTitle','aboutText','videoUrl','fallbackImage']"
+          new = "['churchName','tagline','title','subtitle','cta','phone','email','footerTagline','aboutEyebrow','aboutTitle','aboutText','videoUrl','audioUrl','fallbackImage']"
+          if s.count(old) != 2:
+              raise SystemExit('Expected load/save field lists not found twice')
+          s = s.replace(old, new)
+          p.write_text(s)
+          PY
+      - name: Commit and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/add-audio-admin-field.yml
+          git add admin.html
+          git commit -m 'Add background audio URL field to admin panel'
+          git push
