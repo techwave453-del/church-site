@@ -1,7 +1,7 @@
 name: Fix YouTube audio control
 on:
   push:
-    branches: [fix/youtube-unmute]
+    branches: [main, fix/youtube-unmute]
 permissions:
   contents: write
 jobs:
