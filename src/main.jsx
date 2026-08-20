@@ -22,7 +22,19 @@ function LandingPage(){const[menu,setMenu]=useState(false);const[search,setSearc
 
 const uploaded=Array.isArray(media)?media.filter(x=>x.type==='image'&&x.url):[];
 
-const byCategory=(category)=>uploaded.filter(x=>String(x.category||'general').trim().toLowerCase()===category.toLowerCase());
+const normalizeCategory=(value)=>{
+  const c=String(value||'general').trim().toLowerCase();
+  if(c==='hero')return'hero';
+  if(c==='logo')return'logo';
+  if(c==='service'||c==='services')return'services';
+  if(c==='gallery')return'gallery';
+  if(c==='about')return'about';
+  if(c==='event'||c==='events')return'events';
+  if(c==='resource'||c==='resources')return'resources';
+  return'general';
+};
+
+const byCategory=(category)=>uploaded.filter(x=>normalizeCategory(x.category)===category);
 const firstByCategory=(category)=>byCategory(category)[0]?.url||"";
 const imagesByCategory=(category)=>byCategory(category).map(x=>({type:'image',src:x.url}));
 
@@ -31,11 +43,11 @@ const base=data?{...DEFAULT_CHURCH,...data}:DEFAULT_CHURCH;
 const heroImages=imagesByCategory('hero');
 const galleryImages=imagesByCategory('gallery');
 
-const hero=heroImages.length?heroImages:(base.gallery||[]);
-const gallery=galleryImages.length?galleryImages:(base.gallery||[]);
+const hero=heroImages.length?heroImages:(base.slides||DEFAULT_CHURCH.slides);
+const gallery=galleryImages.length?galleryImages:(base.gallery||DEFAULT_CHURCH.gallery);
 
 const logo=firstByCategory('logo')||base.logo;
-const fallback=firstByCategory('general')||firstByCategory('hero')||base.fallbackImage;
+const fallback=firstByCategory('general')||base.fallbackImage;
 
 const sectionImage=(category,original)=>firstByCategory(category)||original;
 

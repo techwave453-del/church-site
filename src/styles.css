@@ -662,3 +662,24 @@ textarea {
 .linksSection{background:#fff}.linksGrid{grid-template-columns:repeat(5,minmax(0,1fr))}.linkTile{min-height:220px}.linkTile .tileContent small{color:#eef7ff}.familySection{background:#eef3f7}.classGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:850px;margin:42px auto 0}.classTile{min-height:300px;padding:30px;display:flex;flex-direction:column;justify-content:flex-end;gap:22px;color:#fff;background-image:linear-gradient(135deg,rgba(21,17,60,.2),rgba(21,17,60,.25)),var(--tile-image);background-position:center;background-size:cover;position:relative;isolation:isolate}.classTile:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(31,11,62,.14),rgba(18,17,65,.88))}.classTile strong{font-family:Fraunces,Georgia,serif;font-size:36px}.classTile a{width:max-content;display:inline-flex;align-items:center;gap:8px;padding:11px 15px;background:#fff;color:#43146b;text-decoration:none;font-size:13px;font-weight:800}.siteFooter{display:grid;grid-template-columns:1fr auto;gap:24px;padding:42px max(24px,calc((100vw - 1180px)/2));background:#10141d;color:#f4f8fc}.siteFooter div{display:flex;flex-direction:column;gap:8px}.siteFooter strong{font-family:Fraunces,Georgia,serif;font-size:28px}.siteFooter span,.siteFooter a,.siteFooter small{color:#b6c7d5;font-size:13px}.siteFooter a{text-decoration:none}.siteFooter>small{grid-column:1 / -1;padding-top:20px;border-top:1px solid rgba(255,255,255,.12)}
 @media(max-width:900px){.servicesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.linksGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.aboutSection{gap:35px}}
 @media(max-width:700px){.page.entered .hero.carousel{width:100%;height:50svh;margin:70px 0 0}.homeSection{padding:58px 26px}.aboutSection{display:block}.aboutSection p{margin-top:28px;font-size:18px;line-height:1.7}.sectionIntro h2{font-size:48px}.servicesGrid,.linksGrid,.classGrid{grid-template-columns:1fr;gap:14px;margin-top:30px}.imageTile{min-height:210px;padding:22px}.servicesGrid .imageTile{min-height:190px}.tileContent strong{font-size:27px}.tileContent em,.imageTile:hover .tileContent em{opacity:1;transform:none}.classTile{min-height:260px}.classTile strong{font-size:32px}.siteFooter{display:flex;flex-direction:column;padding:38px 26px}.siteFooter>small{padding-top:18px}}
+
+/* Church logo sizing */
+.brandLogo {
+  width: 52px;
+  height: 52px;
+  max-width: 52px;
+  max-height: 52px;
+  flex: 0 0 52px;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .brandLogo {
+    width: 42px;
+    height: 42px;
+    max-width: 42px;
+    max-height: 42px;
+    flex-basis: 42px;
+  }
+}
