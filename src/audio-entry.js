@@ -17,9 +17,15 @@ const getYouTubeId = value => {
 
 let youtubeFrame = null;
 let youtubeId = null;
+let youtubeReady = false;
+let pendingCommand = null;
 
 const sendYouTubeCommand = command => {
   if (!youtubeFrame?.contentWindow || !youtubeId) return;
+  if (!youtubeReady) {
+    pendingCommand = command;
+    return;
+  }
   youtubeFrame.contentWindow.postMessage(JSON.stringify({
     event: "command",
     func: command,
@@ -34,6 +40,8 @@ const setupYouTubeAudio = audio => {
   if (youtubeId === id && youtubeFrame) return true;
 
   youtubeId = id;
+  youtubeReady = false;
+  pendingCommand = null;
   youtubeFrame?.remove();
 
   youtubeFrame = document.createElement("iframe");
@@ -42,8 +50,40 @@ const setupYouTubeAudio = audio => {
   youtubeFrame.setAttribute("tabindex", "-1");
   youtubeFrame.allow = "autoplay; encrypted-media";
   youtubeFrame.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:0;left:-10px;bottom:-10px;";
+  youtubeFrame.addEventListener("load", () => {
+    youtubeReady = true;
+    if (pendingCommand) {
+      const command = pendingCommand;
+      pendingCommand = null;
+      sendYouTubeCommand(command);
+    }
+  }, { once: true });
   youtubeFrame.src = `https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&autoplay=0&controls=0&loop=1&playlist=${encodeURIComponent(id)}&playsinline=1&rel=0`;
   document.body.appendChild(youtubeFrame);
+
+  // BackgroundAudio in React uses the normal HTMLAudioElement API. When the
+  // configured source is YouTube, route those calls to the YouTube player
+  // instead of trying to play a YouTube page as an <audio> source.
+  if (!audio.__youtubeAudioPatched) {
+    const nativePlay = audio.play.bind(audio);
+    const nativePause = audio.pause.bind(audio);
+    audio.play = () => {
+      if (getYouTubeId(audio.src || audio.getAttribute("src") || "")) {
+        sendYouTubeCommand("playVideo");
+        return Promise.resolve();
+      }
+      return nativePlay();
+    };
+    audio.pause = () => {
+      if (getYouTubeId(audio.src || audio.getAttribute("src") || "")) {
+        sendYouTubeCommand("pauseVideo");
+        return;
+      }
+      nativePause();
+    };
+    audio.__youtubeAudioPatched = true;
+  }
+
   return true;
 };
 
@@ -73,7 +113,8 @@ document.addEventListener("click", event => {
   if (!audio || !setupYouTubeAudio(audio)) return;
 
   // React's click handler updates muted before this document-level listener runs.
-  // That makes the explicit sound-button gesture the only way YouTube starts.
+  // The patched audio.play()/pause() methods above now translate that explicit
+  // gesture into a YouTube play/pause command without breaking React's state.
   if (audio.muted) sendYouTubeCommand("pauseVideo");
   else sendYouTubeCommand("playVideo");
 });
