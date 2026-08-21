@@ -1,10 +1,12 @@
+import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
-import express from 'express';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } }) : null;
-const originalExpress = express;
+const require = createRequire(import.meta.url);
+const expressPath = require.resolve('express');
+const originalExpress = require(expressPath);
+const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+  : null;
 
 function attachCommentRoutes(app) {
   app.get('/api/live/comments', async (_req, res) => {
@@ -33,6 +35,19 @@ function attachCommentRoutes(app) {
       res.status(500).json({ error: 'Unable to post your comment.' });
     }
   });
+
+  app.delete('/api/live/comments/:id', async (req, res) => {
+    if (!supabase) return res.status(503).json({ error: 'Comments are temporarily unavailable.' });
+    if (!req.session?.user) return res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    try {
+      const { error } = await supabase.from('live_comments').delete().eq('id', Number(req.params.id));
+      if (error) throw error;
+      res.json({ ok: true });
+    } catch (error) {
+      console.error('Live comment delete failed:', error);
+      res.status(500).json({ error: 'Unable to delete comment.' });
+    }
+  });
 }
 
 function patchedExpress(...args) {
@@ -41,10 +56,6 @@ function patchedExpress(...args) {
   return app;
 }
 Object.assign(patchedExpress, originalExpress);
-patchedExpress.Router = originalExpress.Router;
-patchedExpress.json = originalExpress.json;
-patchedExpress.urlencoded = originalExpress.urlencoded;
-patchedExpress.static = originalExpress.static;
-
-const expressModule = await import('express');
-if (expressModule.default === originalExpress) expressModule.default = patchedExpress;
+for (const key of ['Router', 'json', 'urlencoded', 'static', 'raw', 'text']) patchedExpress[key] = originalExpress[key];
+require.cache[expressPath].exports = patchedExpress;
+await import('./server.js');
