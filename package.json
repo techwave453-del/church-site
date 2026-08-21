@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node server.js",
-    "dev:all": "concurrently \"node comments-preload.js\" \"npm run dev\"",
+    "dev:all": "concurrently \"node server.js\" \"npm run dev\"",
     "build": "node scripts/fix-vite-regex.js && node scripts/inject-live-stream.js && vite build",
-    "start": "node comments-preload.js",
+    "start": "node server.js",
     "preview": "vite preview",
     "test": "node --test"
   },
