@@ -4,6 +4,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    allowedHosts: ['kingdomfellowshipchristianchurch.onrender.com'],
     proxy: {
       '/api': 'http://localhost:3001',
       '/uploads': 'http://localhost:3001'
@@ -11,6 +12,7 @@ export default defineConfig({
   },
   preview: {
     host: '0.0.0.0',
-    port: 4173
+    port: 4173,
+    allowedHosts: ['kingdomfellowshipchristianchurch.onrender.com']
   }
 });
