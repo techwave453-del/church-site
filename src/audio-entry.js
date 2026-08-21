@@ -1,5 +1,6 @@
 // Background audio must NOT start automatically.
 // It starts only after the visitor explicitly clicks the sound control.
+// When the visitor clicks Enter Site, the audio is muted immediately.
 
 const getYouTubeId = value => {
   try {
@@ -99,14 +100,30 @@ const hideSoundAfterEnter = () => {
   document.head.appendChild(style);
 };
 
+const muteAfterEnter = audio => {
+  const page = document.querySelector(".page");
+  if (!page?.classList.contains("entered") || !audio) return;
+
+  audio.muted = true;
+  const id = getYouTubeId(audio.src || audio.getAttribute("src") || "");
+  if (id) queueYouTubeCommand("mute");
+};
+
 const observeAudio = () => {
   hideSoundAfterEnter();
   const audio = document.querySelector("audio[aria-hidden='true']");
   if (!audio) return false;
-  if (observedAudio === audio) return true;
+  if (observedAudio === audio) {
+    muteAfterEnter(audio);
+    return true;
+  }
   observedAudio = audio;
   setupYouTubeAudio(audio);
-  const observer = new MutationObserver(() => setupYouTubeAudio(audio));
+  muteAfterEnter(audio);
+  const observer = new MutationObserver(() => {
+    setupYouTubeAudio(audio);
+    muteAfterEnter(audio);
+  });
   observer.observe(audio, { attributes: true, attributeFilter: ["src"] });
   return true;
 };
@@ -117,7 +134,7 @@ const startObserver = () => {
   observeAudio();
   if (!document.body) return;
   const rootObserver = new MutationObserver(() => observeAudio());
-  rootObserver.observe(document.body, { childList: true, subtree: true });
+  rootObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
 };
 
 if (document.readyState === "loading") {
