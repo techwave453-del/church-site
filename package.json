@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node server.js",
-    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev\"",
+    "dev:all": "concurrently \"node server.js\" \"npm run dev\"",
     "build": "node scripts/fix-vite-regex.js && node scripts/inject-live-stream.js && vite build",
     "start": "node server.js",
     "preview": "vite preview",
