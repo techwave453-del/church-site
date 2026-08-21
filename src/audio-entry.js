@@ -61,9 +61,6 @@ const setupYouTubeAudio = audio => {
   youtubeFrame.src = `https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&autoplay=0&controls=0&loop=1&playlist=${encodeURIComponent(id)}&playsinline=1&rel=0`;
   document.body.appendChild(youtubeFrame);
 
-  // BackgroundAudio in React uses the normal HTMLAudioElement API. When the
-  // configured source is YouTube, route those calls to the YouTube player
-  // instead of trying to play a YouTube page as an <audio> source.
   if (!audio.__youtubeAudioPatched) {
     const nativePlay = audio.play.bind(audio);
     const nativePause = audio.pause.bind(audio);
@@ -87,11 +84,18 @@ const setupYouTubeAudio = audio => {
   return true;
 };
 
+const hideSoundAfterEnter = () => {
+  const style = document.createElement("style");
+  style.textContent = ".page.entered .sound{display:none!important}";
+  document.head.appendChild(style);
+};
+
 const observeAudio = () => {
   const audio = document.querySelector("audio[aria-hidden='true']");
   if (!audio) return;
 
   setupYouTubeAudio(audio);
+  hideSoundAfterEnter();
 
   new MutationObserver(() => setupYouTubeAudio(audio)).observe(audio, {
     attributes: true,
@@ -101,10 +105,7 @@ const observeAudio = () => {
 
 document.addEventListener("click", event => {
   const enterButton = event.target.closest?.(".enter");
-  if (enterButton) {
-    // Entering the site remains silent. Never start audio here.
-    return;
-  }
+  if (enterButton) return;
 
   const soundButton = event.target.closest?.(".sound");
   if (!soundButton) return;
@@ -112,11 +113,11 @@ document.addEventListener("click", event => {
   const audio = document.querySelector("audio[aria-hidden='true']");
   if (!audio || !setupYouTubeAudio(audio)) return;
 
-  // React's click handler updates muted before this document-level listener runs.
-  // The patched audio.play()/pause() methods above now translate that explicit
-  // gesture into a YouTube play/pause command without breaking React's state.
-  if (audio.muted) sendYouTubeCommand("pauseVideo");
-  else sendYouTubeCommand("playVideo");
+  // The click starts with the audio muted. Therefore this explicit user
+  // gesture means UNMUTE -> play. A second click starts muted -> pause.
+  const wasMuted = audio.muted;
+  if (wasMuted) sendYouTubeCommand("playVideo");
+  else sendYouTubeCommand("pauseVideo");
 });
 
 if (document.readyState === "loading") {
