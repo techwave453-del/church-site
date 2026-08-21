@@ -16,7 +16,7 @@ jobs:
           import re
           p=Path('src/main.jsx')
           s=p.read_text()
-          replacement=r'''function getYouTubeId(url=""){try{const u=new URL(url);if(u.hostname.includes("youtu.be"))return u.pathname.slice(1).split("/")[0];if(u.hostname.includes("youtube.com")){if(u.pathname==="/watch")return u.searchParams.get("v");if(u.pathname.startswith("/embed/"))return u.pathname.split("/")[2];if(u.pathname.startswith("/shorts/"))return u.pathname.split("/")[2]}}catch(_e){}return null}
+          replacement=r'''function getYouTubeId(url=""){try{const u=new URL(url);if(u.hostname.includes("youtu.be"))return u.pathname.slice(1).split("/")[0];if(u.hostname.includes("youtube.com")){if(u.pathname==="/watch")return u.searchParams.get("v");if(u.pathname.startsWith("/embed/"))return u.pathname.split("/")[2];if(u.pathname.startsWith("/shorts/"))return u.pathname.split("/")[2]}}catch(_e){}return null}
 function BackgroundAudio({audioUrl,muted,setMuted}){const audioRef=useRef(null);const youtubeRef=useRef(null);const url=audioUrl||DEFAULT_CHURCH.audioUrl;const youtubeId=getYouTubeId(url);const isYouTube=Boolean(youtubeId);useEffect(()=>{const audio=audioRef.current;if(!audio||isYouTube)return;audio.src=url;audio.loop=true;audio.volume=.45;audio.muted=muted;return()=>{audio.pause();audio.src=""}},[url,isYouTube]);useEffect(()=>{const audio=audioRef.current;if(audio&&!isYouTube)audio.muted=muted},[muted,isYouTube]);const sendYouTube=(func,args=[])=>{youtubeRef.current?.contentWindow?.postMessage(JSON.stringify({event:"command",func,args}),"*")};const toggle=async()=>{const next=!muted;setMuted(next);if(isYouTube){if(next){sendYouTube("pauseVideo")}else{sendYouTube("unMute");sendYouTube("setVolume",[45]);sendYouTube("playVideo")}return}const audio=audioRef.current;if(!audio)return;if(next){audio.pause();return}try{audio.muted=false;await audio.play()}catch(_error){setMuted(true)}};return <>{isYouTube?<iframe ref={youtubeRef} className="audioYoutube" title="background-audio" src={`https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&autoplay=0&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0`} allow="autoplay"/>:<audio ref={audioRef} preload="auto" loop aria-hidden="true"/>}<button className="sound desktop" onClick={toggle} aria-label={muted?"Turn sound on":"Mute sound"}><span>{t("EN","sound")}</span><i/>{muted?<VolumeX/>:<Volume2/>}</button><button className="sound mobile" onClick={toggle} aria-label={muted?"Turn sound on":"Mute sound"}>{muted?<VolumeX/>:<Volume2/>}</button></>}
 '''
           s2=re.sub(r'function BackgroundAudio\(.*?\nfunction scrollToSection', replacement+'function scrollToSection', s, count=1, flags=re.S)
@@ -30,3 +30,5 @@ function BackgroundAudio({audioUrl,muted,setMuted}){const audioRef=useRef(null);
           git add src/main.jsx
           git commit -m "Fix YouTube background audio unmute" || exit 0
           git push
+
+# Trigger the patch after the previous merge
