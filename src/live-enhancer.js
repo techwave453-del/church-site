@@ -1,4 +1,4 @@
-/* Reliable floating Live control. It is intentionally unavailable until the visitor enters the site. */
+/* Floating Live control: hidden on the landing screen and shown immediately after site entry. */
 (function(){
   const getId = (value='') => {
     const v = String(value || '').trim();
@@ -18,7 +18,6 @@
     const style = document.createElement('style');
     style.id = 'live-enhancer-styles';
     style.textContent = `
-      /* Hide the older live control from site-config.js so only this control is visible. */
       #live-floating-button{display:none!important}
       #live-enhancer-button{position:fixed;right:24px;bottom:92px;z-index:9998;width:58px;height:58px;border:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff3030,#c90000);color:#fff;cursor:pointer;box-shadow:0 14px 36px rgba(0,0,0,.32);font:800 11px Arial,sans-serif;letter-spacing:.04em}
       #live-enhancer-button:hover{transform:translateY(-2px)}
@@ -41,62 +40,62 @@
   };
 
   const mount = async () => {
-    // The landing screen has no Live control. React adds .entered only after
-    // the visitor presses "Enter Site" / "Continue".
     if (!document.querySelector('.page.entered')) return;
+    addStyles();
 
+    // Create the button immediately after entry. Do not make its visibility
+    // depend on the API response, live enabled flag, or URL configuration.
+    let button = document.getElementById('live-enhancer-button');
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'live-enhancer-button';
+      button.type = 'button';
+      button.setAttribute('aria-label', 'Open live worship service');
+      button.innerHTML = '<span>LIVE</span>';
+      document.body.appendChild(button);
+    }
+
+    let modal = document.getElementById('live-enhancer-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'live-enhancer-modal';
+      modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong>Live Worship Service</strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"><div id="live-enhancer-empty">Loading live stream…</div></div><div id="live-enhancer-note">Join us live for worship, the Word of God and fellowship.</div></div>`;
+      document.body.appendChild(modal);
+    }
+
+    let live = {};
     try {
       const response = await fetch('/api/site/content?live=' + Date.now(), {cache:'no-store'});
-      if (!response.ok) return;
-      const content = await response.json();
-      const live = content && content.liveStream ? content.liveStream : {};
-      if (!live.enabled || !(live.url || live.videoUrl)) return;
-      const videoId = getId(live.url || live.videoUrl);
-
-      addStyles();
-      let button = document.getElementById('live-enhancer-button');
-      if (!button) {
-        button = document.createElement('button');
-        button.id = 'live-enhancer-button';
-        button.type = 'button';
-        button.setAttribute('aria-label', 'Open live worship service');
-        button.innerHTML = '<span>LIVE</span>';
-        document.body.appendChild(button);
+      if (response.ok) {
+        const content = await response.json();
+        live = content && content.liveStream ? content.liveStream : {};
       }
-
-      let modal = document.getElementById('live-enhancer-modal');
-      if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'live-enhancer-modal';
-        modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong></strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"></div><div id="live-enhancer-note"></div></div>`;
-        document.body.appendChild(modal);
-      }
-
-      const title = live.title || 'Live Worship Service';
-      const description = live.description || 'Join us live for worship, the Word of God and fellowship.';
-      modal.querySelector('#live-enhancer-head strong').textContent = title;
-      modal.querySelector('#live-enhancer-note').textContent = description;
-
-      const open = () => {
-        const player = modal.querySelector('#live-enhancer-player');
-        if (videoId) {
-          player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
-        } else {
-          player.innerHTML = '<div id="live-enhancer-empty">The church live stream is not configured yet. Please check back during a live service.</div>';
-        }
-        modal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      };
-      const close = () => {
-        modal.classList.remove('open');
-        modal.querySelector('#live-enhancer-player').innerHTML = '';
-        document.body.style.overflow = '';
-      };
-      button.onclick = open;
-      modal.querySelector('#live-enhancer-close').onclick = close;
-      modal.onclick = event => { if (event.target === modal) close(); };
-      document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
     } catch (_) {}
+
+    const videoId = getId(live.url || live.videoUrl);
+    const title = live.title || 'Live Worship Service';
+    const description = live.description || 'Join us live for worship, the Word of God and fellowship.';
+    modal.querySelector('#live-enhancer-head strong').textContent = title;
+    modal.querySelector('#live-enhancer-note').textContent = description;
+
+    const open = () => {
+      const player = modal.querySelector('#live-enhancer-player');
+      if (videoId) {
+        player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
+      } else {
+        player.innerHTML = '<div id="live-enhancer-empty">The church live stream is not configured yet. Please add the YouTube Live URL in the admin panel.</div>';
+      }
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      modal.classList.remove('open');
+      modal.querySelector('#live-enhancer-player').innerHTML = '';
+      document.body.style.overflow = '';
+    };
+    button.onclick = open;
+    modal.querySelector('#live-enhancer-close').onclick = close;
+    modal.onclick = event => { if (event.target === modal) close(); };
   };
 
   const waitForEntry = () => {
