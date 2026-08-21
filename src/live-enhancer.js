@@ -1,7 +1,6 @@
-/* Live-stream enhancer: works independently of the React page so the floating Live control
-   is available after the public site loads and opens the configured YouTube broadcast. */
+/* Reliable floating Live control. Reads the public live-stream configuration from the API. */
 (function(){
-  const getId = (value) => {
+  const getId = (value='') => {
     const v = String(value || '').trim();
     if (!v) return '';
     const patterns = [
@@ -30,8 +29,9 @@
       #live-enhancer-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 18px}
       #live-enhancer-head strong{font:800 18px Arial,sans-serif}
       #live-enhancer-close{border:0;background:transparent;color:#fff;font-size:30px;line-height:1;cursor:pointer;padding:0 4px}
-      #live-enhancer-player{aspect-ratio:16/9;background:#000}
+      #live-enhancer-player{aspect-ratio:16/9;background:#000;display:grid;place-items:center}
       #live-enhancer-player iframe{width:100%;height:100%;border:0;display:block}
+      #live-enhancer-empty{padding:40px 25px;text-align:center;color:#ddd;font:600 16px Arial,sans-serif}
       #live-enhancer-note{padding:10px 18px 15px;color:#bbb;font:14px Arial,sans-serif}
       @media(max-width:700px){#live-enhancer-button{right:14px;bottom:74px;width:52px;height:52px}#live-enhancer-modal{padding:10px}#live-enhancer-head strong{font-size:16px}}
     `;
@@ -40,13 +40,11 @@
 
   const mount = async () => {
     try {
-      const response = await fetch('/api/site/content', {cache:'no-store'});
+      const response = await fetch('/api/site/content?live=' + Date.now(), {cache:'no-store'});
       if (!response.ok) return;
       const content = await response.json();
-      const live = content && content.liveStream;
-      if (!live || !live.enabled) return;
+      const live = content && content.liveStream ? content.liveStream : {};
       const videoId = getId(live.url || live.videoUrl);
-      if (!videoId) return;
 
       addStyles();
       let button = document.getElementById('live-enhancer-button');
@@ -63,17 +61,22 @@
       if (!modal) {
         modal = document.createElement('div');
         modal.id = 'live-enhancer-modal';
-        modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong></strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"></div><div id="live-enhancer-note">Live worship service</div></div>`;
+        modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong></strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"></div><div id="live-enhancer-note"></div></div>`;
         document.body.appendChild(modal);
       }
 
       const title = live.title || 'Live Worship Service';
+      const description = live.description || 'Join us live for worship, the Word of God and fellowship.';
       modal.querySelector('#live-enhancer-head strong').textContent = title;
-      modal.querySelector('#live-enhancer-note').textContent = live.description || 'Join us live for worship, the Word of God and fellowship.';
+      modal.querySelector('#live-enhancer-note').textContent = description;
 
       const open = () => {
         const player = modal.querySelector('#live-enhancer-player');
-        player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
+        if (videoId && live.enabled !== false) {
+          player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
+        } else {
+          player.innerHTML = '<div id="live-enhancer-empty">The church live stream is not configured yet. Please check back during a live service.</div>';
+        }
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
       };
@@ -84,8 +87,8 @@
       };
       button.onclick = open;
       modal.querySelector('#live-enhancer-close').onclick = close;
-      modal.onclick = (event) => { if (event.target === modal) close(); };
-      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') close(); }, {once:false});
+      modal.onclick = event => { if (event.target === modal) close(); };
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
     } catch (_) {}
   };
 
