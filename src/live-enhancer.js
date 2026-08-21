@@ -1,4 +1,4 @@
-/* Reliable floating Live control. Reads the public live-stream configuration from the API. */
+/* Reliable floating Live control. It is intentionally unavailable until the visitor enters the site. */
 (function(){
   const getId = (value='') => {
     const v = String(value || '').trim();
@@ -18,6 +18,8 @@
     const style = document.createElement('style');
     style.id = 'live-enhancer-styles';
     style.textContent = `
+      /* Hide the older live control from site-config.js so only this control is visible. */
+      #live-floating-button{display:none!important}
       #live-enhancer-button{position:fixed;right:24px;bottom:92px;z-index:9998;width:58px;height:58px;border:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff3030,#c90000);color:#fff;cursor:pointer;box-shadow:0 14px 36px rgba(0,0,0,.32);font:800 11px Arial,sans-serif;letter-spacing:.04em}
       #live-enhancer-button:hover{transform:translateY(-2px)}
       #live-enhancer-button span{position:relative}
@@ -39,11 +41,16 @@
   };
 
   const mount = async () => {
+    // The landing screen has no Live control. React adds .entered only after
+    // the visitor presses "Enter Site" / "Continue".
+    if (!document.querySelector('.page.entered')) return;
+
     try {
       const response = await fetch('/api/site/content?live=' + Date.now(), {cache:'no-store'});
       if (!response.ok) return;
       const content = await response.json();
       const live = content && content.liveStream ? content.liveStream : {};
+      if (!live.enabled || !(live.url || live.videoUrl)) return;
       const videoId = getId(live.url || live.videoUrl);
 
       addStyles();
@@ -72,7 +79,7 @@
 
       const open = () => {
         const player = modal.querySelector('#live-enhancer-player');
-        if (videoId && live.enabled !== false) {
+        if (videoId) {
           player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
         } else {
           player.innerHTML = '<div id="live-enhancer-empty">The church live stream is not configured yet. Please check back during a live service.</div>';
@@ -92,6 +99,18 @@
     } catch (_) {}
   };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, {once:true});
-  else mount();
+  const waitForEntry = () => {
+    addStyles();
+    if (document.querySelector('.page.entered')) { mount(); return; }
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('.page.entered')) {
+        observer.disconnect();
+        mount();
+      }
+    });
+    observer.observe(document.documentElement, {subtree:true, attributes:true, attributeFilter:['class']});
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', waitForEntry, {once:true});
+  else waitForEntry();
 })();
