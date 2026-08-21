@@ -32,7 +32,9 @@
       #live-enhancer-close{border:0;background:transparent;color:#fff;font-size:30px;line-height:1;cursor:pointer;padding:0 4px}
       #live-enhancer-player{aspect-ratio:16/9;background:#000;display:grid;place-items:center}
       #live-enhancer-player iframe{width:100%;height:100%;border:0;display:block}
-      #live-enhancer-empty{padding:40px 25px;text-align:center;color:#ddd;font:600 16px Arial,sans-serif}
+      #live-enhancer-empty{padding:40px 25px;text-align:center;color:#ddd;font:600 16px/1.6 Arial,sans-serif}
+      #live-enhancer-empty strong{display:block;color:#fff;font-size:21px;margin-bottom:8px}
+      #live-enhancer-empty small{display:block;color:#aaa;font-weight:400;font-size:14px;margin-top:8px}
       #live-enhancer-note{padding:10px 18px 15px;color:#bbb;font:14px Arial,sans-serif}
       @media(max-width:700px){#live-enhancer-button{right:14px;bottom:74px;width:52px;height:52px}#live-enhancer-modal{padding:10px}#live-enhancer-head strong{font-size:16px}}
     `;
@@ -59,7 +61,7 @@
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'live-enhancer-modal';
-      modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong>Live Worship Service</strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"><div id="live-enhancer-empty">Loading live stream…</div></div><div id="live-enhancer-note">Join us live for worship, the Word of God and fellowship.</div></div>`;
+      modal.innerHTML = `<div id="live-enhancer-card" role="dialog" aria-modal="true" aria-label="Live worship service"><div id="live-enhancer-head"><strong>Live Worship Service</strong><button id="live-enhancer-close" type="button" aria-label="Close live player">&times;</button></div><div id="live-enhancer-player"><div id="live-enhancer-empty"><strong>We're not live right now</strong>Thank you for joining us! Our live stream is currently unavailable.<small>Please check back during our next service. We look forward to worshipping with you!</small></div></div><div id="live-enhancer-note">We'd love to have you join us again for worship, the Word of God and fellowship.</div></div>`;
       document.body.appendChild(modal);
     }
 
@@ -74,7 +76,7 @@
 
     const videoId = getId(live.url || live.videoUrl);
     const title = live.title || 'Live Worship Service';
-    const description = live.description || 'Join us live for worship, the Word of God and fellowship.';
+    const description = live.description || 'We\'d love to have you join us again for worship, the Word of God and fellowship.';
     modal.querySelector('#live-enhancer-head strong').textContent = title;
     modal.querySelector('#live-enhancer-note').textContent = description;
 
@@ -83,7 +85,7 @@
       if (videoId) {
         player.innerHTML = `<iframe title="${title.replace(/"/g,'&quot;')}" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>`;
       } else {
-        player.innerHTML = '<div id="live-enhancer-empty">The church live stream is not configured yet. Please add the YouTube Live URL in the admin panel.</div>';
+        player.innerHTML = '<div id="live-enhancer-empty"><strong>We\'re not live right now</strong>Thank you for joining us! Our live stream is currently unavailable.<small>Please check back during our next service. We look forward to worshipping with you!</small></div>';
       }
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
