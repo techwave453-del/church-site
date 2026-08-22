@@ -22,6 +22,45 @@ const details = {
 };
 
 const slugify=value=>String(value||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-function DetailPage({church,type,onBack}){const key=type||'visit-us';const item=details[key]||details[slugify(key)]||{eyebrow:'Kingdom Fellowship',title:key,summary:'More information will be added by the church team.',sections:[['More Information','Please contact the church for the latest details about this programme or ministry.']]};return <div className="detailPage"><header className="detailHeader"><button className="detailBack" onClick={onBack}><ArrowLeft size={18}/> Back to website</button><div className="detailBrand"><strong>{church?.name||'Kingdom Fellowship Christian Church'}</strong><span>{church?.tagline||'Revealing Christ to Nations'}</span></div></header><main><section className="detailHero"><span>{item.eyebrow}</span><h1>{item.title}</h1><p>{item.summary}</p>{item.schedule&&<div className="detailSchedule"><Clock3 size={18}/>{item.schedule}</div>}</section><section className="detailGrid">{item.sections.map(([heading,text])=><article key={heading}><div className="detailIcon"><ArrowRight size={18}/></div><h2>{heading}</h2><p>{text}</p></article>)}</section><section className="detailCta"><div><span>Kingdom Fellowship Christian Church</span><h2>Have questions or want to get connected?</h2><p>Our church team will be happy to help you with directions, registration, programmes or any other enquiry.</p></div><div className="detailActions"><a href={`tel:${church?.phone||''}`}><Phone size={17}/> Call</a><a href={`mailto:${church?.email||''}`}><Mail size={17}/> Email</a><button onClick={onBack}><ArrowLeft size={17}/> Return to site</button></div></section></main><footer className="detailFooter"><strong>{church?.name||'Kingdom Fellowship Christian Church'}</strong><span>{church?.footerTagline||'Revealing Christ to Nations'}</span></footer></div>}
+
+function normalizeDetail(value, fallback) {
+  if (!value || typeof value !== 'object') return fallback;
+  const sections = Array.isArray(value.sections)
+    ? value.sections.map((section, index) => {
+        if (Array.isArray(section)) return [String(section[0] || `Section ${index + 1}`), String(section[1] || '')];
+        if (section && typeof section === 'object') return [String(section.heading || section.title || `Section ${index + 1}`), String(section.text || section.description || '')];
+        return null;
+      }).filter(Boolean)
+    : fallback.sections;
+  return {
+    ...fallback,
+    ...value,
+    eyebrow: value.eyebrow || fallback.eyebrow,
+    title: value.title || fallback.title,
+    summary: value.summary || fallback.summary,
+    schedule: value.schedule || fallback.schedule,
+    sections: sections.length ? sections : fallback.sections
+  };
+}
+
+function getDetail(church, key) {
+  const fallback = details[key] || details[slugify(key)] || {
+    eyebrow:'Kingdom Fellowship',
+    title:key,
+    summary:'More information will be added by the church team.',
+    sections:[['More Information','Please contact the church for the latest details about this programme or ministry.']]
+  };
+  const saved = church?.detailContent || {};
+  const candidates = [key, slugify(key), fallback.title, slugify(fallback.title)].filter(Boolean);
+  const custom = candidates.map(candidate => saved[candidate]).find(value => value && typeof value === 'object');
+  return normalizeDetail(custom, fallback);
+}
+
+function DetailPage({church,type,onBack}) {
+  const key=type||'visit-us';
+  const item=getDetail(church,key);
+  return <div className="detailPage"><header className="detailHeader"><button className="detailBack" onClick={onBack}><ArrowLeft size={18}/> Back to website</button><div className="detailBrand"><strong>{church?.name||'Kingdom Fellowship Christian Church'}</strong><span>{church?.tagline||'Revealing Christ to Nations'}</span></div></header><main><section className="detailHero"><span>{item.eyebrow}</span><h1>{item.title}</h1><p>{item.summary}</p>{item.schedule&&<div className="detailSchedule"><Clock3 size={18}/>{item.schedule}</div>}</section><section className="detailGrid">{item.sections.map(([heading,text],index)=><article key={`${heading}-${index}`}><div className="detailIcon"><ArrowRight size={18}/></div><h2>{heading}</h2><p>{text}</p></article>)}</section><section className="detailCta"><div><span>Kingdom Fellowship Christian Church</span><h2>Have questions or want to get connected?</h2><p>Our church team will be happy to help you with directions, registration, programmes or any other enquiry.</p></div><div className="detailActions"><a href={`tel:${church?.phone||''}`}><Phone size={17}/> Call</a><a href={`mailto:${church?.email||''}`}><Mail size={17}/> Email</a><button onClick={onBack}><ArrowLeft size={17}/> Return to site</button></div></section></main><footer className="detailFooter"><strong>{church?.name||'Kingdom Fellowship Christian Church'}</strong><span>{church?.footerTagline||'Revealing Christ to Nations'}</span></footer></div>
+}
+
 export function DetailRouter({church,type,onBack}){return <DetailPage church={church} type={type} onBack={onBack}/>}
 export function detailSlug(value){return slugify(value)}
