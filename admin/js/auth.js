@@ -90,9 +90,11 @@ async function save() {
 
 async function upload(event) {
   event.preventDefault();
-  const response = await uploadMedia(api, event.target);
-  if (!response.ok) { msg((await response.json()).error || 'Upload failed.', true); return; }
-  event.target.reset(); msg('Media uploaded successfully.'); loadMedia();
+  try {
+    const response = await uploadMedia(api, event.target);
+    if (!response.ok) { msg((await response.json()).error || 'Upload failed.', true); return; }
+    event.target.reset(); msg('Media uploaded successfully.'); await loadMedia();
+  } catch (error) { msg(error.message || 'Upload failed.', true); }
 }
 
 async function loadMedia() {
@@ -102,19 +104,31 @@ async function loadMedia() {
     box.innerHTML = items.length ? items.map(item => `<div class="media">${item.type === 'image' ? `<img class="thumb" src="${esc(item.url)}" alt="">` : '<div class="thumb"></div>'}<div class="mi"><strong>${esc(item.title)}</strong><small>${esc(item.category)} · ${esc(item.type)}</small></div><div class="toolbar"><button type="button" class="secondary small" data-copy-url="${esc(item.url)}">Copy URL</button><a class="secondary small" href="${esc(item.url)}" target="_blank" rel="noopener">Open</a><button type="button" class="danger small" data-delete-media="${Number(item.id)}">Delete</button></div></div>`).join('') : '<div class="empty">No media uploaded yet.</div>';
     box.querySelectorAll('[data-copy-url]').forEach(button => button.addEventListener('click', async () => { if (!await copyMediaUrl(button.dataset.copyUrl, button)) msg('Could not copy the URL. Please try again.', true); }));
     box.querySelectorAll('[data-delete-media]').forEach(button => button.addEventListener('click', () => delMedia(Number(button.dataset.deleteMedia))));
-  } catch { box.innerHTML = '<div class="empty">Unable to load media.</div>'; }
+  } catch (error) { box.innerHTML = `<div class="empty">${esc(error.message || 'Unable to load media.')}</div>`; }
 }
-async function delMedia(id) { if (!confirm('Delete this media item?')) return; const response = await deleteMedia(api, id); if (response.ok) { msg('Media deleted.'); loadMedia(); } else msg((await response.json()).error || 'Delete failed.', true); }
+async function delMedia(id) { if (!confirm('Delete this media item?')) return; try { const response = await deleteMedia(api, id); if (response.ok) { msg('Media deleted.'); await loadMedia(); } else msg((await response.json()).error || 'Delete failed.', true); } catch (error) { msg(error.message || 'Delete failed.', true); } }
 
 async function loadComments() {
   await renderComments(api, $('commentsList'), esc);
-  $('commentsList').querySelectorAll('[data-moderate]').forEach(button => button.addEventListener('click', async () => { const response = await moderateComment(api, Number(button.dataset.moderate), button.dataset.approved === 'true'); if (!response.ok) { msg((await response.json()).error || 'Action failed.', true); return; } loadComments(); }));
-  $('commentsList').querySelectorAll('[data-delete-comment]').forEach(button => button.addEventListener('click', async () => { if (!confirm('Delete this comment permanently?')) return; const response = await removeComment(api, Number(button.dataset.deleteComment)); if (!response.ok) { msg((await response.json()).error || 'Delete failed.', true); return; } loadComments(); }));
+  $('commentsList').querySelectorAll('[data-moderate]').forEach(button => button.addEventListener('click', async () => { const response = await moderateComment(api, Number(button.dataset.moderate), button.dataset.approved === 'true'); if (!response.ok) { msg((await response.json()).error || 'Action failed.', true); return; } await loadComments(); }));
+  $('commentsList').querySelectorAll('[data-delete-comment]').forEach(button => button.addEventListener('click', async () => { if (!confirm('Delete this comment permanently?')) return; const response = await removeComment(api, Number(button.dataset.deleteComment)); if (!response.ok) { msg((await response.json()).error || 'Delete failed.', true); return; } await loadComments(); }));
 }
 function tab(which, button) { document.querySelectorAll('.tabs button').forEach(item => item.classList.remove('active')); button.classList.add('active'); ['site','media','comments'].forEach(id => $(id).classList.toggle('hidden', id !== which)); if (which === 'media') loadMedia(); if (which === 'comments') loadComments(); }
-async function loginForm(event) { event.preventDefault(); const response = await login($('username').value, $('password').value); if (response.ok) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); msg('Signed in successfully.'); await load(); } else $('loginMsg').textContent = (await response.json()).error || 'Invalid username or password.'; }
+async function loginForm(event) { event.preventDefault(); try { const response = await login($('username').value, $('password').value); if (response.ok) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); msg('Signed in successfully.'); await load(); } else $('loginMsg').textContent = (await response.json()).error || 'Invalid username or password.'; } catch (error) { $('loginMsg').textContent = error.message || 'Unable to sign in. Please try again.'; } }
 
 Object.assign(window, { api, login: loginForm, logout, tab, load, save, upload, loadMedia, loadComments, addItem });
 
-async function init() { checkApiStatus($('apiStatus')); const session = await getSession(); if (session.ok) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); await load(); } }
+async function init() {
+  await checkApiStatus($('apiStatus'));
+  try {
+    const session = await getSession();
+    if (session.ok) {
+      $('login').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      await load();
+    }
+  } catch (error) {
+    msg('Unable to connect to the admin session. Please refresh and try again.', true);
+  }
+}
 init();
