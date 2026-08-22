@@ -64,3 +64,31 @@ function DetailPage({church,type,onBack}) {
 
 export function DetailRouter({church,type,onBack}){return <DetailPage church={church} type={type} onBack={onBack}/>}
 export function detailSlug(value){return slugify(value)}
+
+// The main site's header and mobile drawer currently use section anchors. Intercept
+// those menu clicks in the capture phase and route them to the matching detail page.
+// This keeps the existing header/drawer behavior intact while making each menu item
+// open a real page instead of only scrolling to a section.
+const menuPageRoutes={
+  about:'visit-us',
+  events:'upcoming-programs',
+  visit:'visit-us',
+  media:'media',
+  resources:'resources',
+  give:'give',
+  contact:'contact'
+};
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', event => {
+    const anchor=event.target?.closest?.('a[href^="#"]');
+    if (!anchor) return;
+    const href=anchor.getAttribute('href') || '';
+    const section=href.slice(1).toLowerCase();
+    const page=menuPageRoutes[section];
+    if (!page) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.location.hash=`detail/${page}`;
+  }, true);
+}
