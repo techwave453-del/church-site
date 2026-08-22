@@ -1,15 +1,6 @@
-/*
- * Media Library module
- *
- * This module is intentionally independent of the existing admin.html while
- * the refactor is being performed incrementally. The public functions below
- * can be wired into the existing page after the current Media Library markup
- * is extracted.
- */
-
+/* Media Library module — safe incremental refactor. */
 export async function copyMediaUrl(url, button = null) {
   if (!url) throw new Error('No media URL was provided.');
-
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(url);
@@ -26,20 +17,20 @@ export async function copyMediaUrl(url, button = null) {
       textarea.remove();
       if (!copied) throw new Error('Clipboard copy was not available.');
     }
-
     if (button) {
       const originalText = button.textContent;
       button.textContent = '✓ Copied!';
       button.disabled = true;
-      window.setTimeout(() => {
-        button.textContent = originalText;
-        button.disabled = false;
-      }, 1800);
+      window.setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1800);
     }
-
     return true;
   } catch (error) {
     console.error('Failed to copy media URL:', error);
+    if (button) {
+      const originalText = button.textContent;
+      button.textContent = 'Copy failed';
+      window.setTimeout(() => { button.textContent = originalText; }, 1800);
+    }
     return false;
   }
 }
