@@ -26,11 +26,11 @@ export const DEFAULT_SITE_CONTENT = {
   phone: '+254 700 000 000',
   email: 'hello@aickitanga.org',
   services: [
-    { title: 'Sunday Worship Service', time: 'Sundays | 9:00 AM', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp' },
-    { title: 'Healing and Deliverance Service', time: 'Tuesdays | 5:30 PM', image: 'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg' },
-    { title: 'Power Communion Service', time: 'Wednesdays | 5:30 PM', image: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785' },
-    { title: 'Worship, Word & Wonders Night', time: 'Fridays | 5:30 PM', image: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp' },
-    { title: 'Commanding the Day Midnight Prayer', time: 'Last Friday | 11:00 PM', image: 'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg' }
+    { title: 'Sunday Worship Service', time: 'Sundays | 9:00 AM', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1600&q=85' },
+    { title: 'Healing and Deliverance Service', time: 'Tuesdays | 5:30 PM', image: 'https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=1600&q=85' },
+    { title: 'Power Communion Service', time: 'Wednesdays | 5:30 PM', image: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=1600&q=85' },
+    { title: 'Worship, Word & Wonders Night', time: 'Fridays | 5:30 PM', image: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1600&q=85' },
+    { title: 'Commanding the Day Midnight Prayer', time: 'Last Friday | 11:00 PM', image: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?auto=format&fit=crop&w=1600&q=85' }
   ],
   videoUrl: 'https://www.pexels.com/download/video/12921271/',
   audioUrl: 'https://youtu.be/9sE5kEnitqE?list=RD7eAvIYagrrs',
