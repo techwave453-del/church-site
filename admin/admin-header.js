@@ -1,0 +1,12 @@
+(function(){
+  const mount=document.getElementById('adminHeader');
+  if(!mount)return;
+  if(!document.querySelector('link[data-admin-header-css]')){
+    const css=document.createElement('link');
+    css.rel='stylesheet';
+    css.href='/admin/admin-header.css';
+    css.dataset.adminHeaderCss='true';
+    document.head.appendChild(css);
+  }
+  mount.innerHTML='<header class="admin-header"><strong class="admin-header__title">Kingdom Fellowship Christian Church — Admin</strong><div class="admin-header__actions"><span id="apiStatus" class="admin-header__status">Checking…</span><a class="secondary small admin-header__back" href="/" aria-label="Back to website">← Back to Website</a><button class="secondary small" type="button" onclick="logout()">Log out</button></div></header>';
+})();
