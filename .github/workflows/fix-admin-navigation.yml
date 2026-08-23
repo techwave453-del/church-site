@@ -1,0 +1,55 @@
+name: Fix admin navigation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-admin-navigation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Make admin navigation sticky
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('admin.html')
+          text = path.read_text(encoding='utf-8')
+
+          old_css = '.tabs{display:flex;gap:8px;margin-bottom:16px;overflow:auto}'
+          new_css = '''html{scroll-behavior:smooth}.tabs{position:sticky;top:var(--admin-header-offset,0px);z-index:19;display:flex;gap:8px;margin-bottom:16px;overflow:auto;padding:10px 0;background:var(--bg);box-shadow:0 4px 12px #0000000d}.tabs button{flex:none}.tabs button.active{background:var(--accent)}.jump{position:sticky;top:calc(var(--admin-header-offset,0px) + var(--admin-tabs-offset,56px));z-index:18;padding:8px 0;background:var(--bg);box-shadow:0 4px 12px #0000000d}'''
+          if old_css not in text:
+              raise SystemExit('Expected .tabs CSS was not found; no changes made.')
+          text = text.replace(old_css, new_css, 1)
+
+          old_script = "const $=id=>document.getElementById(id);const textKeys="
+          new_script = "const $=id=>document.getElementById(id);function updateAdminNavOffsets(){const header=document.querySelector('header'),tabs=document.querySelector('.tabs');if(header)document.documentElement.style.setProperty('--admin-header-offset',header.offsetHeight+'px');if(tabs)document.documentElement.style.setProperty('--admin-tabs-offset',tabs.offsetHeight+'px')}window.addEventListener('resize',updateAdminNavOffsets);window.addEventListener('orientationchange',()=>setTimeout(updateAdminNavOffsets,50));const textKeys="
+          if old_script not in text:
+              raise SystemExit('Expected script anchor was not found; no changes made.')
+          text = text.replace(old_script, new_script, 1)
+
+          old_init = 'async function init(){checkApi();const r=await api(\'/api/admin/session\');'
+          new_init = 'async function init(){updateAdminNavOffsets();checkApi();const r=await api(\'/api/admin/session\');'
+          if old_init not in text:
+              raise SystemExit('Expected init function was not found; no changes made.')
+          text = text.replace(old_init, new_init, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit admin navigation update and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          git rm .github/workflows/fix-admin-navigation.yml
+          git commit -m 'Fix sticky admin navigation'
+          git push
