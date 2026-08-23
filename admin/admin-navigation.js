@@ -1,5 +1,14 @@
 (function(){
+  function loadStyles(){
+    if(document.querySelector('link[data-admin-navigation-css]'))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='/admin/admin-navigation.css';
+    link.dataset.adminNavigationCss='true';
+    document.head.appendChild(link);
+  }
   function mountNavigation(){
+    loadStyles();
     const existing=document.querySelector('.tabs');
     if(!existing)return;
     const nav=document.createElement('nav');
