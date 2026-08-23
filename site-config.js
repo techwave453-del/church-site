@@ -36,6 +36,7 @@ export const DEFAULT_SITE_CONTENT = {
   audioUrl: 'https://youtu.be/9sE5kEnitqE?list=RD7eAvIYagrrs',
   fallbackImage: 'https://store.christianitytoday.com/cdn/shop/articles/Untitled_design_9_large.jpg?v=1717170785',
   liveStream: { enabled: false, url: '', title: 'Live Worship Service', description: 'Join us live for worship, the Word of God and fellowship.' },
+  theme: { mode: 'light', accent: '#4da6ff' },
   gallery: [
     { type: 'image', src: 'https://cfni.org/wp-content/uploads/2024/12/Banner_Mackbook16_Worship.webp' },
     { type: 'image', src: 'https://cdn.prod.website-files.com/5f6b9a421d5a61e1d0cd9e3d/67993630bb7f463a5b9c6b0a_worship-672c02982a03e589238fc443_62f285c4f9aa3441840257d6_nathan-mullet-pmiW630yDPE-unsplash.jpeg' },
@@ -45,21 +46,56 @@ export const DEFAULT_SITE_CONTENT = {
 };
 
 export function mergeSiteContent(values = {}) {
-  const merged = {
-    ...DEFAULT_SITE_CONTENT,
-    ...values,
-    gallery: Array.isArray(values.gallery) ? values.gallery : DEFAULT_SITE_CONTENT.gallery
-  };
-
-  ['services', 'links', 'membershipClasses'].forEach((key) => {
-    if (!Array.isArray(values[key])) merged[key] = DEFAULT_SITE_CONTENT[key];
-  });
-
+  const merged = { ...DEFAULT_SITE_CONTENT, ...values, gallery: Array.isArray(values.gallery) ? values.gallery : DEFAULT_SITE_CONTENT.gallery };
+  ['services', 'links', 'membershipClasses'].forEach((key) => { if (!Array.isArray(values[key])) merged[key] = DEFAULT_SITE_CONTENT[key]; });
+  merged.theme = { ...DEFAULT_SITE_CONTENT.theme, ...(values.theme || {}) };
+  merged.theme.mode = merged.theme.mode === 'dark' ? 'dark' : 'light';
   return merged;
 }
 
+// Apply the admin-controlled global theme. The website keeps its content backgrounds white in light mode;
+// dark mode switches the site surfaces/text together so all text remains readable.
+if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+  const applyTheme = (theme = {}) => {
+    const root = document.documentElement;
+    const mode = theme.mode === 'dark' ? 'dark' : 'light';
+    const accent = /^#[0-9a-f]{6}$/i.test(theme.accent || '') ? theme.accent : '#4da6ff';
+    root.dataset.siteTheme = mode;
+    root.style.setProperty('--site-accent', accent);
+    root.style.setProperty('--site-surface', mode === 'dark' ? '#0b1118' : '#ffffff');
+    root.style.setProperty('--site-surface-2', mode === 'dark' ? '#121b25' : '#f7f9fb');
+    root.style.setProperty('--site-text', mode === 'dark' ? '#f5f7fa' : '#111820');
+    root.style.setProperty('--site-muted', mode === 'dark' ? '#c7d0da' : '#5c6875');
+    root.style.setProperty('--site-border', mode === 'dark' ? 'rgba(255,255,255,.14)' : 'rgba(17,24,32,.12)');
+    root.style.setProperty('--site-accent-soft', mode === 'dark' ? `${accent}33` : `${accent}18`);
+    let style = document.getElementById('admin-site-theme-style');
+    if (!style) { style = document.createElement('style'); style.id = 'admin-site-theme-style'; document.head.appendChild(style); }
+    style.textContent = `
+      body{background:var(--site-surface);color:var(--site-text)}
+      header{background:var(--site-surface)!important;color:var(--site-text)!important;border-bottom-color:var(--site-accent)!important}
+      .navLinks a,.icon{color:var(--site-text)!important}
+      .navLinks a:hover{background:var(--site-accent-soft)!important}
+      .brand small{color:var(--site-accent)!important}.mark{color:var(--site-accent)!important}
+      .homeContent,.homeSection,.siteFooter{background:var(--site-surface)!important;color:var(--site-text)!important}
+      .homeSection p,.siteFooter span,.siteFooter small{color:var(--site-muted)!important}
+      .homeSection a,.siteFooter a,.detailLink{color:var(--site-accent)!important}
+      .sectionIntro span{color:var(--site-accent)!important}
+      .imageTile,.classTile{border-color:var(--site-border)!important}
+      .utilitySection,.aboutSection{background:var(--site-surface)!important}
+      .drawer{background:linear-gradient(135deg,#07192e,var(--site-accent),#9bd8ff)!important}
+      .searchBox{background:var(--site-surface)!important;color:var(--site-text)!important}
+      .searchBox input{background:transparent!important;color:var(--site-text)!important}
+      .language{border-color:var(--site-border)!important}
+      .language button{color:var(--site-muted)!important}.language .active{background:var(--site-accent)!important;color:#fff!important}
+      .enter,.chat{background:linear-gradient(135deg,var(--site-accent),#7cc7ff)!important}
+      [data-site-theme="dark"] .fallback{filter:saturate(.85) brightness(.62)}
+    `;
+  };
+  const loadTheme = async () => { try { const r = await fetch('/api/site/content'); if (r.ok) applyTheme((await r.json()).theme); } catch (_) {} };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadTheme, { once: true }); else loadTheme();
+}
+
 // Add the live action as a floating control, matching the existing chat control.
-// It reads the live configuration from the same API used by the public site.
 if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
   const mountLiveButton = async () => {
     try {
@@ -67,36 +103,10 @@ if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admi
       if (!response.ok) return;
       const content = await response.json();
       const live = content?.liveStream;
-      if (!live?.enabled || !live?.url) return;
-      if (document.getElementById('live-floating-button')) return;
-
-      const style = document.createElement('style');
-      style.id = 'live-floating-button-style';
-      style.textContent = `
-        #live-floating-button{position:fixed;z-index:111;right:25px;bottom:94px;width:58px;height:58px;border:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff3030,#d90000);color:#fff;text-decoration:none;box-shadow:0 15px 40px rgba(255,48,48,.42);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
-        #live-floating-button:hover{transform:translateY(-3px);box-shadow:0 19px 44px rgba(255,48,48,.52)}
-        #live-floating-button .live-icon{position:relative;width:24px;height:24px;border:2px solid currentColor;border-radius:50%;display:grid;place-items:center}
-        #live-floating-button .live-icon:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(255,255,255,.16)}
-        #live-floating-button .live-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.2);animation:livePulse 1.5s infinite}
-        @keyframes livePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:.7}}
-        @media(max-width:700px){#live-floating-button{right:14px;bottom:76px;width:52px;height:52px}}
-      `;
-      document.head.appendChild(style);
-
-      const button = document.createElement('a');
-      button.id = 'live-floating-button';
-      button.href = live.url;
-      button.target = '_blank';
-      button.rel = 'noopener noreferrer';
-      button.setAttribute('aria-label', 'Watch live worship service');
-      button.title = live.title || 'Watch live';
-      button.innerHTML = '<span class="live-icon" aria-hidden="true"></span><span class="live-dot" aria-hidden="true"></span>';
-      document.body.appendChild(button);
-    } catch (_) {
-      // Keep the public site working if the live configuration cannot be loaded.
-    }
+      if (!live?.enabled || !live?.url || document.getElementById('live-floating-button')) return;
+      const style = document.createElement('style'); style.id = 'live-floating-button-style'; style.textContent = `#live-floating-button{position:fixed;z-index:111;right:25px;bottom:94px;width:58px;height:58px;border:0;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ff3030,#d90000);color:#fff;text-decoration:none;box-shadow:0 15px 40px rgba(255,48,48,.42);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}#live-floating-button:hover{transform:translateY(-3px)}#live-floating-button .live-icon{position:relative;width:24px;height:24px;border:2px solid currentColor;border-radius:50%;display:grid;place-items:center}#live-floating-button .live-icon:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}#live-floating-button .live-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#fff;animation:livePulse 1.5s infinite}@keyframes livePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:.7}}@media(max-width:700px){#live-floating-button{right:14px;bottom:76px;width:52px;height:52px}}`; document.head.appendChild(style);
+      const button = document.createElement('a'); button.id='live-floating-button'; button.href=live.url; button.target='_blank'; button.rel='noopener noreferrer'; button.setAttribute('aria-label','Watch live worship service'); button.title=live.title||'Watch live'; button.innerHTML='<span class="live-icon" aria-hidden="true"></span><span class="live-dot" aria-hidden="true"></span>'; document.body.appendChild(button);
+    } catch (_) {}
   };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountLiveButton, { once: true });
-  else mountLiveButton();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountLiveButton, { once: true }); else mountLiveButton();
 }
