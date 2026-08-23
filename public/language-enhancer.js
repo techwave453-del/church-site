@@ -1,0 +1,64 @@
+(() => {
+  const SW = {
+    'Who We Are':'Sisi Ni Nani','About Kingdom Fellowship Christian Church':'Kuhusu Kingdom Fellowship Christian Church',
+    'Learn more about us':'Jifunze zaidi kutuhusu','Join Us In Worship':'Jiunge Nasi Katika Ibada','Service Times':'Muda wa Ibada',
+    'Explore each gathering for its purpose, schedule and what to expect.':'Jifunze kuhusu kila ibada, ratiba yake na mambo ya kutarajia.',
+    'Discover':'Gundua','More From Our Church':'Zaidi Kutoka Kwa Kanisa Letu','Find practical information about visiting, programmes, media, testimonies and resources.':'Pata taarifa muhimu kuhusu kututembelea, programu, vyombo vya habari, ushuhuda na rasilimali.',
+    'Grow With Us':'Kua Pamoja Nasi','Faith & Membership Classes':'Madarasa ya Imani na Uanachama','Learn about the classes and take the next step in your faith journey.':'Jifunze kuhusu madarasa na chukua hatua inayofuata katika safari yako ya imani.',
+    'Plan your visit':'Panga Ziara Yako','Giving information':'Taarifa za Utoaji','More contact information':'Taarifa Zaidi za Mawasiliano',
+    'Explore':'Gundua','Explore Class':'Gundua Darasa','All rights reserved.':'Haki zote zimehifadhiwa.',
+    'Back to website':'Rudi kwenye tovuti','Kingdom Fellowship Christian Church':'Kingdom Fellowship Christian Church','Revealing Christ to Nations':'Kumfunua Kristo kwa Mataifa',
+    'Worship Service':'Ibada','Sunday Worship Service':'Ibada ya Jumapili','Gather with the Kingdom Fellowship Christian Church family for worship, the Word of God, prayer and fellowship.':'Jiunge na familia ya Kingdom Fellowship Christian Church kwa ibada, Neno la Mungu, maombi na ushirika.',
+    'Every Sunday · 9:00 AM':'Kila Jumapili · 9:00 Asubuhi','What to Expect':'Mambo ya Kutarajia','A welcoming worship experience with congregational praise, biblical teaching, prayer and opportunities to connect with other believers.':'Ni ibada yenye ukaribisho, sifa za pamoja, mafundisho ya Biblia, maombi na nafasi ya kuungana na waamini wengine.',
+    'Who Can Attend?':'Nani Anaweza Kuhudhuria?','Everyone is welcome—families, young people, first-time visitors and members of the church family.':'Kila mtu anakaribishwa—familia, vijana, wageni wa mara ya kwanza na washiriki wa familia ya kanisa.',
+    'Come Prepared':'Njoo Ukiwa Umejiandaa','Bring your Bible, an expectant heart and a friend. Arrive a little early so you have time to settle in and connect.':'Leta Biblia yako, moyo wenye matarajio na rafiki. Fika mapema kidogo ili upate muda wa kutulia na kuungana na wengine.',
+    'Church Calendar':'Kalenda ya Kanisa','Upcoming Programs':'Programu Zijazo','Stay informed about worship services, prayer meetings, discipleship classes, special services and church activities.':'Pata taarifa kuhusu ibada, mikutano ya maombi, madarasa ya uanafunzi, ibada maalum na shughuli za kanisa.',
+    'Weekly Gatherings':'Mikusanyiko ya Kila Wiki','Our regular services provide consistent opportunities for worship, teaching, prayer and fellowship.':'Ibada zetu za kawaida hutoa nafasi endelevu ya kuabudu, kufundishwa, kuomba na kushirikiana.',
+    'Special Events':'Matukio Maalum','Special programs may be added throughout the year. Watch the announcements for dates, venues and registration requirements.':'Programu maalum zinaweza kuongezwa mwaka mzima. Fuatilia matangazo kwa tarehe, maeneo na masharti ya usajili.',
+    'Stay Updated':'Endelea Kupata Taarifa','Follow the church website and official announcements for the latest programme information.':'Fuatilia tovuti ya kanisa na matangazo rasmi kwa taarifa za hivi karibuni za programu.',
+    'Plan Your Visit':'Panga Ziara Yako','Visit Us':'Tutembelee','We would be delighted to worship and fellowship with you.':'Tutafurahi kuabudu na kushirikiana nawe.',
+    'Service Times':'Muda wa Ibada','See the current service schedule on the Events section of the website.':'Angalia ratiba ya sasa ya ibada katika sehemu ya Matukio ya tovuti.',
+    'Location':'Mahali','For the latest branch location and directions, contact the church office before travelling.':'Kwa eneo na maelekezo ya tawi ya sasa, wasiliana na ofisi ya kanisa kabla ya kusafiri.',
+    'Welcome': 'Karibu', "I'm New Here":'Mimi ni Mgeni Hapa','Welcome to Kingdom Fellowship Christian Church. We are glad you are here and would love to help you take your next step.':'Karibu Kingdom Fellowship Christian Church. Tunafurahi uko hapa na tungependa kukusaidia kuchukua hatua yako inayofuata.',
+    'You Are Welcome':'Unakaribishwa','Whether this is your first visit or you are looking for a church family, you are warmly welcome among us.':'Iwe ni ziara yako ya kwanza au unatafuta familia ya kanisa, unakaribishwa kwa moyo wote.',
+    'Grow in Faith':'Kua Katika Imani','Resources':'Rasilimali','Find helpful materials for discipleship, Bible study, prayer and continued spiritual growth.':'Pata nyenzo muhimu za uanafunzi, kujifunza Biblia, maombi na ukuaji wa kiroho.',
+    'Messages & Teaching':'Ujumbe na Mafundisho','Use available sermons and media to revisit biblical teaching and continue learning during the week.':'Tumia mahubiri na vyombo vya habari vinavyopatikana kurudia mafundisho ya Biblia na kuendelea kujifunza wakati wa wiki.',
+    'Study & Discipleship':'Masomo na Uanafunzi','Membership and foundation classes provide structured opportunities to grow in understanding and Christian maturity.':'Madarasa ya uanachama na msingi hutoa nafasi zilizopangwa za kukua katika ufahamu na ukomavu wa Kikristo.',
+    'Need Help Finding Something?':'Unahitaji Msaada Kupata Kitu?','Contact the church team if you are looking for a specific sermon, class or resource.':'Wasiliana na timu ya kanisa ikiwa unatafuta mahubiri, darasa au rasilimali maalum.',
+    'Generosity':'Ukarimu','Support the Ministry':'Unga Mkono Huduma','Thank you for supporting the work of the church. Giving helps the ministry serve people, strengthen discipleship and continue its mission.':'Asante kwa kuunga mkono kazi ya kanisa. Utoaji husaidia huduma kuwahudumia watu, kuimarisha uanafunzi na kuendeleza utume wake.',
+    'Give Responsibly':'Toa Kwa Uwajibikaji','Use only official giving details provided by the church. If you are unsure, contact the church office before sending funds.':'Tumia maelezo rasmi ya utoaji yaliyotolewa na kanisa pekee. Ikiwa huna uhakika, wasiliana na ofisi ya kanisa kabla ya kutuma fedha.',
+    'A Heart of Generosity':'Moyo wa Ukarimu','Christian giving is an expression of gratitude, worship and a desire to support the work of ministry.':'Utoaji wa Kikristo ni ishara ya shukrani, ibada na hamu ya kuunga mkono kazi ya huduma.',
+    'Need the Details?':'Unahitaji Maelezo?','Contact the church for the current official giving channels and instructions.':'Wasiliana na kanisa kwa njia rasmi za sasa za utoaji na maelekezo.',
+    'Connect With Us':'Wasiliana Nasi','Contact the Church':'Wasiliana na Kanisa','Have a question, need directions, want to join a ministry or need more information? Reach out to the church team.':'Una swali, unahitaji maelekezo, ungependa kujiunga na huduma au unahitaji taarifa zaidi? Wasiliana na timu ya kanisa.',
+    'Phone':'Simu','Call the church using the official number shown on the website.':'Piga kanisa kwa kutumia namba rasmi iliyoonyeshwa kwenye tovuti.','Email':'Barua Pepe','Send an email for enquiries that do not require an immediate response.':'Tuma barua pepe kwa maswali ambayo hayahitaji jibu la haraka.','Message':'Ujumbe','You can also use the website chat/contact control to start a conversation.':'Unaweza pia kutumia gumzo au sehemu ya mawasiliano ya tovuti kuanzisha mazungumzo.',
+    'Watch & Listen':'Tazama na Sikiliza','Media':'Vyombo vya Habari','Watch sermons, join live worship, browse the church gallery and revisit other media shared by Kingdom Fellowship Christian Church.':'Tazama mahubiri, jiunge na ibada ya moja kwa moja, angalia picha za kanisa na vyombo vingine vya habari vilivyoshirikiwa na Kingdom Fellowship Christian Church.',
+    'Sermons & Teaching':'Mahubiri na Mafundisho','Revisit messages from church gatherings and continue growing in the Word throughout the week.':'Rudia ujumbe kutoka kwenye mikusanyiko ya kanisa na endelea kukua katika Neno wakati wa wiki.',
+    'Live Worship':'Ibada ya Moja kwa Moja','When a live stream is enabled by the church, use the LIVE button to join the current service online.':'Kanisa linapowasha matangazo ya moja kwa moja, tumia kitufe cha LIVE kujiunga na ibada ya sasa mtandaoni.',
+    'Photos & Gallery':'Picha na Matunzio','Browse approved images from worship services, events and church activities.':'Tazama picha zilizoidhinishwa kutoka kwenye ibada, matukio na shughuli za kanisa.',
+    'Live Service':'Ibada ya Moja kwa Moja','Join the church online whenever the live service is enabled.':'Jiunge na kanisa mtandaoni wakati ibada ya moja kwa moja imewezeshwa.','Watch Live':'Tazama Moja kwa Moja','Sermons & Videos':'Mahubiri na Video','Watch recorded teaching and other church video content.':'Tazama mafundisho yaliyorekodiwa na video nyingine za kanisa.','Photo Gallery':'Matunzio ya Picha','See moments from worship services, events and church activities.':'Tazama matukio kutoka kwenye ibada, matukio na shughuli za kanisa.','Audio':'Sauti','Listen to available church audio and teaching recordings.':'Sikiliza sauti na rekodi za mafundisho ya kanisa zinazopatikana.','Check back for new recordings':'Rudi tena kwa rekodi mpya','Latest Gallery':'Matunzio ya Hivi Karibuni',
+    'Have questions or want to get connected?':'Una maswali au ungependa kuunganishwa nasi?','Our church team will be happy to help you with directions, registration, programmes or any other enquiry.':'Timu yetu ya kanisa itafurahi kukusaidia kwa maelekezo, usajili, programu au swali lolote.',
+    'Return to site':'Rudi kwenye tovuti'
+  };
+  const original = new WeakMap();
+  function translate(root, enabled){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const nodes=[]; let n; while(n=walker.nextNode()) nodes.push(n);
+    nodes.forEach(node=>{
+      if(!node.nodeValue.trim()) return;
+      if(!original.has(node)) original.set(node,node.nodeValue);
+      const base=original.get(node);
+      if(!enabled){node.nodeValue=base;return;}
+      const trimmed=base.trim(); const translated=SW[trimmed];
+      if(translated){node.nodeValue=base.replace(trimmed,translated);return;}
+      let result=base; Object.keys(SW).forEach(k=>{if(result.includes(k)) result=result.split(k).join(SW[k])}); node.nodeValue=result;
+    });
+    document.documentElement.lang=enabled?'sw':'en';
+  }
+  function activeSwahili(){const active=document.querySelector('.language .active');return active?.textContent?.trim().toUpperCase()==='SW';}
+  let last=null;
+  const apply=()=>{const sw=activeSwahili();if(sw===last)return;last=sw;translate(document.body,sw)};
+  const observer=new MutationObserver(()=>{clearTimeout(observer.timer);observer.timer=setTimeout(apply,30)});
+  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+  window.addEventListener('hashchange',()=>setTimeout(()=>{last=null;apply()},50));
+  setTimeout(apply,300);
+})();
