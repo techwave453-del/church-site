@@ -88,6 +88,7 @@ if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admi
       .language{border-color:var(--site-border)!important}
       .language button{color:var(--site-muted)!important}.language .active{background:var(--site-accent)!important;color:#fff!important}
       .enter,.chat{background:linear-gradient(135deg,var(--site-accent),#7cc7ff)!important}
+      .hero h1{color:#fff!important}
       [data-site-theme="dark"] .fallback{filter:saturate(.85) brightness(.62)}
     `;
   };
