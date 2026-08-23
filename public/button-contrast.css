@@ -31,3 +31,41 @@ button.chat,
 a.enter {
   color: #fff !important;
 }
+
+/* Image-backed box tiles: force white text and strengthen the image overlay so labels remain readable on bright photos. */
+.imageTile,
+.imageTile:visited,
+.imageTile:hover,
+.imageTile:focus,
+.imageTile:active,
+.imageTile .tileContent,
+.imageTile .tileContent strong,
+.imageTile .tileContent small,
+.imageTile .tileContent em,
+.classTile,
+.classTile strong {
+  color: #fff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,.92), 0 1px 12px rgba(0,0,0,.75);
+}
+
+.imageTile:after {
+  background: linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.28) 38%,rgba(0,0,0,.88)) !important;
+}
+
+.imageTile:hover:after,
+.imageTile:focus-visible:after {
+  background: linear-gradient(180deg,rgba(0,0,0,.24),rgba(0,0,0,.34) 38%,rgba(0,0,0,.92)) !important;
+}
+
+.classTile:before {
+  background: linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.30) 38%,rgba(0,0,0,.88)) !important;
+}
+
+/* Keep class tile CTA labels readable without a text shadow. */
+.classTile button,
+.classTile a {
+  color: #fff !important;
+  text-shadow: none;
+  background: rgba(0,0,0,.72);
+  border: 1px solid rgba(255,255,255,.72);
+}
