@@ -1,0 +1,36 @@
+name: Tune admin sticky navigation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tune-admin-sticky-nav.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  tune:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tune anchor spacing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('admin.html')
+          s = p.read_text(encoding='utf-8')
+          old = '.section{scroll-margin-top:75px}'
+          new = '.section{scroll-margin-top:calc(var(--admin-header-offset,0px) + var(--admin-tabs-offset,56px) + 120px)}'
+          if old not in s:
+              raise SystemExit('Expected section scroll-margin rule was not found.')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Commit and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          git rm .github/workflows/tune-admin-sticky-nav.yml
+          git commit -m 'Tune admin navigation anchor spacing'
+          git push
