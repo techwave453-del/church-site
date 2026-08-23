@@ -1,0 +1,33 @@
+/* Button text contrast: keep action/button labels white against their colored backgrounds. */
+.enter,
+.chat,
+.primary-btn,
+.danger-btn,
+.logout-btn,
+.detailLink,
+.classTile button {
+  color: #fff !important;
+}
+
+/* Keep icons inside action buttons white as well. */
+.enter svg,
+.chat svg,
+.primary-btn svg,
+.danger-btn svg,
+.logout-btn svg,
+.detailLink svg,
+.classTile button svg {
+  color: #fff !important;
+  stroke: currentColor;
+}
+
+/* Theme-colored buttons should never fall back to dark browser text. */
+button.primary-btn,
+button.danger-btn,
+button.logout-btn,
+button.detailLink,
+button.classTile,
+button.chat,
+a.enter {
+  color: #fff !important;
+}
