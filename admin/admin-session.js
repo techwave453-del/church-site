@@ -23,8 +23,11 @@
         if(msg)msg.textContent='';
         showApp();
         await loadAuthenticatedData();
+        if(window.loadAdminModules)await window.loadAdminModules();
+        return true;
       }catch(error){
         if(msg)msg.textContent=error.message||'Login failed.';
+        return false;
       }
     },
     logout:async function(){
@@ -39,8 +42,10 @@
         if(status){status.textContent='API online';status.className='status ok';}
         showApp();
         await loadAuthenticatedData();
+        return true;
       }catch(error){
         if(status){status.textContent='API offline';status.className='status bad';}
+        return false;
       }
     }
   };
