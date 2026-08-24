@@ -4,28 +4,27 @@
   function loadStyles(){if(document.querySelector('link[data-admin-navigation-css]'))return;const link=document.createElement('link');link.rel='stylesheet';link.href='/admin/admin-navigation.css';link.dataset.adminNavigationCss='true';document.head.appendChild(link);}
   function updateOffsets(){const header=document.querySelector('.admin-header'),tabs=document.querySelector('.admin-navigation');const h=header?Math.ceil(header.getBoundingClientRect().height):56;if(header)document.documentElement.style.setProperty('--admin-header-offset',h+'px');if(tabs)document.documentElement.style.setProperty('--admin-tabs-offset',Math.ceil(tabs.getBoundingClientRect().height)+'px');const main=document.querySelector('main');if(main)main.style.paddingTop=Math.max(22,h+22)+'px';}
   function permission(p){return window.AdminRBAC?.hasPermission?.(p)??false;}
-  function setEditable(section,allowed){
+  function hideUnauthorizedControls(section,allowed){
     if(!section)return;
     section.querySelectorAll('input,textarea,select,button').forEach(control=>{
       if(control.closest('.head')||control.classList.contains('rbac-exempt'))return;
-      control.disabled=!allowed;
-      control.classList.toggle('rbac-disabled',!allowed);
+      const wrapper=control.closest('label,.field,.form-row,.toolbar,.form-actions,.editor-actions,.savebar')||control;
+      wrapper.classList.toggle('rbac-hidden',!allowed);
     });
-    section.querySelectorAll('[onclick*="addItem"],.savebar').forEach(control=>{control.classList.toggle('rbac-hidden',!allowed);});
+    section.querySelectorAll('[onclick*="addItem"],.savebar').forEach(control=>control.classList.toggle('rbac-hidden',!allowed));
   }
   function applySitePermissions(){
-    const site=document.getElementById('site');
-    if(!site)return;
+    const site=document.getElementById('site');if(!site)return;
     Object.entries(SITE_SECTIONS).forEach(([id,viewPermission])=>{
       const section=document.getElementById(id);if(!section)return;
       const canView=permission(viewPermission);const canEdit=permission(EDIT_PERMISSIONS[id]||viewPermission);
       section.classList.toggle('admin-view-hidden',!canView);
-      setEditable(section,canEdit);
+      hideUnauthorizedControls(section,canEdit);
       const jump=site.querySelector(`.jump a[href="#${id}"]`);if(jump)jump.classList.toggle('rbac-hidden',!canView);
     });
     const savebar=site.querySelector('.savebar');if(savebar)savebar.classList.toggle('rbac-hidden',!permission('site.edit'));
     const theme=document.getElementById('theme');
-    if(theme){const canView=permission('theme.view');const canEdit=permission('theme.edit');theme.classList.toggle('admin-view-hidden',!canView);theme.querySelectorAll('button[data-accent],#themeMode,#themeAccent').forEach(control=>{control.disabled=!canEdit;control.classList.toggle('rbac-disabled',!canEdit);});const themeJump=site.querySelector('.jump a[href="#theme"]');if(themeJump)themeJump.classList.toggle('rbac-hidden',!canView);}
+    if(theme){const canView=permission('theme.view');const canEdit=permission('theme.edit');theme.classList.toggle('admin-view-hidden',!canView);hideUnauthorizedControls(theme,canEdit);const themeJump=site.querySelector('.jump a[href="#theme"]');if(themeJump)themeJump.classList.toggle('rbac-hidden',!canView);}
   }
   function setSiteMode(mode){const site=document.getElementById('site');if(!site)return;site.classList.remove('admin-view-hidden');if(mode==='theme'){Object.keys(SITE_SECTIONS).forEach(id=>document.getElementById(id)?.classList.add('admin-view-hidden'));applySitePermissions();return;}applySitePermissions();document.getElementById('theme')?.classList.add('admin-view-hidden');}
   function views(){return{site:{el:document.getElementById('site'),permission:'site.view'},media:{el:document.getElementById('media'),permission:'media.view'},comments:{el:document.getElementById('comments'),permission:'comments.view'},theme:{el:document.getElementById('theme'),permission:'theme.view'},users:{el:document.getElementById('adminRbac'),permission:'users.view'}};}
