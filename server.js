@@ -19,7 +19,7 @@ const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 
 if (isProduction) {
   const required = ['ADMIN_USERNAME', 'ADMIN_PASSWORD', 'SESSION_SECRET'];
-  const missing = required.filter(name => !process.env.env[name]);
+  const missing = required.filter(name => !process.env[name]);
   if (missing.length) throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
   if (process.env.SESSION_SECRET.length < 32) throw new Error('SESSION_SECRET must be at least 32 characters in production.');
   if (!useSupabase) console.warn('Supabase environment variables are not configured; temporarily using SQLite. Configure Supabase before the next production redeploy to make data persistent.');
