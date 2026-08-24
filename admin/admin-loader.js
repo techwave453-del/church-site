@@ -11,8 +11,8 @@
       });
     }
     const rbac=document.createElement('script');
-    rbac.src='/admin-users.js';
-    await new Promise((resolve,reject)=>{rbac.onload=resolve;rbac.onerror=()=>reject(new Error('Failed to load admin-users.js'));document.head.appendChild(rbac);});
+    rbac.src='/admin/admin-users.js';
+    await new Promise((resolve,reject)=>{rbac.onload=resolve;rbac.onerror=()=>reject(new Error('Failed to load admin users module'));document.head.appendChild(rbac);});
     if(window.initAdminSession)await window.initAdminSession();
     if(window.AdminRBAC)await window.AdminRBAC.init();
   };
