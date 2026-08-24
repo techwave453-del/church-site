@@ -7,6 +7,14 @@
     link.dataset.adminNavigationCss='true';
     document.head.appendChild(link);
   }
+
+  function updateOffsets(){
+    const header=document.querySelector('.admin-header');
+    const tabs=document.querySelector('.admin-navigation');
+    if(header)document.documentElement.style.setProperty('--admin-header-offset',Math.ceil(header.getBoundingClientRect().height)+'px');
+    if(tabs)document.documentElement.style.setProperty('--admin-tabs-offset',Math.ceil(tabs.getBoundingClientRect().height)+'px');
+  }
+
   function mountNavigation(){
     loadStyles();
     const existing=document.querySelector('.tabs');
@@ -19,12 +27,17 @@
     nav.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',function(){
       if(typeof window.tab==='function') window.tab(this.dataset.tab,this);
     }));
-    requestAnimationFrame(function(){
-      const header=document.querySelector('header');
-      const tabs=document.querySelector('.tabs');
-      if(header)document.documentElement.style.setProperty('--admin-header-offset',header.offsetHeight+'px');
-      if(tabs)document.documentElement.style.setProperty('--admin-tabs-offset',tabs.offsetHeight+'px');
-    });
+
+    requestAnimationFrame(updateOffsets);
+    if(window.ResizeObserver){
+      const observer=new ResizeObserver(updateOffsets);
+      const header=document.querySelector('.admin-header');
+      if(header)observer.observe(header);
+      observer.observe(nav);
+    }else{
+      window.addEventListener('resize',updateOffsets,{passive:true});
+    }
   }
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountNavigation);else mountNavigation();
 })();
