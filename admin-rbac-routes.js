@@ -25,9 +25,6 @@ export function registerAdminRbacRoutes({ app, supabase, requireAdmin, requireSa
     };
   }
 
-  // Gate the existing admin APIs as well as the RBAC management APIs. These
-  // middleware-only routes call next(), allowing the existing handlers in
-  // server.js to remain unchanged while adding server-side authorization.
   app.put('/api/site/content', requireSameOrigin, requireAdmin, requirePermission('site.edit'), (_req, _res, next) => next());
   app.post('/api/media', requireSameOrigin, requireAdmin, requirePermission('media.upload'), (_req, _res, next) => next());
   app.patch('/api/media/:id', requireSameOrigin, requireAdmin, requirePermission('media.edit'), (_req, _res, next) => next());
@@ -45,6 +42,21 @@ export function registerAdminRbacRoutes({ app, supabase, requireAdmin, requireSa
       console.error(error);
       res.status(500).json({ error: 'Unable to load administrator profile.' });
     }
+  });
+
+  app.patch('/api/admin/me', requireSameOrigin, requireAdmin, async (req, res) => {
+    try {
+      const id = Number(req.session.user.id);
+      const target = await rbac.getUser(id);
+      if (!target || !target.is_active) return res.status(401).json({ error: 'Unauthorized.' });
+      const changes = {};
+      if (typeof req.body?.username === 'string' && req.body.username.trim()) changes.username = req.body.username.trim();
+      const user = Object.keys(changes).length ? await rbac.updateUser(id, changes) : await rbac.getUserWithPermissions(id);
+      if (req.body?.password) await rbac.changePassword(id, req.body.password);
+      if (!user) return res.status(404).json({ error: 'Administrator not found.' });
+      req.session.user.username = user.username;
+      res.json({ user });
+    } catch (error) { console.error(error); res.status(400).json({ error: error.message || 'Unable to update administrator account.' }); }
   });
 
   app.get('/api/admin/users', requireSameOrigin, requireAdmin, requirePermission('users.view'), async (_req, res) => {
