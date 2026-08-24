@@ -1,0 +1,27 @@
+name: Repair npm lockfile
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Regenerate lockfile from package.json
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify clean install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Commit repaired lockfile and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git rm .github/workflows/repair-npm-lock.yml
+          git commit -m "Fix npm lockfile sync for Supabase dependency"
+          git push
