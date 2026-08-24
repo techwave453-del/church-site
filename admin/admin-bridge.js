@@ -7,8 +7,8 @@
         membershipClasses:()=>window.adminClassHelpers,
         gallery:()=>window.adminGalleryHelpers
       };
-      window.addItem=function(key){helpers[key]?.()?.add();};
-      window.removeItem=function(key,i){helpers[key]?.()?.remove(i);};
+      window.addItem=function(key){const helper=helpers[key]?.();if(helper?.add)helper.add();};
+      window.removeItem=function(key,i){const helper=helpers[key]?.();if(helper?.remove)helper.remove(i);};
       if(window.loadSiteContent)window.load=window.loadSiteContent;
       if(window.saveSiteContent)window.save=window.saveSiteContent;
       if(window.loadAdminComments)window.loadComments=window.loadAdminComments;
