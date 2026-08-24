@@ -25,6 +25,17 @@ export function registerAdminRbacRoutes({ app, supabase, requireAdmin, requireSa
     };
   }
 
+  // Gate the existing admin APIs as well as the RBAC management APIs. These
+  // middleware-only routes call next(), allowing the existing handlers in
+  // server.js to remain unchanged while adding server-side authorization.
+  app.put('/api/site/content', requireSameOrigin, requireAdmin, requirePermission('site.edit'), (_req, _res, next) => next());
+  app.post('/api/media', requireSameOrigin, requireAdmin, requirePermission('media.upload'), (_req, _res, next) => next());
+  app.patch('/api/media/:id', requireSameOrigin, requireAdmin, requirePermission('media.edit'), (_req, _res, next) => next());
+  app.delete('/api/media/:id', requireSameOrigin, requireAdmin, requirePermission('media.delete'), (_req, _res, next) => next());
+  app.get('/api/admin/live/comments', requireAdmin, requirePermission('comments.view'), (_req, _res, next) => next());
+  app.patch('/api/admin/live/comments/:id', requireSameOrigin, requireAdmin, requirePermission('comments.moderate'), (_req, _res, next) => next());
+  app.delete('/api/admin/live/comments/:id', requireSameOrigin, requireAdmin, requirePermission('comments.moderate'), (_req, _res, next) => next());
+
   app.get('/api/admin/me', requireAdmin, async (req, res) => {
     try {
       const user = await currentAdmin(req);
