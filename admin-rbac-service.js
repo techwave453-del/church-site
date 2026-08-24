@@ -23,10 +23,21 @@ export function createAdminRbacService({ supabase }) {
   }
 
   async function listUsers() {
-    const { data, error } = await supabase.from('admin_users').select('id,username,role,is_active,created_at,updated_at,last_login_at').order('username');
-    if (error) throw error;
-    const users = data || [];
-    return Promise.all(users.map(async user => ({ ...user, permissions: await getPermissions(user.id) })));
+    const { data: users, error: usersError } = await supabase.from('admin_users').select('id,username,role,is_active,created_at,updated_at,last_login_at').order('username');
+    if (usersError) throw usersError;
+    const rows = users || [];
+    if (!rows.length) return [];
+
+    const ids = rows.map(user => user.id);
+    const { data: permissionRows, error: permissionError } = await supabase.from('admin_permissions').select('user_id,permission').in('user_id', ids);
+    if (permissionError) throw permissionError;
+
+    const permissionsByUser = new Map(ids.map(id => [id, []]));
+    for (const row of permissionRows || []) {
+      const permissions = permissionsByUser.get(row.user_id);
+      if (permissions) permissions.push(row.permission);
+    }
+    return rows.map(user => ({ ...user, permissions: permissionsByUser.get(user.id) || [] }));
   }
 
   async function createUser({ username, password, role = ADMIN_ROLES.CUSTOM, permissions = [] }) {
