@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_SITE_CONTENT, mergeSiteContent } from './site-config.js';
+import { registerAdminRbacRoutes } from './admin-rbac-routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,7 @@ const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 
 if (isProduction) {
   const required = ['ADMIN_USERNAME', 'ADMIN_PASSWORD', 'SESSION_SECRET'];
-  const missing = required.filter(name => !process.env[name]);
+  const missing = required.filter(name => !process.env.env[name]);
   if (missing.length) throw new Error(`Missing required production environment variables: ${missing.join(', ')}`);
   if (process.env.SESSION_SECRET.length < 32) throw new Error('SESSION_SECRET must be at least 32 characters in production.');
   if (!useSupabase) console.warn('Supabase environment variables are not configured; temporarily using SQLite. Configure Supabase before the next production redeploy to make data persistent.');
@@ -62,8 +63,22 @@ async function initDatabase() {
 }
 async function ensureAdminUser() {
   const username = process.env.ADMIN_USERNAME || (isProduction ? null : 'admin'); const password = process.env.ADMIN_PASSWORD || (isProduction ? null : 'admin123'); if (!username || !password) throw new Error('Admin credentials are required.');
-  if (useSupabase) { const { data: row, error } = await supabase.from('admin_users').select('*').eq('username', username).maybeSingle(); if (error) throw error; const hash = bcrypt.hashSync(password, 10); if (!row) { const result = await supabase.from('admin_users').insert({ username, password_hash: hash, role: 'admin' }).select().single(); if (result.error) throw result.error; } else if (!bcrypt.compareSync(password, row.password_hash) || row.role !== 'admin') { const result = await supabase.from('admin_users').update({ password_hash: hash, role: 'admin' }).eq('id', row.id); if (result.error) throw result.error; } return; }
-  const row = sqlite.prepare('SELECT * FROM admin_users WHERE username = ?').get(username); if (!row) sqlite.prepare('INSERT INTO admin_users (username,password_hash,role) VALUES (?,?,?)').run(username,bcrypt.hashSync(password,10),'admin'); else if (!bcrypt.compareSync(password,row.password_hash) || row.role !== 'admin') sqlite.prepare('UPDATE admin_users SET password_hash=?,role=? WHERE username=?').run(bcrypt.hashSync(password,10),'admin',username);
+  if (useSupabase) {
+    const { data: row, error } = await supabase.from('admin_users').select('*').eq('username', username).maybeSingle();
+    if (error) throw error;
+    const hash = bcrypt.hashSync(password, 10);
+    if (!row) {
+      const result = await supabase.from('admin_users').insert({ username, password_hash: hash, role: 'admin', is_active: true }).select().single();
+      if (result.error) throw result.error;
+    } else if (!bcrypt.compareSync(password, row.password_hash)) {
+      const result = await supabase.from('admin_users').update({ password_hash: hash, updated_at: new Date().toISOString() }).eq('id', row.id);
+      if (result.error) throw result.error;
+    } else if (row.is_active === false) {
+      throw new Error('The configured administrator account is disabled.');
+    }
+    return;
+  }
+  const row = sqlite.prepare('SELECT * FROM admin_users WHERE username = ?').get(username); if (!row) sqlite.prepare('INSERT INTO admin_users (username,password_hash,role) VALUES (?,?,?)').run(username,bcrypt.hashSync(password,10),'admin'); else if (!bcrypt.compareSync(password,row.password_hash)) sqlite.prepare('UPDATE admin_users SET password_hash=? WHERE username=?').run(bcrypt.hashSync(password,10),username);
 }
 function mimeFromExt(ext) { return ({'.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.gif':'image/gif','.mp4':'video/mp4','.webm':'video/webm','.mov':'video/quicktime','.mp3':'audio/mpeg','.m4a':'audio/mp4','.wav':'audio/wav','.ogg':'audio/ogg','.pdf':'application/pdf'})[ext] || 'application/octet-stream'; }
 async function migrateSqliteIfPresent() {
@@ -137,9 +152,12 @@ app.use((_req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.
 app.use(express.json({limit:'1mb'})); app.use(express.urlencoded({extended:true,limit:'1mb'})); app.use(session({secret:process.env.SESSION_SECRET||'development-only-session-secret',resave:false,saveUninitialized:false,cookie:{maxAge:1000*60*60*12,httpOnly:true,sameSite:'lax',secure:isProduction}}));
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:50*1024*1024},fileFilter:(_req,file,cb)=>new Set(['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','video/quicktime','audio/mpeg','audio/mp4','audio/wav','audio/ogg','audio/webm','application/pdf']).has(file.mimetype)?cb(null,true):cb(new Error('Unsupported file type. Upload an image, video, audio file, or PDF.'))});
 function requireAdmin(req,res,next){if(!req.session.user)return res.status(401).json({error:'Unauthorized. Please log in.'});next();} function requireSameOrigin(req,res,next){const origin=req.get('Origin');const host=req.get('Host');if(!origin)return next();try{const originUrl=new URL(origin);if(originUrl.host!==host||!['http:','https:'].includes(originUrl.protocol))return res.status(403).json({error:'Cross-site request blocked.'});}catch(_error){return res.status(403).json({error:'Invalid request origin.'});}next();}
+
+registerAdminRbacRoutes({ app, supabase, requireAdmin, requireSameOrigin });
+
 const loginAttempts=new Map(),LOGIN_WINDOW_MS=15*60*1000,LOGIN_MAX_ATTEMPTS=10;function loginKey(req){return`${req.ip}:${String(req.body?.username||'').trim().toLowerCase()}`;}function isRateLimited(key){const entry=loginAttempts.get(key);if(!entry||Date.now()-entry.startedAt>LOGIN_WINDOW_MS){loginAttempts.delete(key);return false;}return entry.count>=LOGIN_MAX_ATTEMPTS;}function recordFailedLogin(key){const now=Date.now(),entry=loginAttempts.get(key);if(!entry||now-entry.startedAt>LOGIN_WINDOW_MS)loginAttempts.set(key,{startedAt:now,count:1});else entry.count+=1;}function clearLoginAttempts(key){loginAttempts.delete(key);}
 app.get('/api/health',(_req,res)=>res.json({ok:true,service:'aic-kitanga-admin',database:useSupabase?'supabase':'sqlite'}));
-app.post('/api/admin/login',requireSameOrigin,async(req,res)=>{try{const{username,password}=req.body||{},key=loginKey(req);if(isRateLimited(key))return res.status(429).json({error:'Too many login attempts. Please try again later.'});const user=await dbGetAdmin(username);if(!user||!bcrypt.compareSync(password||'',user.password_hash)){recordFailedLogin(key);return res.status(401).json({error:'Invalid username or password.'});}clearLoginAttempts(key);req.session.regenerate(error=>{if(error)return res.status(500).json({error:'Unable to create a secure session.'});req.session.user={id:user.id,username:user.username,role:user.role};res.json({ok:true,user:req.session.user});});}catch(error){console.error(error);res.status(500).json({error:'Unable to log in.'});}});
+app.post('/api/admin/login',requireSameOrigin,async(req,res)=>{try{const{username,password}=req.body||{},key=loginKey(req);if(isRateLimited(key))return res.status(429).json({error:'Too many login attempts. Please try again later.'});const user=await dbGetAdmin(username);if(!user||user.is_active===false||!bcrypt.compareSync(password||'',user.password_hash)){recordFailedLogin(key);return res.status(401).json({error:'Invalid username or password.'});}clearLoginAttempts(key);if(useSupabase){await supabase.from('admin_users').update({last_login_at:new Date().toISOString()}).eq('id',user.id);}req.session.regenerate(error=>{if(error)return res.status(500).json({error:'Unable to create a secure session.'});req.session.user={id:user.id,username:user.username,role:user.role};res.json({ok:true,user:req.session.user});});}catch(error){console.error(error);res.status(500).json({error:'Unable to log in.'});}});
 app.post('/api/admin/logout',requireSameOrigin,(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get('/api/admin/session',(req,res)=>{if(!req.session.user)return res.status(401).json({loggedIn:false});res.json({loggedIn:true,user:req.session.user});});
 app.get('/api/site/content',async(_req,res)=>{try{res.json(await getSiteContent());}catch(error){console.error(error);res.status(500).json({error:'Unable to load site content.'});}});
