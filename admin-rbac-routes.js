@@ -25,7 +25,24 @@ export function registerAdminRbacRoutes({ app, supabase, requireAdmin, requireSa
     };
   }
 
-  app.put('/api/site/content', requireSameOrigin, requireAdmin, requirePermission('site.edit'), (_req, _res, next) => next());
+  async function protectSiteContentTheme(req, res, next) {
+    try {
+      const user = req.adminUser || await currentAdmin(req);
+      if (!user || !user.is_active) return res.status(401).json({ error: 'Unauthorized.' });
+      if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'theme') && !rbac.hasPermission(user, 'theme.edit', user.permissions)) {
+        const sanitized = { ...req.body };
+        delete sanitized.theme;
+        req.body = sanitized;
+      }
+      req.adminUser = user;
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Unable to verify theme permissions.' });
+    }
+  }
+
+  app.put('/api/site/content', requireSameOrigin, requireAdmin, requirePermission('site.edit'), protectSiteContentTheme, (_req, _res, next) => next());
   app.post('/api/media', requireSameOrigin, requireAdmin, requirePermission('media.upload'), (_req, _res, next) => next());
   app.patch('/api/media/:id', requireSameOrigin, requireAdmin, requirePermission('media.edit'), (_req, _res, next) => next());
   app.delete('/api/media/:id', requireSameOrigin, requireAdmin, requirePermission('media.delete'), (_req, _res, next) => next());
