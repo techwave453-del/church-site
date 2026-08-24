@@ -1,6 +1,6 @@
 -- RBAC database foundation for Kingdom Fellowship Christian Church.
 -- Run after supabase-schema.sql.
--- This version does NOT promote every legacy admin account.
+-- This migration does not change passwords.
 
 begin;
 
@@ -31,13 +31,13 @@ create index if not exists admin_permissions_user_id_idx on public.admin_permiss
 create index if not exists admin_audit_log_user_id_idx on public.admin_audit_log(user_id);
 create index if not exists admin_audit_log_created_at_idx on public.admin_audit_log(created_at desc);
 
--- IMPORTANT: promote only the administrator configured by the application.
--- Set this to the exact username you currently use for the admin panel.
--- Do not put the password here.
--- Example:
--- update public.admin_users
--- set role = 'super_admin', is_active = true, updated_at = now()
--- where username = 'your-admin-username';
+-- Promote ONLY the existing administrator account.
+-- Username comparison is case-insensitive. Password is untouched.
+update public.admin_users
+set role = 'super_admin',
+    is_active = true,
+    updated_at = now()
+where lower(username) = lower('Deno');
 
 alter table public.admin_users enable row level security;
 alter table public.admin_permissions enable row level security;
