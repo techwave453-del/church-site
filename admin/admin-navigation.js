@@ -11,8 +11,11 @@
   function updateOffsets(){
     const header=document.querySelector('.admin-header');
     const tabs=document.querySelector('.admin-navigation');
-    if(header)document.documentElement.style.setProperty('--admin-header-offset',Math.ceil(header.getBoundingClientRect().height)+'px');
+    const headerHeight=header?Math.ceil(header.getBoundingClientRect().height):56;
+    if(header)document.documentElement.style.setProperty('--admin-header-offset',headerHeight+'px');
     if(tabs)document.documentElement.style.setProperty('--admin-tabs-offset',Math.ceil(tabs.getBoundingClientRect().height)+'px');
+    const main=document.querySelector('main');
+    if(main)main.style.paddingTop=Math.max(22,headerHeight+22)+'px';
   }
 
   function mountNavigation(){
@@ -25,7 +28,7 @@
     nav.innerHTML='<button class="active" type="button" data-tab="site">Website Content</button><button type="button" data-tab="media">Media Library</button><button type="button" data-tab="comments">Live Comments</button>';
     existing.replaceWith(nav);
     nav.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',function(){
-      if(typeof window.tab==='function') window.tab(this.dataset.tab,this);
+      if(typeof window.tab==='function')window.tab(this.dataset.tab,this);
     }));
 
     requestAnimationFrame(updateOffsets);
@@ -34,9 +37,8 @@
       const header=document.querySelector('.admin-header');
       if(header)observer.observe(header);
       observer.observe(nav);
-    }else{
-      window.addEventListener('resize',updateOffsets,{passive:true});
     }
+    window.addEventListener('resize',updateOffsets,{passive:true});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountNavigation);else mountNavigation();
