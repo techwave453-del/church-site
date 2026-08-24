@@ -34,7 +34,7 @@
     check:async function(){
       const status=document.getElementById('apiStatus');
       try{
-        const r=await api()('/api/admin/me');
+        const r=await api()('/api/admin/session');
         if(!r.ok)throw new Error();
         if(status){status.textContent='API online';status.className='status ok';}
         showApp();
