@@ -47,6 +47,5 @@
   window.login=event=>window.adminSession.login(event);
   window.logout=()=>window.adminSession.logout();
   window.checkApi=()=>window.adminSession.check();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>window.adminSession.check(),{once:true});
-  else window.adminSession.check();
+  window.initAdminSession=()=>window.adminSession.check();
 })();
