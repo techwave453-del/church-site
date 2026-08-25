@@ -22,7 +22,7 @@ const GROUPS=[
  {id:'admin',label:'Administration',items:['users']}
 ];
 function permission(p){return window.AdminRBAC?.hasPermission?.(p)??false;}
-function hide(el,yes){if(el)el.classList.toggle('admin-view-hidden',!!yes);}
+function hide(el,yes){if(!el)return;el.classList.toggle('admin-view-hidden',!!yes);el.classList.toggle('hidden',!!yes);}
 function loadStyles(){
  if(document.getElementById('admin-section-navigation-style'))return;
  const s=document.createElement('style');s.id='admin-section-navigation-style';
@@ -74,7 +74,6 @@ function getTarget(id){return document.getElementById(id==='users'?'adminRbac':i
 function getView(id){return VIEWS.find(v=>v[0]===id);}
 function canView(id){const item=getView(id);return !!item&&permission(item[2]);}
 function closeMenus(){document.querySelectorAll('.admin-menu.open').forEach(m=>m.classList.remove('open'));}
-function selectMenu(menu){document.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m===menu));}
 function buildNavigation(){
  const old=document.querySelector('.tabs');if(!old)return;
  const nav=document.createElement('nav');nav.className='tabs admin-navigation';nav.setAttribute('aria-label','Admin sections');
@@ -89,10 +88,7 @@ function buildNavigation(){
      child.addEventListener('click',()=>{showView(id);wrapper.classList.remove('open');nav.classList.remove('mobile-menu-open');toggle.setAttribute('aria-expanded','false');button.setAttribute('aria-expanded','false');});
      panel.appendChild(child);
    });
-   button.addEventListener('click',()=>{
-     const opening=!wrapper.classList.contains('open');closeMenus();
-     wrapper.classList.toggle('open',opening);button.setAttribute('aria-expanded',String(opening));
-   });
+   button.addEventListener('click',()=>{const opening=!wrapper.classList.contains('open');closeMenus();wrapper.classList.toggle('open',opening);button.setAttribute('aria-expanded',String(opening));});
    wrapper.append(button,panel);nav.appendChild(wrapper);
  });
  toggle.addEventListener('click',()=>{const opening=!nav.classList.contains('mobile-menu-open');nav.classList.toggle('mobile-menu-open',opening);toggle.setAttribute('aria-expanded',String(opening));if(!opening)closeMenus();});
@@ -107,7 +103,7 @@ function applyPermissions(){
    group.items.forEach(id=>{const item=wrapper.querySelector(`[data-view="${id}"]`);const allowed=canView(id);hide(item,!allowed);if(allowed)visible++;});
    hide(wrapper,visible===0);
  });
- const first=GROUPS.flatMap(g=>g.items).find(canView);if(first)showView(first);
+ const first=GROUPS.flatMap(g=>g.items).find(canView);if(first){const current=document.querySelector('.admin-menu-item.selected')?.dataset.view;if(!current||!canView(current))showView(first);}
 }
 function showView(id){
  const item=getView(id);if(!item||!permission(item[2]))return;
@@ -127,11 +123,7 @@ function showView(id){
  if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();
  window.scrollTo(0,0);
 }
-function init(){
- loadStyles();setHeaderHeight();buildNavigation();
- requestAnimationFrame(()=>{setHeaderHeight();if(window.AdminRBAC)applyPermissions();});
- window.addEventListener('resize',setHeaderHeight);
-}
+function init(){loadStyles();setHeaderHeight();buildNavigation();requestAnimationFrame(setHeaderHeight);window.addEventListener('resize',setHeaderHeight);}
 window.AdminNavigation={showView,applyVisibility:applyPermissions,updateOffsets:setHeaderHeight};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
