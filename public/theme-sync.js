@@ -97,6 +97,37 @@
       .chat { background:var(--accent-2) !important; }
       .language .active { background:var(--accent-2) !important; }
       header { border-bottom-color:var(--accent-2) !important; }
+
+      :root[data-site-theme="light"] .church-chat-panel { background:#fff !important; color:#111 !important; border-color:rgba(17,17,17,.08) !important; }
+      :root[data-site-theme="light"] .church-chat-header { background:linear-gradient(135deg,var(--accent-3),var(--accent-2)) !important; }
+      :root[data-site-theme="light"] .church-chat-messages { background:#f7faff !important; }
+      :root[data-site-theme="light"] .church-chat-message { background:#fff !important; color:#111 !important; border-color:rgba(77,166,255,.12) !important; }
+      :root[data-site-theme="light"] .church-chat-message.mine { background:var(--accent-1) !important; }
+      :root[data-site-theme="light"] .church-chat-message.bot { border-color:rgba(77,166,255,.18) !important; }
+      :root[data-site-theme="light"] .church-chat-suggestions,
+      :root[data-site-theme="light"] .church-chat-form { background:#fff !important; border-color:rgba(77,166,255,.14) !important; }
+      :root[data-site-theme="light"] .church-chat-suggestion { background:#f7faff !important; color:#173f35 !important; border-color:var(--accent-1) !important; }
+      :root[data-site-theme="light"] .church-chat-send { background:var(--accent-2) !important; }
+      :root[data-site-theme="light"] .church-chat-name,
+      :root[data-site-theme="light"] .church-chat-input { background:#fff !important; color:#111 !important; border-color:rgba(77,166,255,.22) !important; }
+
+      :root[data-site-theme="dark"] .church-chat-panel { background:#0f1720 !important; color:#f8fafc !important; border-color:rgba(255,255,255,.12) !important; box-shadow:0 18px 60px rgba(0,0,0,.5) !important; }
+      :root[data-site-theme="dark"] .church-chat-header { background:linear-gradient(135deg,var(--accent-3),var(--accent-2)) !important; }
+      :root[data-site-theme="dark"] .church-chat-messages { background:#0b1118 !important; }
+      :root[data-site-theme="dark"] .church-chat-message,
+      :root[data-site-theme="dark"] .church-chat-message.bot { background:#17212c !important; color:#f8fafc !important; border-color:rgba(255,255,255,.1) !important; }
+      :root[data-site-theme="dark"] .church-chat-message.mine { background:var(--accent-dark,#24527a) !important; }
+      :root[data-site-theme="dark"] .church-chat-message .body { color:#f8fafc !important; }
+      :root[data-site-theme="dark"] .church-chat-suggestions,
+      :root[data-site-theme="dark"] .church-chat-form { background:#0f1720 !important; border-color:rgba(255,255,255,.1) !important; }
+      :root[data-site-theme="dark"] .church-chat-suggestion { background:#162331 !important; color:#dbeafe !important; border-color:rgba(255,255,255,.16) !important; }
+      :root[data-site-theme="dark"] .church-chat-name,
+      :root[data-site-theme="dark"] .church-chat-input { background:#111c27 !important; color:#f8fafc !important; border-color:rgba(255,255,255,.16) !important; }
+      :root[data-site-theme="dark"] .church-chat-name::placeholder,
+      :root[data-site-theme="dark"] .church-chat-input::placeholder { color:#94a3b8 !important; }
+      :root[data-site-theme="dark"] .church-chat-send { background:var(--accent-2) !important; }
+      :root[data-site-theme="dark"] .church-chat-note,
+      :root[data-site-theme="dark"] .church-chat-empty { color:#aebdca !important; }
     `;
   }
 
