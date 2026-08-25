@@ -88,13 +88,13 @@
       .detailLink,
       .classTile button,
       .enter,
-      .chat { box-shadow:0 12px 32px var(--accent-shadow) !important; }
+      .page .chat { box-shadow:0 12px 32px var(--accent-shadow) !important; }
       .sectionIntro > span,
       .tileMore,
       .siteFooter a,
       .homeSection a { color:var(--accent-2); }
       .sectionIntro i { background:var(--accent-2); }
-      .chat { background:var(--accent-2) !important; }
+      .page .chat { background:var(--accent-2) !important; }
       .language .active { background:var(--accent-2) !important; }
       header { border-bottom-color:var(--accent-2) !important; }
 
@@ -116,7 +116,7 @@
       :root[data-site-theme="dark"] .church-chat-messages { background:#0b1118 !important; }
       :root[data-site-theme="dark"] .church-chat-message,
       :root[data-site-theme="dark"] .church-chat-message.bot { background:#17212c !important; color:#f8fafc !important; border-color:rgba(255,255,255,.1) !important; }
-      :root[data-site-theme="dark"] .church-chat-message.mine { background:var(--accent-dark,#24527a) !important; }
+      :root[data-site-theme="dark"] .church-chat-message.mine { background:var(--accent-3) !important; }
       :root[data-site-theme="dark"] .church-chat-message .body { color:#f8fafc !important; }
       :root[data-site-theme="dark"] .church-chat-suggestions,
       :root[data-site-theme="dark"] .church-chat-form { background:#0f1720 !important; border-color:rgba(255,255,255,.1) !important; }
@@ -128,6 +128,42 @@
       :root[data-site-theme="dark"] .church-chat-send { background:var(--accent-2) !important; }
       :root[data-site-theme="dark"] .church-chat-note,
       :root[data-site-theme="dark"] .church-chat-empty { color:#aebdca !important; }
+
+      :root[data-site-theme="light"] .top,
+      :root[data-site-theme="light"] .chat { color:#111 !important; }
+      :root[data-site-theme="light"] .top { background:rgba(255,255,255,.97) !important; border-bottom-color:var(--accent-2) !important; }
+      :root[data-site-theme="light"] .top a { color:#111 !important; }
+      :root[data-site-theme="light"] .intro p { color:#536474 !important; }
+      :root[data-site-theme="light"] .chat { background:#fff !important; border-color:rgba(77,166,255,.18) !important; }
+      :root[data-site-theme="light"] .chatHead { background:linear-gradient(90deg,var(--accent-1),rgba(135,0,221,.06)) !important; border-bottom-color:rgba(17,17,17,.08) !important; }
+      :root[data-site-theme="light"] .chatHead h2,
+      :root[data-site-theme="light"] .bubbleMeta strong,
+      :root[data-site-theme="light"] .empty strong { color:#111 !important; }
+      :root[data-site-theme="light"] .bubble { background:#f4f8fc !important; border-color:rgba(77,166,255,.14) !important; }
+      :root[data-site-theme="light"] .bubble p { color:#354858 !important; }
+      :root[data-site-theme="light"] .composer { background:#fafcff !important; border-top-color:rgba(17,17,17,.08) !important; }
+      :root[data-site-theme="light"] .composer input,
+      :root[data-site-theme="light"] .composer textarea { background:#fff !important; color:#111 !important; }
+      :root[data-site-theme="light"] .send { background:var(--accent-2) !important; }
+
+      :root[data-site-theme="dark"] .top { background:rgba(10,14,20,.96) !important; color:#f8fafc !important; border-bottom-color:var(--accent-2) !important; }
+      :root[data-site-theme="dark"] .top a { color:#f8fafc !important; }
+      :root[data-site-theme="dark"] .intro p { color:#cbd5e1 !important; }
+      :root[data-site-theme="dark"] .chat { background:#0f1720 !important; color:#f8fafc !important; border-color:rgba(255,255,255,.12) !important; box-shadow:0 30px 90px rgba(0,0,0,.35) !important; }
+      :root[data-site-theme="dark"] .chatHead { background:linear-gradient(90deg,rgba(77,166,255,.18),rgba(135,0,221,.16)) !important; border-bottom-color:rgba(255,255,255,.1) !important; }
+      :root[data-site-theme="dark"] .chatHead h2,
+      :root[data-site-theme="dark"] .bubbleMeta strong,
+      :root[data-site-theme="dark"] .empty strong { color:#f8fafc !important; }
+      :root[data-site-theme="dark"] .bubble { background:#17212c !important; border-color:rgba(255,255,255,.1) !important; }
+      :root[data-site-theme="dark"] .bubble p { color:#dbe5ee !important; }
+      :root[data-site-theme="dark"] .composer { background:#0c141d !important; border-top-color:rgba(255,255,255,.1) !important; }
+      :root[data-site-theme="dark"] .composer input,
+      :root[data-site-theme="dark"] .composer textarea { background:#111c27 !important; color:#f8fafc !important; border-color:rgba(255,255,255,.14) !important; }
+      :root[data-site-theme="dark"] .composer input::placeholder,
+      :root[data-site-theme="dark"] .composer textarea::placeholder { color:#94a3b8 !important; }
+      :root[data-site-theme="dark"] .send { background:var(--accent-2) !important; }
+      :root[data-site-theme="dark"] .note,
+      :root[data-site-theme="dark"] .hint { color:#94a3b8 !important; }
     `;
   }
 
