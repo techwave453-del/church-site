@@ -1,0 +1,48 @@
+/* Home hero image sizing fix.
+   Keep the existing hero section height, but make each slide/media fill it edge-to-edge. */
+.hero.carousel {
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.hero.carousel .carousel-inner,
+.hero.carousel .carousel-slide {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.hero.carousel .carousel-media {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+.hero.carousel .carousel-slide > img.carousel-media,
+.hero.carousel .carousel-slide > video.carousel-media {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 700px) {
+  .hero.carousel .carousel-media {
+    object-position: center center !important;
+  }
+}
