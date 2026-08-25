@@ -1,0 +1,302 @@
+/* Desktop reference layout: inspired by the supplied church-site screenshot. */
+@media (min-width: 701px) {
+  html, body, #root { min-height: 100%; height: auto !important; }
+  body { overflow-x: hidden !important; overflow-y: auto !important; background: #fff !important; }
+  .page { min-height: 100svh !important; height: auto !important; overflow: visible !important; background: #fff !important; }
+
+  /* Two-tier header: purple identity bar + clean white navigation bar. */
+  .page > header {
+    position: sticky !important;
+    top: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: 200 !important;
+    width: 100% !important;
+    height: 272px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 144px 128px !important;
+    align-items: center !important;
+    padding: 0 4.8vw !important;
+    background: linear-gradient(to bottom, #680b88 0 144px, #ffffff 144px 100%) !important;
+    border: 0 !important;
+    box-shadow: 0 8px 22px rgba(24, 9, 30, .08) !important;
+    color: #fff !important;
+  }
+
+  .page > header .brand {
+    grid-row: 1 !important;
+    justify-self: start !important;
+    align-self: center !important;
+    height: 110px !important;
+    min-height: 0 !important;
+    gap: 14px !important;
+    color: #fff !important;
+    text-align: left !important;
+    cursor: pointer !important;
+  }
+
+  .page > header .brandLogo {
+    width: 92px !important;
+    height: 92px !important;
+    max-width: 92px !important;
+    max-height: 92px !important;
+    object-fit: contain !important;
+    flex: 0 0 92px !important;
+  }
+
+  .page > header .brand b {
+    color: #fff !important;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif !important;
+    font-size: clamp(17px, 1.45vw, 25px) !important;
+    font-weight: 800 !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
+  }
+
+  .page > header .brand small {
+    color: rgba(255,255,255,.88) !important;
+    font-size: 10px !important;
+    letter-spacing: .26em !important;
+  }
+
+  .page > header .navLinks {
+    grid-row: 2 !important;
+    width: 100% !important;
+    height: 128px !important;
+    margin: 0 !important;
+    padding-right: 210px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: clamp(14px, 2vw, 34px) !important;
+    overflow: visible !important;
+  }
+
+  .page > header .navLinks > a,
+  .page > header .navLinks > .site-nav-group > .site-nav-group-toggle {
+    position: relative !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #111 !important;
+    text-decoration: none !important;
+    padding: 10px 0 !important;
+    font-size: clamp(15px, 1.1vw, 19px) !important;
+    font-weight: 800 !important;
+    letter-spacing: .01em !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+  }
+
+  .page > header .navLinks > a:first-child { color: #6b0b8d !important; }
+
+  .page > header .navLinks > a:nth-child(2)::after,
+  .page > header .navLinks > a:nth-child(3)::after,
+  .page > header .navLinks > a:nth-child(4)::after,
+  .page > header .navLinks > a:nth-child(5)::after,
+  .page > header .navLinks > a:nth-child(6)::after {
+    content: "+";
+    display: inline-block;
+    margin-left: 7px;
+    color: currentColor;
+    font-weight: 500;
+  }
+
+  .page > header .navLinks .site-nav-group { position: relative !important; }
+  .page > header .navLinks .site-nav-group-toggle { display: inline-flex !important; align-items: center !important; gap: 0 !important; }
+  .page > header .navLinks .site-nav-group-toggle > span { display: none !important; }
+  .page > header .navLinks .site-nav-submenu { top: 100% !important; }
+
+  /* Header controls live at the right edge of the purple bar. */
+  .page > header > div:last-child {
+    position: absolute !important;
+    top: 48px !important;
+    right: 4.8vw !important;
+    bottom: auto !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 210 !important;
+  }
+
+  .page > header > div:last-child .icon {
+    color: #fff !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .page > header > div:last-child .menuIcon { display: none !important; }
+
+  .desktop-reference-meta {
+    position: absolute;
+    top: 45px;
+    right: 120px;
+    display: flex;
+    align-items: center;
+    gap: clamp(18px, 2.8vw, 46px);
+    color: #fff;
+    font-size: clamp(13px, 1vw, 17px);
+    white-space: nowrap;
+  }
+  .desktop-reference-meta span { display: inline-flex; align-items: center; gap: 9px; }
+  .desktop-reference-meta svg { width: 19px; height: 19px; }
+
+  .desktop-reference-live {
+    position: absolute;
+    right: 4.8vw;
+    bottom: 43px;
+    z-index: 210;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 188px;
+    height: 55px;
+    padding: 0 25px;
+    border-radius: 6px;
+    background: #680b88;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .desktop-reference-live:hover { background: #56066f; }
+
+  /* Hero image begins directly under the navigation and fills the desktop viewport. */
+  .page .hero.carousel {
+    position: relative !important;
+    z-index: 10 !important;
+    width: calc(100% - 28px) !important;
+    height: min(650px, calc(100svh - 272px)) !important;
+    min-height: 510px !important;
+    margin: 0 14px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: block !important;
+    background: #290033 !important;
+  }
+
+  .page .hero.carousel .carousel-inner,
+  .page .hero.carousel .carousel-slide,
+  .page .hero.carousel .carousel-media {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .page .hero.carousel .carousel-media { object-fit: cover !important; }
+  .page .hero.carousel .carousel-slide { opacity: 0 !important; transition: opacity .7s ease !important; }
+  .page .hero.carousel .carousel-slide.active { opacity: 1 !important; }
+
+  .page .hero.carousel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(64,0,93,.62), rgba(131,0,183,.55) 48%, rgba(70,0,96,.66)), linear-gradient(180deg, rgba(42,0,65,.18), rgba(50,0,75,.42));
+    mix-blend-mode: multiply;
+  }
+
+  .desktop-hero-welcome {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 5px 22px rgba(0,0,0,.22);
+  }
+  .desktop-hero-welcome .welcome-script {
+    font-family: "Brush Script MT", "Segoe Script", cursive;
+    font-size: clamp(92px, 10vw, 170px);
+    font-weight: 400;
+    line-height: .82;
+    transform: rotate(-4deg);
+    margin-left: -35px;
+  }
+  .desktop-hero-welcome .welcome-home {
+    margin-top: 3px;
+    font-size: clamp(45px, 4.6vw, 78px);
+    line-height: .95;
+    font-weight: 900;
+    letter-spacing: -.04em;
+  }
+
+  .desktop-hero-arrow {
+    position: absolute;
+    z-index: 9;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.12);
+    color: #fff;
+    font-size: 42px;
+    line-height: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .desktop-hero-arrow.left { left: 38px; }
+  .desktop-hero-arrow.right { right: 118px; }
+
+  .desktop-promo-rail {
+    position: absolute;
+    z-index: 9;
+    top: 50%;
+    right: 22px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  .desktop-promo-rail a {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,.9);
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    background: #300039;
+  }
+  .desktop-promo-rail img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .page .hero.carousel .carousel-inner { z-index: 1 !important; }
+  .page .hero.carousel .desktop-hero-welcome,
+  .page .hero.carousel .desktop-hero-arrow,
+  .page .hero.carousel .desktop-promo-rail { z-index: 8 !important; }
+
+  .language {
+    left: 28px !important;
+    bottom: 28px !important;
+    z-index: 250 !important;
+    padding: 9px 12px !important;
+    gap: 2px !important;
+    border: 1px solid rgba(0,0,0,.08) !important;
+    border-radius: 3px !important;
+    background: #fff !important;
+    color: #202020 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.16) !important;
+    backdrop-filter: none !important;
+  }
+  .language svg { display: none !important; }
+  .language button { color: #202020 !important; padding: 5px 9px !important; border-radius: 0 !important; font-size: 15px !important; }
+  .language .active { background: transparent !important; color: #202020 !important; }
+  .language::after { content: "⌃"; margin-left: 2px; color: #666; font-size: 16px; }
+
+  .sound.desktop { right: 30px !important; top: 52% !important; }
+  .chat { right: 28px !important; bottom: 28px !important; }
+
+  .page > .media { display: none !important; }
+  .page > .homeContent { position: relative !important; z-index: 12 !important; }
+
+  /* The reference composition is a desktop treatment; mobile keeps the existing site layout. */
+}
