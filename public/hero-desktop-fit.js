@@ -1,8 +1,12 @@
 (()=>{
   const setup=()=>{
+    // This enhancement is desktop-only. Mobile keeps the original carousel DOM and sizing.
+    if(!window.matchMedia('(min-width: 701px)').matches)return;
     const root=document.querySelector('.hero.carousel');
     if(!root)return;
+
     const sync=()=>{
+      if(!window.matchMedia('(min-width: 701px)').matches)return;
       root.querySelectorAll('.carousel-slide').forEach(slide=>{
         let bg=slide.querySelector('.hero-desktop-background');
         const media=slide.querySelector('.carousel-media');
@@ -20,11 +24,15 @@
           }
           slide.insertBefore(bg,slide.firstChild);
         }
-        if(bg.src!==media.currentSrc&&bg.src!==media.src)bg.src=media.currentSrc||media.src;
+        const source=media.currentSrc||media.src;
+        if(source&&bg.src!==source)bg.src=source;
       });
     };
+
     sync();
     new MutationObserver(sync).observe(root,{subtree:true,attributes:true,attributeFilter:['class','src']});
   };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});
+  else setup();
 })();
