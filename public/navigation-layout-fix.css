@@ -1,0 +1,91 @@
+/* Public navigation layout: desktop gets a dedicated logo row and a full-width navigation row. */
+@media (min-width: 701px) {
+  header {
+    height: 148px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 86px 62px !important;
+    align-items: center !important;
+    justify-items: center !important;
+    padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
+  }
+
+  header .brand {
+    grid-row: 1;
+    justify-self: center;
+    align-self: center;
+  }
+
+  header .navLinks {
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    justify-content: center;
+    gap: clamp(4px, 1.1vw, 18px) !important;
+    align-self: stretch;
+  }
+
+  header > div:last-child {
+    position: absolute !important;
+    right: max(18px, calc((100vw - 1500px) / 2)) !important;
+    bottom: 8px !important;
+    z-index: 30;
+  }
+
+  .site-nav-group:last-child .site-nav-submenu {
+    left: auto;
+    right: 0;
+  }
+
+  .site-nav-group-toggle,
+  .navLinks > a {
+    white-space: nowrap;
+  }
+}
+
+/* Mobile: compact header plus a floating, translucent left drawer. */
+@media (max-width: 700px) {
+  header {
+    height: 70px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 9px !important;
+  }
+
+  header .brand {
+    grid-row: auto;
+  }
+
+  header .navLinks {
+    display: none !important;
+  }
+
+  .drawer {
+    top: 70px !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 16px !important;
+    width: min(82vw, 360px) !important;
+    max-width: 360px !important;
+    max-height: calc(100svh - 86px) !important;
+    padding: 18px 20px !important;
+    background: rgba(5, 20, 40, 0.72) !important;
+    backdrop-filter: blur(18px) saturate(125%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-left: 0 !important;
+    border-radius: 0 18px 18px 0 !important;
+    box-shadow: 12px 12px 40px rgba(0, 0, 0, 0.32) !important;
+    overflow: hidden !important;
+  }
+
+  .drawer nav {
+    height: calc(100% - 66px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 8px 4px 24px 8px !important;
+  }
+}
