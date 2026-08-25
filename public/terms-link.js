@@ -1,7 +1,11 @@
 (() => {
   const TERMS_HREF = '/terms.html';
   const TERMS_TEXT = 'Terms & Conditions';
+  function removeChatInternalNote() {
+    document.querySelectorAll('.church-chat-note').forEach(note => note.remove());
+  }
   function addLinks() {
+    removeChatInternalNote();
     document.querySelectorAll('.siteFooter,.detailFooter').forEach(footer => {
       if (footer.querySelector('[data-terms-link]')) return;
       const link = document.createElement('a');
