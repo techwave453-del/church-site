@@ -1,10 +1,10 @@
-/* Public navigation layout: desktop gets a dedicated logo row and a full-width navigation row. */
+/* Public navigation layout: desktop gets a taller church-identity row and a compact full-width menu row. */
 @media (min-width: 701px) {
   header {
-    height: 148px !important;
+    height: 184px !important;
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: 86px 62px !important;
+    grid-template-rows: 126px 58px !important;
     align-items: center !important;
     justify-items: center !important;
     padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
@@ -14,14 +14,38 @@
     grid-row: 1;
     justify-self: center;
     align-self: center;
+    min-height: 104px;
+    gap: 16px !important;
+  }
+
+  header .brandLogo {
+    width: 88px !important;
+    height: 88px !important;
+    max-width: 88px !important;
+    max-height: 88px !important;
+    object-fit: contain !important;
+    flex: 0 0 88px !important;
+  }
+
+  header .brand b {
+    font-size: 18px !important;
+    letter-spacing: .14em !important;
+  }
+
+  header .brand small {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+    letter-spacing: .34em !important;
   }
 
   header .navLinks {
     grid-row: 2;
     width: 100%;
     min-width: 0;
+    height: 58px;
     margin: 0 !important;
     justify-content: center;
+    align-items: center !important;
     gap: clamp(4px, 1.1vw, 18px) !important;
     align-self: stretch;
   }
@@ -41,6 +65,12 @@
   .site-nav-group-toggle,
   .navLinks > a {
     white-space: nowrap;
+  }
+
+  /* Keep the hero content clear of the two-row header while preserving its background. */
+  .hero {
+    padding-top: 214px !important;
+    padding-bottom: 30px !important;
   }
 }
 
