@@ -21,23 +21,23 @@ function loadStyles(){
  s.textContent=`
  .admin-view-hidden{display:none!important}
  html.admin-section-mode,html.admin-section-mode body{height:100%;overflow:hidden}
- body.admin-section-mode main{height:calc(100vh - var(--admin-header-height,64px));overflow:hidden}
+ .admin-section-mode main{height:calc(100vh - var(--admin-header-height,56px));margin-top:var(--admin-header-height,56px);margin-bottom:0;overflow:hidden}
  .admin-section-mode #app{height:100%;display:flex;flex-direction:column;min-height:0}
- .admin-section-mode .admin-navigation{flex:0 0 auto;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
- .admin-section-mode .admin-view-stage{flex:1 1 auto;min-height:0;overflow:hidden}
- .admin-section-mode .admin-view-stage>.section,
- .admin-section-mode .admin-view-stage>#media,
- .admin-section-mode .admin-view-stage>#comments,
- .admin-section-mode .admin-view-stage>#adminRbac{height:100%;max-height:100%;overflow:auto;margin-bottom:0}
- .admin-section-mode .admin-view-stage>#site{height:100%;min-height:0;overflow:hidden}
- .admin-section-mode .admin-view-stage>#site>.section{height:100%;max-height:100%;overflow:auto;margin-bottom:0}
- .admin-section-mode .admin-view-stage>#site>.savebar{position:sticky;bottom:12px}
- .admin-section-mode .admin-view-stage>#site>.jump{display:none!important}
+ .admin-section-mode .admin-navigation{position:relative;top:auto;z-index:2;flex:0 0 auto;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:10px 0;margin-bottom:16px;scrollbar-width:thin}
+ .admin-section-mode .admin-navigation button{flex:none}
+ .admin-section-mode #site,.admin-section-mode #media,.admin-section-mode #comments,.admin-section-mode #adminRbac{flex:1 1 auto;min-height:0;overflow:hidden;margin-bottom:0}
+ .admin-section-mode #site{display:flex;flex-direction:column;min-height:0}
+ .admin-section-mode #site>.jump{display:none!important}
+ .admin-section-mode #site>.section{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;margin-bottom:16px;scroll-margin-top:0}
+ .admin-section-mode #site>.savebar{flex:0 0 auto;position:relative;bottom:auto;margin-bottom:0}
+ .admin-section-mode #media,.admin-section-mode #comments,.admin-section-mode #adminRbac{overflow:auto}
+ .admin-section-mode #media>.card,.admin-section-mode #comments>.card{margin-bottom:16px}
+ .admin-section-mode #adminRbac{padding-bottom:8px}
  `;
  document.head.appendChild(s);
  document.documentElement.classList.add('admin-section-mode');
 }
-function setHeaderHeight(){const h=document.querySelector('.admin-header')?.getBoundingClientRect().height||64;document.documentElement.style.setProperty('--admin-header-height',h+'px');}
+function setHeaderHeight(){const h=document.querySelector('.admin-header')?.getBoundingClientRect().height||56;document.documentElement.style.setProperty('--admin-header-height',h+'px');}
 function getTarget(id){return document.getElementById(id==='users'?'adminRbac':id);}
 function canView(item){return permission(item[2]);}
 function buildNavigation(){
@@ -49,7 +49,7 @@ function buildNavigation(){
 }
 function applyPermissions(){
  const nav=document.querySelector('.admin-navigation');if(!nav)return;
- VIEWS.forEach(item=>{const [id,,view]=item;const button=nav.querySelector(`[data-view="${id}"]`);const target=getTarget(id);const allowed=permission(view);hide(button,!allowed);hide(target,!allowed);});
+ VIEWS.forEach(([id,,view])=>{const button=nav.querySelector(`[data-view="${id}"]`);hide(button,!permission(view));});
  const first=VIEWS.find(canView);if(first)showView(first[0]);
 }
 function showView(id){
@@ -57,15 +57,17 @@ function showView(id){
  const target=getTarget(id);if(!target)return;
  document.querySelectorAll('.admin-navigation [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
  VIEWS.forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));
- if(id==='site'){hide(target,false);const firstSite=VIEWS.slice(0,7).find(v=>permission(v[2]));if(firstSite&&document.getElementById(firstSite[0])){VIEWS.slice(0,7).forEach(([sid,,vp])=>hide(document.getElementById(sid),sid!==firstSite[0]||!permission(vp)));}}
+ if(id==='site'){
+   hide(target,false);
+   VIEWS.slice(0,7).forEach(([sid,,vp])=>hide(document.getElementById(sid),sid!==id||!permission(vp)));
+ }
  if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();
  if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();
  if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();
- window.scrollTo(0,0);
 }
 function init(){
  loadStyles();setHeaderHeight();buildNavigation();
- requestAnimationFrame(()=>{setHeaderHeight();applyPermissions();});
+ requestAnimationFrame(()=>{setHeaderHeight();if(window.AdminRBAC)applyPermissions();});
  window.addEventListener('resize',setHeaderHeight);
 }
 window.AdminNavigation={showView,applyVisibility:applyPermissions,updateOffsets:setHeaderHeight};
