@@ -13,6 +13,7 @@ const VIEWS=[
  ['comments','Live Comments','comments.view','comments.moderate'],
  ['users','Users & Permissions','users.view','users.edit']
 ];
+const SITE_IDS=new Set(['identity','about','services','links','classes','mediaSettings','live','theme']);
 function permission(p){return window.AdminRBAC?.hasPermission?.(p)??false;}
 function hide(el,yes){if(el)el.classList.toggle('admin-view-hidden',!!yes);}
 function loadStyles(){
@@ -49,18 +50,19 @@ function buildNavigation(){
 }
 function applyPermissions(){
  const nav=document.querySelector('.admin-navigation');if(!nav)return;
- VIEWS.forEach(([id,,view])=>{const button=nav.querySelector(`[data-view="${id}"]`);hide(button,!permission(view));});
+ VIEWS.forEach(([id,,view])=>hide(nav.querySelector(`[data-view="${id}"]`),!permission(view)));
  const first=VIEWS.find(canView);if(first)showView(first[0]);
 }
 function showView(id){
  const item=VIEWS.find(v=>v[0]===id);if(!item||!permission(item[2]))return;
  const target=getTarget(id);if(!target)return;
  document.querySelectorAll('.admin-navigation [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
- VIEWS.forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));
- if(id==='site'){
-   hide(target,false);
-   VIEWS.slice(0,7).forEach(([sid,,vp])=>hide(document.getElementById(sid),sid!==id||!permission(vp)));
- }
+ const site= document.getElementById('site');
+ hide(site,!SITE_IDS.has(id));
+ VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));
+ hide(document.getElementById('media'),id!=='media');
+ hide(document.getElementById('comments'),id!=='comments');
+ hide(document.getElementById('adminRbac'),id!=='users');
  if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();
  if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();
  if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();
