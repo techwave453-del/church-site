@@ -11,6 +11,10 @@
     rbac.src='/admin/admin-users.js';
     await new Promise((resolve,reject)=>{rbac.onload=resolve;rbac.onerror=()=>reject(new Error('Failed to load admin users module'));document.head.appendChild(rbac);});
     if(window.AdminRBAC)await window.AdminRBAC.init();
+    if(window.loadSiteContent)await window.loadSiteContent();
+    if(window.loadMedia)await window.loadMedia();
+    if(window.loadAdminComments)await window.loadAdminComments();
+    window.AdminNavigation?.applyVisibility?.();
     return true;
   };
 })();
