@@ -1,0 +1,9 @@
+/* Desktop-only hero framing. Mobile is intentionally untouched. */
+@media (min-width: 701px){
+.hero.carousel{position:relative!important;overflow:hidden!important}
+.hero.carousel .carousel-inner{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important}
+.hero.carousel .carousel-slide{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
+.hero.carousel .carousel-slide .hero-desktop-background{position:absolute!important;inset:-32px!important;width:calc(100% + 64px)!important;height:calc(100% + 64px)!important;z-index:0!important;object-fit:cover!important;object-position:center!important;filter:blur(24px) brightness(.58) saturate(.9)!important;transform:scale(1.03)!important;pointer-events:none!important}
+.hero.carousel .carousel-slide .carousel-media{position:relative!important;inset:auto!important;z-index:2!important;display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;margin:0!important;filter:none!important}
+.hero.carousel .carousel-slide::after{content:"";position:absolute;inset:0;z-index:1;background:rgba(5,3,8,.10);pointer-events:none}
+}
