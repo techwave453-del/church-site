@@ -1,10 +1,11 @@
-/* Desktop hero framing: match the actual two-row public header. Mobile is untouched. */
+/* Desktop hero: standard-height framing with a blurred full-area background
+   and the same carousel image presented sharply, smaller and fully visible. */
 @media (min-width:701px){
   .hero.carousel{
     position:relative!important;
-    height:calc(100svh - 184px)!important;
+    height:min(700px,calc(100svh - 84px))!important;
     min-height:0!important;
-    margin-top:184px!important;
+    margin-top:84px!important;
     padding:0!important;
     overflow:hidden!important;
   }
@@ -28,6 +29,7 @@
     overflow:hidden!important;
   }
 
+  /* The current carousel image is reused as the soft full-area backdrop. */
   .hero.carousel .carousel-slide::before{
     content:"";
     position:absolute!important;
@@ -51,24 +53,24 @@
     pointer-events:none!important;
   }
 
-  /* Fill the real hero rectangle while preserving the source image aspect ratio.
-     object-fit:cover scales uniformly; it never stretches the image. */
+  /* Sharp foreground: smaller, centered, proportional and never cropped. */
   .hero.carousel .carousel-slide > .carousel-media{
     position:relative!important;
     inset:auto!important;
     z-index:2!important;
     display:block!important;
-    width:100%!important;
-    height:100%!important;
-    max-width:none!important;
-    max-height:none!important;
-    object-fit:cover!important;
+    width:auto!important;
+    height:auto!important;
+    max-width:88%!important;
+    max-height:88%!important;
+    object-fit:contain!important;
     object-position:center center!important;
     margin:0!important;
     padding:0!important;
     border:0!important;
     filter:none!important;
-    flex:0 0 100%!important;
+    flex:0 1 auto!important;
+    box-shadow:0 18px 55px rgba(0,0,0,.28)!important;
   }
 }
 
