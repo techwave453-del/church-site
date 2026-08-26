@@ -1,0 +1,171 @@
+import crypto from 'crypto';
+import { ADMIN_ROLES, ADMIN_PERMISSIONS, hashPassword } from './admin-rbac.js';
+
+const REQUEST_TTL_MS = 3 * 60 * 1000;
+
+function hash(value) {
+  return crypto.createHash('sha256').update(String(value || '')).digest('hex');
+}
+function randomChoice() {
+  return String(crypto.randomInt(1000, 10000));
+}
+function choices() {
+  const set = new Set();
+  while (set.size < 3) set.add(randomChoice());
+  return [...set];
+}
+function activationCode() {
+  const raw = crypto.randomBytes(18).toString('base64url').toUpperCase();
+  return `KFC-${raw.slice(0, 6)}-${raw.slice(6, 12)}-${raw.slice(12, 18)}`;
+}
+
+export function registerAdminAccessRoutes({ app, supabase, requireSameOrigin, rbac }) {
+  if (!supabase) return;
+
+  async function getRequest(req) {
+    const id = req.session.adminAccessRequestId;
+    if (!id) return null;
+    const { data, error } = await supabase.from('admin_access_requests').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async function expireIfNeeded(row) {
+    if (!row || row.status !== 'pending') return row;
+    if (new Date(row.expires_at).getTime() <= Date.now()) {
+      const { data, error } = await supabase.from('admin_access_requests').update({ status: 'expired' }).eq('id', row.id).eq('status', 'pending').select('*').maybeSingle();
+      if (error) throw error;
+      return data || { ...row, status: 'expired' };
+    }
+    return row;
+  }
+
+  app.post('/api/admin/access/request', requireSameOrigin, async (req, res) => {
+    try {
+      const username = String(req.body?.username || '').trim().toLowerCase();
+      if (!/^[a-z0-9._-]{3,40}$/.test(username)) return res.status(400).json({ error: 'Choose a username using 3–40 letters, numbers, dots, underscores or hyphens.' });
+      const existing = await supabase.from('admin_users').select('id').eq('username', username).maybeSingle();
+      if (existing.error) throw existing.error;
+      if (existing.data) return res.status(409).json({ error: 'That username is already in use.' });
+      const pending = await supabase.from('admin_access_requests').select('id').eq('username', username).eq('status', 'pending').maybeSingle();
+      if (pending.error) throw pending.error;
+      if (pending.data) return res.status(409).json({ error: 'A request for that username is already pending.' });
+
+      const requestToken = crypto.randomBytes(32).toString('hex');
+      const [choiceOne, choiceTwo, choiceThree] = choices();
+      const expiresAt = new Date(Date.now() + REQUEST_TTL_MS).toISOString();
+      const inserted = await supabase.from('admin_access_requests').insert({
+        username,
+        request_token_hash: hash(requestToken),
+        choice_one: choiceOne,
+        choice_two: choiceTwo,
+        choice_three: choiceThree,
+        expires_at: expiresAt,
+        status: 'pending'
+      }).select('id,username,choice_one,choice_two,choice_three,expires_at,status').single();
+      if (inserted.error) throw inserted.error;
+      req.session.adminAccessRequestId = inserted.data.id;
+      req.session.adminAccessToken = requestToken;
+      req.session.adminAccessSelected = null;
+      res.status(201).json({ requestId: inserted.data.id, choices: [choiceOne, choiceTwo, choiceThree], expiresAt, status: 'pending' });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message || 'Unable to start account setup.' });
+    }
+  });
+
+  app.post('/api/admin/access/select', requireSameOrigin, async (req, res) => {
+    try {
+      let row = await getRequest(req);
+      row = await expireIfNeeded(row);
+      if (!row || row.status !== 'pending') return res.status(400).json({ error: 'This request is no longer active.' });
+      const selected = String(req.body?.choice || '').trim();
+      const valid = [row.choice_one, row.choice_two, row.choice_three].includes(selected);
+      if (!valid) return res.status(400).json({ error: 'Invalid selection.' });
+      const updated = await supabase.from('admin_access_requests').update({ selected_choice: selected, selected_at: new Date().toISOString() }).eq('id', row.id).eq('status', 'pending').select('id,expires_at,status').single();
+      if (updated.error) throw updated.error;
+      req.session.adminAccessSelected = selected;
+      res.json({ ok: true, status: updated.data.status, expiresAt: updated.data.expires_at });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message || 'Unable to save your selection.' });
+    }
+  });
+
+  app.get('/api/admin/access/status', async (req, res) => {
+    try {
+      let row = await getRequest(req);
+      if (!row) return res.status(404).json({ error: 'No active setup request.' });
+      row = await expireIfNeeded(row);
+      const response = { status: row.status, username: row.username, expiresAt: row.expires_at, selected: Boolean(row.selected_choice) };
+      if (row.status === 'approved') response.activationCode = req.session.adminActivationCode || null;
+      res.json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Unable to check setup status.' });
+    }
+  });
+
+  app.get('/api/admin/access/requests', async (req, res) => {
+    try {
+      if (!req.session.user) return res.status(401).json({ error: 'Unauthorized.' });
+      const admin = await rbac.getUserWithPermissions(req.session.user.id);
+      if (!admin || admin.role !== ADMIN_ROLES.SUPER_ADMIN) return res.status(403).json({ error: 'Only a Super Admin can review access requests.' });
+      const { data, error } = await supabase.from('admin_access_requests').select('id,username,choice_one,choice_two,choice_three,selected_choice,status,created_at,expires_at').in('status', ['pending', 'approved']).order('created_at', { ascending: false }).limit(50);
+      if (error) throw error;
+      const rows = [];
+      for (const row of data || []) rows.push(await expireIfNeeded(row));
+      res.json(rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Unable to load access requests.' });
+    }
+  });
+
+  app.post('/api/admin/access/requests/:id/approve', requireSameOrigin, async (req, res) => {
+    try {
+      if (!req.session.user) return res.status(401).json({ error: 'Unauthorized.' });
+      const admin = await rbac.getUserWithPermissions(req.session.user.id);
+      if (!admin || admin.role !== ADMIN_ROLES.SUPER_ADMIN) return res.status(403).json({ error: 'Only a Super Admin can approve access requests.' });
+      const id = Number(req.params.id);
+      let row = (await supabase.from('admin_access_requests').select('*').eq('id', id).maybeSingle()).data;
+      row = await expireIfNeeded(row);
+      if (!row || row.status !== 'pending') return res.status(400).json({ error: 'This request is no longer pending.' });
+      if (!row.selected_choice) return res.status(400).json({ error: 'The requester has not completed the selection.' });
+      const adminChoice = String(req.body?.choice || '').trim();
+      if (![row.choice_one, row.choice_two, row.choice_three].includes(adminChoice)) return res.status(400).json({ error: 'Invalid approval choice.' });
+      if (adminChoice !== row.selected_choice) return res.status(400).json({ error: 'The selected verification does not match.' });
+      const role = Object.values(ADMIN_ROLES).includes(req.body?.role) ? req.body.role : ADMIN_ROLES.CUSTOM;
+      const permissions = Array.isArray(req.body?.permissions) ? req.body.permissions.filter(p => ADMIN_PERMISSIONS.includes(p)) : [];
+      const created = await rbac.createUser({ username: row.username, role, permissions });
+      const code = activationCode();
+      const activation = await supabase.from('admin_activation_codes').insert({ user_id: created.id, code_hash: hash(code), expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() }).select('id').single();
+      if (activation.error) {
+        await rbac.deleteUser(created.id);
+        throw activation.error;
+      }
+      const updated = await supabase.from('admin_access_requests').update({ status: 'approved', admin_choice: adminChoice, approved_at: new Date().toISOString() }).eq('id', id).eq('status', 'pending').select('id').maybeSingle();
+      if (updated.error) throw updated.error;
+      res.json({ ok: true, username: row.username, activationCode: code });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message || 'Unable to approve this request.' });
+    }
+  });
+
+  app.post('/api/admin/access/requests/:id/reject', requireSameOrigin, async (req, res) => {
+    try {
+      if (!req.session.user) return res.status(401).json({ error: 'Unauthorized.' });
+      const admin = await rbac.getUserWithPermissions(req.session.user.id);
+      if (!admin || admin.role !== ADMIN_ROLES.SUPER_ADMIN) return res.status(403).json({ error: 'Only a Super Admin can reject access requests.' });
+      const id = Number(req.params.id);
+      const result = await supabase.from('admin_access_requests').update({ status: 'rejected', rejected_at: new Date().toISOString() }).eq('id', id).eq('status', 'pending').select('id').maybeSingle();
+      if (result.error) throw result.error;
+      if (!result.data) return res.status(400).json({ error: 'This request is no longer pending.' });
+      res.json({ ok: true });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message || 'Unable to reject this request.' });
+    }
+  });
+}
