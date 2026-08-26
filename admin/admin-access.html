@@ -11,28 +11,28 @@
 <body>
 <main class="card">
 <h1>Administrator Account Setup</h1>
-<p class="lead">Create your administrator request. A Super Admin must approve your request and assign your role and permissions before your account can be activated.</p>
+<p class="lead">Set up your administrator account.</p>
 
 <section id="start">
-<div class="step"><span class="num">1</span><div><strong>Request administrator access</strong><span class="muted small">Choose your username, then request a verification code.</span></div></div>
+<div class="step"><span class="num">1</span><div><strong>Get started</strong></div></div>
 <label for="username">Username</label>
 <input id="username" autocomplete="username" maxlength="40" placeholder="Choose a username">
-<button id="requestBtn" type="button">Request Code</button>
+<button id="requestBtn" type="button">Continue</button>
 <div id="startError" class="error" role="alert"></div>
 </section>
 
 <section id="verify" class="hidden">
-<div class="step"><span class="num">2</span><div><strong>Confirm your verification number</strong><span class="muted small">Choose one of the three numbers. The Super Admin will confirm your selection when approving the request.</span></div></div>
+<div class="step"><span class="num">2</span><div><strong>Verification</strong></div></div>
 <div id="choices" class="choices"></div>
-<button id="selectBtn" type="button">Submit Verification</button>
-<div class="status"><strong>Waiting for Super Admin approval…</strong><br><span class="muted small">Your request will remain pending until a Super Admin approves or declines it.</span> <span id="timer" class="timer"></span></div>
+<button id="selectBtn" type="button">Continue</button>
+<div class="status"><strong>Please wait…</strong> <span id="timer" class="timer"></span></div>
 <div id="verifyError" class="error" role="alert"></div>
 </section>
 
 <section id="password" class="hidden">
-<div class="step"><span class="num">3</span><div><strong>Request approved</strong><span class="muted small">Your role and permissions have been assigned. Your activation code has been automatically filled in.</span></div></div>
-<div id="code" class="code" aria-label="Automatically filled admin activation code"></div>
-<label for="passwordInput">Create password</label>
+<div class="step"><span class="num">3</span><div><strong>Create your password</strong></div></div>
+<div id="code" class="code" aria-label="Verification code"></div>
+<label for="passwordInput">Password</label>
 <input id="passwordInput" type="password" autocomplete="new-password">
 <label for="confirmInput">Confirm password</label>
 <input id="confirmInput" type="password" autocomplete="new-password">
@@ -41,9 +41,9 @@
 </section>
 
 <section id="expired" class="hidden">
-<h2>Request unavailable</h2>
-<p class="muted">This administrator request has expired or was declined. Start a new request to try again.</p>
-<button id="restartBtn" type="button">Request Again</button>
+<h2>Setup unavailable</h2>
+<p class="muted">Please start again.</p>
+<button id="restartBtn" type="button">Start Again</button>
 </section>
 </main>
 <script>
@@ -54,7 +54,7 @@ function show(id){['start','verify','password','expired'].forEach(x=>$(x).classL
 function countdown(){clearInterval(timer);timer=setInterval(()=>{const left=Math.max(0,expiresAt-Date.now());$('timer').textContent=`(${Math.ceil(left/1000)}s)`;if(!left){clearInterval(timer);clearTimeout(pollTimer);show('expired')}},250)}
 function renderCode(code){const box=$('code');box.innerHTML='';const parts=String(code||'').replace(/^KFC-/i,'').split('-');parts.forEach((part,pi)=>{[...part].forEach(ch=>{const i=document.createElement('input');i.value=ch;i.readOnly=true;i.tabIndex=-1;box.appendChild(i)});if(pi<parts.length-1){const s=document.createElement('span');s.className='sep';s.textContent='-';box.appendChild(s)}})}
 async function requestCode(){const btn=$('requestBtn');$('startError').textContent='';btn.disabled=true;try{const d=await api('/api/admin/access/request',{method:'POST',body:JSON.stringify({username:$('username').value.trim()})});$('choices').innerHTML=(d.choices||[]).map(c=>`<label class="choice"><input type="radio" name="choice" value="${c}"> <strong>${c}</strong></label>`).join('');expiresAt=new Date(d.expiresAt).getTime();show('verify');countdown();poll()}catch(e){$('startError').textContent=e.message}finally{btn.disabled=false}}
-async function select(){const selected=document.querySelector('input[name="choice"]:checked')?.value;if(!selected){$('verifyError').textContent='Please choose a verification number.';return}const btn=$('selectBtn');btn.disabled=true;$('verifyError').textContent='';try{await api('/api/admin/access/select',{method:'POST',body:JSON.stringify({choice:selected})});poll()}catch(e){$('verifyError').textContent=e.message;btn.disabled=false}}
+async function select(){const selected=document.querySelector('input[name="choice"]:checked')?.value;if(!selected){$('verifyError').textContent='Please choose a number.';return}const btn=$('selectBtn');btn.disabled=true;$('verifyError').textContent='';try{await api('/api/admin/access/select',{method:'POST',body:JSON.stringify({choice:selected})});poll()}catch(e){$('verifyError').textContent=e.message;btn.disabled=false}}
 async function poll(){clearTimeout(pollTimer);try{const d=await api('/api/admin/access/status');if(d.status==='approved'&&d.activationCode){clearInterval(timer);renderCode(d.activationCode);show('password');return}if(['expired','rejected'].includes(d.status)){clearInterval(timer);show('expired');return}pollTimer=setTimeout(poll,2500)}catch(e){pollTimer=setTimeout(poll,4000)}}
 async function finish(){const password=$('passwordInput').value,confirm=$('confirmInput').value;if(password.length<8){$('passwordError').textContent='Password must be at least 8 characters.';return}if(password!==confirm){$('passwordError').textContent='Passwords do not match.';return}const btn=$('finishBtn');btn.disabled=true;try{await api('/api/admin/activate',{method:'POST',body:JSON.stringify({username:$('username').value.trim(),code:[...$('code').querySelectorAll('input')].map(x=>x.value).join(''),password})});$('passwordError').className='success';$('passwordError').textContent='Setup complete. You can now sign in.'}catch(e){$('passwordError').className='error';$('passwordError').textContent=e.message;btn.disabled=false}}
 $('requestBtn').onclick=requestCode;$('selectBtn').onclick=select;$('finishBtn').onclick=finish;$('restartBtn').onclick=()=>location.reload();
