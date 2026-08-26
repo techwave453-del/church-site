@@ -44,7 +44,7 @@
       button.type = 'button';
       button.className = 'site-nav-group-toggle';
       button.setAttribute('aria-expanded', 'false');
-      button.innerHTML = `${group.label}<span aria-hidden="true">⌄</span>`;
+      button.innerHTML = `${group.label}<span aria-hidden="true">+</span>`;
       const submenu = document.createElement('div');
       submenu.className = 'site-nav-submenu';
       group.items.forEach((item) => submenu.appendChild(createLink(item)));
@@ -58,6 +58,7 @@
         });
         const open = wrapper.classList.toggle('open');
         button.setAttribute('aria-expanded', String(open));
+        button.querySelector('span').textContent = open ? '−' : '+';
       });
       wrapper.append(button, submenu);
       nav.appendChild(wrapper);
@@ -103,8 +104,6 @@
     if (window.matchMedia('(max-width: 700px)').matches) return;
     const nav = document.querySelector('.navLinks');
     if (!nav) return;
-
-    // The public page can scroll either the window or its full-page container.
     const page = document.querySelector('.page');
     const scrolled = window.scrollY > 8 || (page && page.scrollTop > 8);
     nav.classList.toggle('nav-stuck', !!scrolled);
@@ -121,6 +120,7 @@
       document.querySelectorAll('.site-nav-group.open').forEach((group) => {
         group.classList.remove('open');
         group.querySelector('.site-nav-group-toggle')?.setAttribute('aria-expanded', 'false');
+        group.querySelector('.site-nav-group-toggle span').textContent = '+';
       });
     }
   });
