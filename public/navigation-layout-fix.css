@@ -1,178 +1,26 @@
-/* Desktop navigation: themed church ribbon + full-width white menu row. Mobile rules are intentionally preserved. */
-@media (min-width: 701px) {
-  header {
-    height: 184px !important;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: 126px 58px !important;
-    align-items: center !important;
-    justify-items: stretch !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border-bottom: 0 !important;
-  }
-
-  header .brand {
-    grid-row: 1;
-    width: 100% !important;
-    height: 126px !important;
-    justify-self: stretch !important;
-    align-self: stretch !important;
-    justify-content: center !important;
-    gap: 16px !important;
-    padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
-    color: #fff !important;
-    background: linear-gradient(135deg, #05204a 0%, var(--accent-3) 52%, var(--accent-1) 100%) !important;
-    border-bottom: 1px solid rgba(255,255,255,.22) !important;
-    border-radius: 0 !important;
-    box-shadow: 0 8px 28px rgba(0,0,0,.16) !important;
-  }
-
-  header .brandLogo {
-    width: 88px !important;
-    height: 88px !important;
-    max-width: 88px !important;
-    max-height: 88px !important;
-    object-fit: contain !important;
-    flex: 0 0 88px !important;
-  }
-
-  header .brand b {
-    font-size: 18px !important;
-    letter-spacing: .14em !important;
-    color: #fff !important;
-  }
-
-  header .brand small {
-    margin-top: 6px !important;
-    font-size: 10px !important;
-    letter-spacing: .34em !important;
-    color: rgba(255,255,255,.82) !important;
-  }
-
-  /* Full-width white navigation. At the top it sits under the ribbon; after scrolling it docks to the viewport top. */
-  header .navLinks {
-    position: fixed !important;
-    top: 126px !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 100 !important;
-    width: 100vw !important;
-    height: 58px !important;
-    min-width: 0;
-    margin: 0 !important;
-    padding: 0 max(18px, calc((100vw - 1500px) / 2)) !important;
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    align-items: stretch !important;
-    justify-content: stretch !important;
-    gap: 0 !important;
-    background: #fff !important;
-    border-bottom: 2px solid var(--accent-2) !important;
-    box-shadow: 0 5px 18px rgba(0,0,0,.10) !important;
-    transition: top .28s ease, box-shadow .28s ease !important;
-  }
-
-  header .navLinks.nav-stuck {
-    top: 0 !important;
-    box-shadow: 0 7px 24px rgba(0,0,0,.16) !important;
-  }
-
-  header .navLinks > a,
-  header .navLinks .site-nav-group,
-  header .navLinks .site-nav-group-toggle {
-    min-width: 0 !important;
-  }
-
-  header .navLinks > a,
-  header .navLinks .site-nav-group-toggle {
-    width: 100% !important;
-    height: 58px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 clamp(7px, 1.1vw, 18px) !important;
-    border-radius: 0 !important;
-    color: #111 !important;
-    white-space: nowrap !important;
-  }
-
-  header .navLinks .site-nav-group {
-    position: relative !important;
-    display: block !important;
-  }
-
-  header .navLinks > a:hover,
-  header .navLinks .site-nav-group-toggle:hover,
-  header .navLinks .site-nav-group.open .site-nav-group-toggle {
-    background: rgba(77,166,255,.09) !important;
-  }
-
-  header .navLinks .site-nav-submenu {
-    top: 58px !important;
-  }
-
-  header > div:last-child {
-    position: absolute !important;
-    right: max(18px, calc((100vw - 1500px) / 2)) !important;
-    bottom: 67px !important;
-    z-index: 110 !important;
-  }
-
-  .site-nav-group:last-child .site-nav-submenu {
-    left: auto;
-    right: 0;
-  }
-
-  /* Preserve the desktop hero height and leave the original two-row header space at page top. */
-  .hero {
-    padding-top: 214px !important;
-    padding-bottom: 30px !important;
-  }
+/* Desktop navigation: full-width ribbon + compact white menu. Mobile rules intentionally preserved. */
+@media (min-width:701px) {
+  header { width:100% !important; max-width:none !important; height:184px !important; padding:0 !important; margin:0 !important; display:grid !important; grid-template-rows:126px 58px !important; grid-template-columns:1fr !important; }
+  header .brand { grid-row:1; width:100% !important; height:126px !important; padding:0 24px !important; justify-content:flex-start !important; gap:16px !important; color:#fff !important; background:linear-gradient(135deg,#05204a 0%,var(--accent-3) 52%,var(--accent-1) 100%) !important; border-radius:0 !important; }
+  header .brandLogo { width:126px !important; height:126px !important; max-width:126px !important; max-height:126px !important; object-fit:contain !important; flex:0 0 126px !important; align-self:stretch !important; }
+  header .navLinks { position:fixed !important; top:126px !important; left:0 !important; right:0 !important; z-index:100 !important; width:100% !important; height:58px !important; margin:0 !important; padding:0 24px !important; display:flex !important; align-items:stretch !important; justify-content:flex-start !important; gap:2px !important; background:#fff !important; border-bottom:2px solid var(--accent-2) !important; box-shadow:0 5px 18px rgba(0,0,0,.10) !important; }
+  header .navLinks.nav-stuck { top:0 !important; box-shadow:0 7px 24px rgba(0,0,0,.16) !important; }
+  header .navLinks > a, header .navLinks .site-nav-group { flex:0 0 auto !important; }
+  header .navLinks > a, header .navLinks .site-nav-group-toggle { width:auto !important; height:58px !important; padding:0 11px !important; display:flex !important; align-items:center !important; justify-content:center !important; border-radius:0 !important; color:#111 !important; white-space:nowrap !important; }
+  header .navLinks .site-nav-group { position:relative !important; display:block !important; }
+  header .navLinks .site-nav-group-toggle span { margin-left:6px !important; font-size:17px !important; line-height:1 !important; }
+  header .navLinks > a:hover, header .navLinks .site-nav-group-toggle:hover, header .navLinks .site-nav-group.open .site-nav-group-toggle { background:rgba(77,166,255,.09) !important; }
+  header .navLinks .site-nav-submenu { top:58px !important; }
+  header > div:last-child { position:absolute !important; right:24px !important; bottom:67px !important; z-index:110 !important; }
+  .site-nav-group:last-child .site-nav-submenu { left:auto; right:0; }
+  .page, .hero { width:100% !important; max-width:none !important; }
+  .hero { padding-top:214px !important; padding-bottom:30px !important; }
 }
 
-/* Mobile: existing compact header/drawer remains unchanged. */
-@media (max-width: 700px) {
-  header {
-    height: 70px !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 0 9px !important;
-  }
-
-  header .brand {
-    grid-row: auto;
-  }
-
-  header .navLinks {
-    display: none !important;
-  }
-
-  .drawer {
-    top: 70px !important;
-    left: 0 !important;
-    right: auto !important;
-    bottom: 16px !important;
-    width: min(82vw, 360px) !important;
-    max-width: 360px !important;
-    max-height: calc(100svh - 86px) !important;
-    padding: 18px 20px !important;
-    background: rgba(5, 20, 40, 0.72) !important;
-    backdrop-filter: blur(18px) saturate(125%) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-left: 0 !important;
-    border-radius: 0 18px 18px 0 !important;
-    box-shadow: 12px 12px 40px rgba(0, 0, 0, 0.32) !important;
-    overflow: hidden !important;
-  }
-
-  .drawer nav {
-    height: calc(100% - 66px) !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain;
-    padding: 8px 4px 24px 8px !important;
-  }
+@media (max-width:700px) {
+  header { height:70px !important; display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:space-between !important; padding:0 9px !important; }
+  header .brand { grid-row:auto; }
+  header .navLinks { display:none !important; }
+  .drawer { top:70px !important; left:0 !important; right:auto !important; bottom:16px !important; width:min(82vw,360px) !important; max-width:360px !important; max-height:calc(100svh - 86px) !important; padding:18px 20px !important; background:rgba(5,20,40,.72) !important; backdrop-filter:blur(18px) saturate(125%) !important; -webkit-backdrop-filter:blur(18px) saturate(125%) !important; border:1px solid rgba(255,255,255,.2) !important; border-left:0 !important; border-radius:0 18px 18px 0 !important; box-shadow:12px 12px 40px rgba(0,0,0,.32) !important; overflow:hidden !important; }
+  .drawer nav { height:calc(100% - 66px) !important; overflow-y:auto !important; overscroll-behavior:contain; padding:8px 4px 24px 8px !important; }
 }
