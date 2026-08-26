@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administrator Account Setup</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#172033;background:#f6f7fb}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;box-sizing:border-box}.card{width:min(520px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 18px 55px rgba(0,0,0,.12)}h1{margin-top:0}.muted{color:#687386}label{display:block;font-weight:650;margin:16px 0 7px}input,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;font:inherit}input{border:1px solid #cbd2dc}button{border:0;background:#243b7a;color:#fff;font-weight:700;cursor:pointer;margin-top:16px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.choice{border:1px solid #ccd3df;padding:14px;text-align:center;border-radius:12px;cursor:pointer}.choice input{width:auto}.hidden{display:none}.status{padding:15px;border-radius:12px;background:#eef3ff;margin-top:16px}.timer{font-weight:800}.error{color:#a11;margin-top:12px}.success{color:#176b3a}.small{font-size:.9rem}
+</style>
+</head>
+<body>
+<main class="card">
+<h1>Administrator Account Setup</h1>
+<p class="muted">Complete the steps below to set up your administrator account.</p>
+<section id="start">
+<label for="username">Username</label>
+<input id="username" autocomplete="username" maxlength="40" placeholder="Choose a username">
+<button id="startBtn">Continue</button>
+<div id="startError" class="error"></div>
+</section>
+<section id="verify" class="hidden">
+<p><strong>Choose one option to continue.</strong></p>
+<div id="choices" class="choices"></div>
+<button id="selectBtn">Continue</button>
+<div class="status">Waiting for approval… <span id="timer" class="timer"></span></div>
+<div id="verifyError" class="error"></div>
+</section>
+<section id="password" class="hidden">
+<p class="success"><strong>Verification complete.</strong></p>
+<p class="muted">You can now create your password.</p>
+<label for="code">Admin code</label>
+<input id="code" readonly>
+<label for="passwordInput">New password</label>
+<input id="passwordInput" type="password" autocomplete="new-password">
+<label for="confirmInput">Confirm password</label>
+<input id="confirmInput" type="password" autocomplete="new-password">
+<button id="finishBtn">Complete Setup</button>
+<div id="passwordError" class="error"></div>
+</section>
+<section id="expired" class="hidden">
+<p><strong>This setup request has expired.</strong></p>
+<button id="restartBtn">Start New Request</button>
+</section>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);let expiresAt=0,timer=null,selected=null;
+async function api(url,opts={}){const r=await fetch(url,{credentials:'same-origin',...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Something went wrong.');return d;}
+function show(id){['start','verify','password','expired'].forEach(x=>$(x).classList.toggle('hidden',x!==id));}
+function countdown(){clearInterval(timer);timer=setInterval(()=>{const left=Math.max(0,expiresAt-Date.now());$('timer').textContent=`(${Math.ceil(left/1000)}s)`;if(!left){clearInterval(timer);show('expired');}},250);}
+async function start(){try{const d=await api('/api/admin/access/request',{method:'POST',body:JSON.stringify({username:$('username').value.trim()})});$('choices').innerHTML=d.choices.map(c=>`<label class="choice"><input type="radio" name="choice" value="${c}"> <strong>${c}</strong></label>`).join('');expiresAt=new Date(d.expiresAt).getTime();show('verify');countdown();}catch(e){$('startError').textContent=e.message;}}
+async function select(){selected=document.querySelector('input[name="choice"]:checked')?.value;if(!selected){$('verifyError').textContent='Please choose an option.';return;}try{await api('/api/admin/access/select',{method:'POST',body:JSON.stringify({choice:selected})});$('verifyError').textContent='';poll();}catch(e){$('verifyError').textContent=e.message;}}
+async function poll(){try{const d=await api('/api/admin/access/status');if(d.status==='approved'){clearInterval(timer);$('code').value=d.activationCode||'';show('password');return;}if(['expired','rejected'].includes(d.status)){clearInterval(timer);show('expired');return;}setTimeout(poll,2500);}catch(e){setTimeout(poll,4000);}}
+async function finish(){const password=$('passwordInput').value,confirm=$('confirmInput').value;if(password!==confirm){$('passwordError').textContent='Passwords do not match.';return;}try{await api('/api/admin/activate',{method:'POST',body:JSON.stringify({username:$('username').value.trim(),code:$('code').value,password})});$('passwordError').className='success';$('passwordError').textContent='Setup complete. You can now sign in.';$('finishBtn').disabled=true;}catch(e){$('passwordError').className='error';$('passwordError').textContent=e.message;}}
+$('startBtn').onclick=start;$('selectBtn').onclick=select;$('finishBtn').onclick=finish;$('restartBtn').onclick=()=>location.reload();
+})();
+</script>
+</body>
+</html>
