@@ -1,10 +1,11 @@
 (function(){
-  const modules=['admin-utils.js','admin-session.js','admin-tabs.js','admin-navigation.js','admin-theme.js','admin-media.js','admin-comments.js','admin-site-content.js','admin-services.js','admin-homepage-links.js','admin-classes.js','admin-gallery.js','admin-live.js','admin-bridge.js'];
+  // Navigation is intentionally loaded last. It must build the new section-by-section
+  // interface only after the authenticated user's RBAC profile is known.
+  const modules=['admin-utils.js','admin-session.js','admin-tabs.js','admin-theme.js','admin-media.js','admin-comments.js','admin-site-content.js','admin-services.js','admin-homepage-links.js','admin-classes.js','admin-gallery.js','admin-live.js','admin-bridge.js'];
   let started=false;
 
   // Admin modules are frequently changed independently. Use a per-page cache-buster
-  // so mobile browsers cannot briefly execute an older cached module while the new
-  // modular UI is being assembled.
+  // so mobile browsers cannot execute an older cached module while the new UI is built.
   const buildVersion=window.__ADMIN_BUILD_VERSION||Date.now().toString();
 
   function setLoadingState(message){
@@ -36,6 +37,22 @@
     });
   }
 
+  async function loadCurrentUserIntoRBAC(){
+    try{
+      const meResponse=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});
+      if(!meResponse.ok)return false;
+      const me=await meResponse.json();
+      if(window.AdminRBAC){
+        window.AdminRBAC.getCurrentUser=()=>me.user;
+        window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));
+      }
+      return !!me.user;
+    }catch(error){
+      console.warn('Unable to load RBAC user profile:',error.message);
+      return false;
+    }
+  }
+
   window.loadAdminModules=async function(){
     if(started)return true;
     started=true;
@@ -46,18 +63,29 @@
       await loadScript('admin-session.js');
       const authenticated=window.initAdminSession?await window.initAdminSession():false;
       if(!authenticated){started=false;finishLoadingState();return false;}
+
       setLoadingState('Loading admin modules…');
       for(const name of modules.slice(2))await loadScript(name);
+
       setLoadingState('Loading user access controls…');
       await loadScript('admin-users.js');
-
-      // RBAC must build #adminRbac before the pending-approval module is initialized.
-      // Previously access requests initialized first, found no mount point, and exited;
-      // as a result the Pending Approval UI never appeared in Users & Permissions.
       if(window.AdminRBAC)await window.AdminRBAC.init();
-      try{await loadScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init();}catch(error){console.warn(error.message);}
 
-      try{const meResponse=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});if(meResponse.ok){const me=await meResponse.json();if(window.AdminRBAC){window.AdminRBAC.getCurrentUser=()=>me.user;window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));}}}catch(error){console.warn('Unable to load RBAC user profile:',error.message);}
+      // Refresh the authenticated user's RBAC profile before navigation is created.
+      // This prevents the old three-tab UI from remaining visible when the user has
+      // just been approved and has permission-restricted access.
+      await loadCurrentUserIntoRBAC();
+
+      // Build the new section-by-section navigation only after RBAC is ready.
+      await loadScript('admin-navigation.js');
+      window.AdminNavigation?.applyVisibility?.();
+
+      // Pending approval belongs inside the already-created Users & Permissions view.
+      try{
+        await loadScript('admin-access-requests.js');
+        if(window.AdminAccessRequests)await window.AdminAccessRequests.init();
+      }catch(error){console.warn(error.message);}
+
       setLoadingState('Loading website content…');
       if(window.loadSiteContent)await window.loadSiteContent();
       if(window.loadMedia)await window.loadMedia();
