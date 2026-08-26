@@ -50,8 +50,13 @@
       for(const name of modules.slice(2))await loadScript(name);
       setLoadingState('Loading user access controls…');
       await loadScript('admin-users.js');
-      try{await loadScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init();}catch(error){console.warn(error.message);}
+
+      // RBAC must build #adminRbac before the pending-approval module is initialized.
+      // Previously access requests initialized first, found no mount point, and exited;
+      // as a result the Pending Approval UI never appeared in Users & Permissions.
       if(window.AdminRBAC)await window.AdminRBAC.init();
+      try{await loadScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init();}catch(error){console.warn(error.message);}
+
       try{const meResponse=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});if(meResponse.ok){const me=await meResponse.json();if(window.AdminRBAC){window.AdminRBAC.getCurrentUser=()=>me.user;window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));}}}catch(error){console.warn('Unable to load RBAC user profile:',error.message);}
       setLoadingState('Loading website content…');
       if(window.loadSiteContent)await window.loadSiteContent();
