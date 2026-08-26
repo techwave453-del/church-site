@@ -1,15 +1,14 @@
-/* Desktop-only hero framing. Mobile is intentionally untouched. */
+/* Desktop hero framing: match the actual two-row public header. Mobile is untouched. */
 @media (min-width:701px){
-  /* Keep the hero below the desktop header instead of allowing the image to sit
-     underneath it. The available image area is the actual visible hero area. */
   .hero.carousel{
     position:relative!important;
-    height:calc(100svh - 84px)!important;
+    height:calc(100svh - 184px)!important;
     min-height:0!important;
-    margin-top:84px!important;
+    margin-top:184px!important;
     padding:0!important;
     overflow:hidden!important;
   }
+
   .hero.carousel .carousel-inner{
     position:absolute!important;
     inset:0!important;
@@ -17,6 +16,7 @@
     height:100%!important;
     overflow:hidden!important;
   }
+
   .hero.carousel .carousel-slide{
     position:absolute!important;
     inset:0!important;
@@ -27,8 +27,7 @@
     justify-content:center!important;
     overflow:hidden!important;
   }
-  /* Use the same image as a soft full-area backdrop so portrait/landscape
-     source images can retain their natural proportions without distortion. */
+
   .hero.carousel .carousel-slide::before{
     content:"";
     position:absolute!important;
@@ -42,6 +41,7 @@
     transform:scale(1.04)!important;
     pointer-events:none!important;
   }
+
   .hero.carousel .carousel-slide::after{
     content:"";
     position:absolute!important;
@@ -50,24 +50,25 @@
     background:rgba(5,3,8,.12)!important;
     pointer-events:none!important;
   }
-  /* The actual hero image is contained inside the visible hero rectangle.
-     Width and height remain proportional to the source image. */
+
+  /* Fill the real hero rectangle while preserving the source image aspect ratio.
+     object-fit:cover scales uniformly; it never stretches the image. */
   .hero.carousel .carousel-slide > .carousel-media{
     position:relative!important;
     inset:auto!important;
     z-index:2!important;
     display:block!important;
-    width:auto!important;
-    height:auto!important;
-    max-width:100%!important;
-    max-height:100%!important;
-    object-fit:contain!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    object-fit:cover!important;
     object-position:center center!important;
     margin:0!important;
     padding:0!important;
     border:0!important;
     filter:none!important;
-    flex:0 1 auto!important;
+    flex:0 0 100%!important;
   }
 }
 
