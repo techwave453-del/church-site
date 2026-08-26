@@ -17,7 +17,7 @@
     ['theme.view','View theme'],['theme.edit','Edit theme'],['users.view','View administrators'],['users.create','Create administrators'],
     ['users.edit','Edit administrators'],['users.disable','Enable/disable administrators'],['users.delete','Delete administrators'],['users.permissions','Manage permissions'],['audit.view','View audit logs']
   ];
-  const esc = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const esc = value => String(value ?? '').replace(/[&<>'\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
   const api = async (url, options={}) => { const response = await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}}); const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||'Request failed.'); return data; };
   const message = text => { const el=document.getElementById('adminUsersMessage'); if(el) el.textContent=text||''; };
 
@@ -32,7 +32,7 @@
   const form=document.getElementById('administratorCreateForm');
   document.getElementById('addAdministratorButton').onclick=()=>{document.getElementById('addAdministratorForm').hidden=false;form.elements.username.focus();};
   document.getElementById('cancelAdministratorButton').onclick=()=>{document.getElementById('addAdministratorForm').hidden=true;form.reset();};
-  form.onsubmit=async e=>{e.preventDefault();message('Creating pending request…');try{await api('/api/admin/users',{method:'POST',body:JSON.stringify({username:form.elements.username.value.trim()})});message('Administrator request created and is now pending approval.');form.reset();document.getElementById('addAdministratorForm').hidden=true;await loadPending();}catch(error){message(error.message);}};
+  form.onsubmit=async e=>{e.preventDefault();message('Creating pending request…');try{await api('/api/admin/access/request',{method:'POST',body:JSON.stringify({username:form.elements.username.value.trim()})});message('Administrator request created and is now pending approval.');form.reset();document.getElementById('addAdministratorForm').hidden=true;await loadPending();}catch(error){message(error.message);}};
 
   async function loadPending(){
     const box=document.getElementById('pendingRequestsList');
