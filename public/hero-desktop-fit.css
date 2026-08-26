@@ -1,80 +1,15 @@
-/* Desktop hero: full-width standard-height carousel below the complete 184px header.
-   The blurred backdrop and smaller sharp image share the same carousel slide. */
+/* Desktop hero: preserve the full hero height while the sharp foreground carousel
+   fills the hero vertically. The blurred backdrop remains independent. */
 @media (min-width:701px){
-  .hero.carousel{
-    position:relative!important;
-    z-index:10!important;
-    width:100%!important;
-    height:min(700px,calc(100svh - 184px))!important;
-    min-height:600px!important;
-    margin-top:184px!important;
-    padding:0!important;
-    overflow:hidden!important;
-  }
-
-  .hero.carousel .carousel-inner{
-    position:absolute!important;
-    inset:0!important;
-    width:100%!important;
-    height:100%!important;
-    overflow:hidden!important;
-  }
-
-  .hero.carousel .carousel-slide{
-    position:absolute!important;
-    inset:0!important;
-    width:100%!important;
-    height:100%!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    overflow:hidden!important;
-  }
-
-  .hero.carousel .carousel-slide::before{
-    content:"";
-    position:absolute!important;
-    inset:-48px!important;
-    z-index:0!important;
-    background-image:var(--hero-image)!important;
-    background-size:cover!important;
-    background-position:center center!important;
-    background-repeat:no-repeat!important;
-    filter:blur(12px) brightness(.72) saturate(1)!important;
-    transform:scale(1.04)!important;
-    pointer-events:none!important;
-  }
-
-  .hero.carousel .carousel-slide::after{
-    content:"";
-    position:absolute!important;
-    inset:0!important;
-    z-index:1!important;
-    background:rgba(5,3,8,.08)!important;
-    pointer-events:none!important;
-  }
-
-  .hero.carousel .carousel-slide > .carousel-media{
-    position:relative!important;
-    inset:auto!important;
-    z-index:2!important;
-    display:block!important;
-    width:auto!important;
-    height:auto!important;
-    max-width:72%!important;
-    max-height:76%!important;
-    object-fit:contain!important;
-    object-position:center center!important;
-    margin:0!important;
-    padding:0!important;
-    border:0!important;
-    filter:none!important;
-    flex:0 1 auto!important;
-    box-shadow:0 18px 55px rgba(0,0,0,.28)!important;
-  }
+  .hero.carousel{position:relative!important;z-index:10!important;width:100%!important;height:min(700px,calc(100svh - 184px))!important;min-height:600px!important;margin-top:184px!important;padding:0!important;overflow:hidden!important}
+  .hero.carousel .carousel-inner{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;overflow:hidden!important}
+  /* Cinematic transition: gentle cross-slide instead of continuous scrolling. */
+  .hero.carousel .carousel-slide{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;opacity:0!important;visibility:hidden!important;transform:translate3d(34px,0,0) scale(.985)!important;transition:opacity 1.05s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1),visibility 0s linear 1.25s!important;will-change:opacity,transform!important}
+  .hero.carousel .carousel-slide.active{opacity:1!important;visibility:visible!important;transform:translate3d(0,0,0) scale(1)!important;transition-delay:0s!important}
+  .hero.carousel .carousel-slide::before{content:"";position:absolute!important;inset:-48px!important;z-index:0!important;background-image:var(--hero-image)!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;filter:blur(12px) brightness(.72) saturate(1)!important;transform:scale(1.04)!important;pointer-events:none!important}
+  .hero.carousel .carousel-slide::after{content:"";position:absolute!important;inset:0!important;z-index:1!important;background:rgba(5,3,8,.08)!important;pointer-events:none!important}
+  /* Height-driven foreground sizing: fills the hero without stretching/cropping. */
+  .hero.carousel .carousel-slide > .carousel-media{position:relative!important;inset:auto!important;z-index:2!important;display:block!important;width:auto!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;object-position:center center!important;margin:0!important;padding:0!important;border:0!important;filter:none!important;flex:0 1 auto!important;box-shadow:0 18px 55px rgba(0,0,0,.28)!important}
 }
-
-@media (max-width:700px){
-  .hero.carousel .carousel-slide::before,
-  .hero.carousel .carousel-slide::after{content:none!important}
-}
+@media (max-width:700px){.hero.carousel .carousel-slide::before,.hero.carousel .carousel-slide::after{content:none!important}}
+@media(prefers-reduced-motion:reduce){.hero.carousel .carousel-slide{transition:none!important;transform:none!important}}
