@@ -1,26 +1,26 @@
 (() => {
   const groups = [
-    { label: 'About', items: [{ label: 'About the Church', target: 'about' }, { label: 'Visit Us', target: 'visit' }] },
-    { label: 'Ministries', items: [{ label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
-    { label: 'Media & Resources', items: [{ label: 'Media & Church Resources', target: 'media' }] },
-    { label: 'Connect', items: [{ label: 'Give', target: 'give' }, { label: 'Contact', target: 'contact' }] },
+    { label: 'About', items: [{ label: 'About the Church', route: 'about' }, { label: 'Visit Us', route: 'visit-us' }] },
+    { label: 'Ministries', items: [{ label: 'Service Times', route: 'events' }, { label: 'Membership Classes', route: 'resources' }] },
+    { label: 'Media & Resources', items: [{ label: 'Media & Church Resources', route: 'media' }] },
+    { label: 'Connect', items: [{ label: 'Give', route: 'give' }, { label: 'Contact', route: 'contact' }] },
     { label: 'More', items: [{ label: 'Terms & Conditions', href: '/terms.html' }] }
   ];
 
-  const scrollTo = (target) => {
-    const el = document.getElementById(target);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const go = (route, closeMenu) => {
+    closeMenu?.();
+    if (route) window.location.hash = route === 'home' ? 'home' : `detail/${route}`;
   };
 
   const createLink = (item, closeMenu) => {
     const a = document.createElement('a');
-    a.href = item.href || `#${item.target}`;
+    a.href = item.href || `#detail/${item.route}`;
     a.textContent = item.label;
-    if (item.target) {
+    if (item.route) {
       a.addEventListener('click', (event) => {
         event.preventDefault();
-        closeMenu?.();
-        scrollTo(item.target);
+        event.stopPropagation();
+        go(item.route, closeMenu);
       });
     }
     return a;
@@ -34,7 +34,11 @@
     const home = document.createElement('a');
     home.href = '#home';
     home.textContent = 'Home';
-    home.addEventListener('click', (e) => { e.preventDefault(); scrollTo('home'); });
+    home.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      go('home');
+    });
     nav.appendChild(home);
 
     groups.forEach((group) => {
@@ -76,7 +80,11 @@
     const home = document.createElement('a');
     home.href = '#home';
     home.textContent = 'Home';
-    home.addEventListener('click', (e) => { e.preventDefault(); closeMenu(); scrollTo('home'); });
+    home.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      go('home', closeMenu);
+    });
     nav.appendChild(home);
 
     groups.forEach((group) => {
