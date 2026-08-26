@@ -32,6 +32,8 @@ html.admin-section-mode,html.admin-section-mode body{height:100%;overflow:hidden
 .admin-section-mode #media,.admin-section-mode #comments,.admin-section-mode #adminRbac{overflow:auto}
 .admin-section-mode #media>.card,.admin-section-mode #comments>.card{margin-bottom:16px}
 .admin-section-mode #adminRbac{padding-bottom:8px}
+.admin-no-permissions{display:flex;align-items:center;justify-content:center;min-height:220px;padding:24px;text-align:center}
+.admin-no-permissions .card{width:min(620px,100%);padding:28px}
 @media(max-width:700px){
 .admin-section-mode .admin-navigation{display:block;padding:8px 0;margin-bottom:12px;box-shadow:0 3px 10px #0000000d}
 .admin-section-mode .admin-menu{display:none;width:100%;padding:0}
@@ -51,6 +53,16 @@ function getTarget(id){return document.getElementById(id==='users'?'adminRbac':i
 function getView(id){return VIEWS.find(v=>v[0]===id);}
 function canView(id){const item=getView(id);return !!item&&permission(item[2]);}
 function closeMenus(){document.querySelectorAll('.admin-menu.open').forEach(m=>{m.classList.remove('open');m.querySelector('.admin-menu-button')?.setAttribute('aria-expanded','false');});}
+function showNoPermissions(){
+ const nav=document.querySelector('.admin-navigation');
+ if(nav)hide(nav,true);
+ const site=document.getElementById('site');
+ VIEWS.forEach(([id])=>hide(getTarget(id),true));
+ hide(document.getElementById('media'),true);hide(document.getElementById('comments'),true);hide(document.getElementById('adminRbac'),true);
+ let state=document.getElementById('adminNoPermissions');
+ if(!state){state=document.createElement('div');state.id='adminNoPermissions';state.className='admin-no-permissions';state.innerHTML='<section class="card"><p>Your administrator account has been created, but no administration permissions have been assigned yet.</p></section>';site?.parentNode?.insertBefore(state,site);}
+ hide(state,false);window.scrollTo(0,0);
+}
 function buildNavigation(){
  const old=document.querySelector('.tabs');if(!old)return;
  const nav=document.createElement('nav');nav.className='tabs admin-navigation';nav.setAttribute('aria-label','Admin sections');
@@ -67,8 +79,18 @@ function buildNavigation(){
  old.replaceWith(nav);
  document.addEventListener('click',event=>{if(!nav.contains(event.target)){closeMenus();nav.classList.remove('mobile-menu-open');toggle.setAttribute('aria-expanded','false');}});
 }
-function applyPermissions(){const nav=document.querySelector('.admin-navigation');if(!nav)return;GROUPS.forEach(group=>{const wrapper=nav.querySelector(`[data-group="${group.id}"]`);if(!wrapper)return;let visible=0;group.items.forEach(id=>{const item=wrapper.querySelector(`[data-view="${id}"]`);const allowed=canView(id);hide(item,!allowed);if(allowed)visible++;});hide(wrapper,visible===0);});const first=GROUPS.flatMap(g=>g.items).find(canView);if(first){const current=document.querySelector('.admin-menu-item.selected')?.dataset.view;if(!current||!canView(current))showView(first);}}
-function showView(id){const item=getView(id);if(!item||!permission(item[2]))return;const target=getTarget(id);if(!target)return;const nav=document.querySelector('.admin-navigation');nav?.querySelectorAll('.admin-menu-item').forEach(b=>b.classList.toggle('selected',b.dataset.view===id));const group=GROUPS.find(g=>g.items.includes(id));nav?.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m.dataset.group===group?.id));const site=document.getElementById('site');hide(site,!SITE_IDS.has(id));VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));hide(document.getElementById('media'),id!=='media');hide(document.getElementById('comments'),id!=='comments');hide(document.getElementById('adminRbac'),id!=='users');if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();window.scrollTo(0,0);}
+function applyPermissions(){
+ const nav=document.querySelector('.admin-navigation');if(!nav)return;
+ GROUPS.forEach(group=>{const wrapper=nav.querySelector(`[data-group="${group.id}"]`);if(!wrapper)return;let visible=0;group.items.forEach(id=>{const item=wrapper.querySelector(`[data-view="${id}"]`);const allowed=canView(id);hide(item,!allowed);if(allowed)visible++;});hide(wrapper,visible===0);});
+ const first=GROUPS.flatMap(g=>g.items).find(canView);
+ const empty=!first;
+ hide(nav,empty);
+ const state=document.getElementById('adminNoPermissions');
+ if(empty){showNoPermissions();return;}
+ hide(state,true);
+ const current=document.querySelector('.admin-menu-item.selected')?.dataset.view;if(!current||!canView(current))showView(first);
+}
+function showView(id){const item=getView(id);if(!item||!permission(item[2]))return;const target=getTarget(id);if(!target)return;hide(document.getElementById('adminNoPermissions'),true);const nav=document.querySelector('.admin-navigation');hide(nav,false);nav?.querySelectorAll('.admin-menu-item').forEach(b=>b.classList.toggle('selected',b.dataset.view===id));const group=GROUPS.find(g=>g.items.includes(id));nav?.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m.dataset.group===group?.id));const site=document.getElementById('site');hide(site,!SITE_IDS.has(id));VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));hide(document.getElementById('media'),id!=='media');hide(document.getElementById('comments'),id!=='comments');hide(document.getElementById('adminRbac'),id!=='users');if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();window.scrollTo(0,0);}
 function init(){loadStyles();setHeaderHeight();buildNavigation();requestAnimationFrame(setHeaderHeight);window.addEventListener('resize',setHeaderHeight);}
 window.AdminNavigation={showView,applyVisibility:applyPermissions,updateOffsets:setHeaderHeight};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
