@@ -99,9 +99,21 @@
     });
   }
 
+  function updateDesktopStickyState() {
+    if (window.matchMedia('(max-width: 700px)').matches) return;
+    const nav = document.querySelector('.navLinks');
+    if (!nav) return;
+
+    // The public page can scroll either the window or its full-page container.
+    const page = document.querySelector('.page');
+    const scrolled = window.scrollY > 8 || (page && page.scrollTop > 8);
+    nav.classList.toggle('nav-stuck', !!scrolled);
+  }
+
   function enhance() {
     buildDesktop(document.querySelector('.navLinks'));
     buildMobile(document.querySelector('.drawer'));
+    updateDesktopStickyState();
   }
 
   document.addEventListener('click', (event) => {
@@ -112,6 +124,9 @@
       });
     }
   });
+
+  window.addEventListener('scroll', updateDesktopStickyState, { passive: true });
+  document.addEventListener('scroll', updateDesktopStickyState, { passive: true, capture: true });
 
   const observer = new MutationObserver(enhance);
   observer.observe(document.documentElement, { childList: true, subtree: true });
