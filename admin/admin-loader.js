@@ -10,6 +10,7 @@
     for(const name of modules.slice(2))await loadScript(name);
     await loadRootScript('admin-users.js');
     if(window.AdminRBAC)await window.AdminRBAC.init();
+    try{const meResponse=await fetch('/api/admin/me',{credentials:'same-origin'});if(meResponse.ok){const me=await meResponse.json();if(window.AdminRBAC){window.AdminRBAC.getCurrentUser=()=>me.user;window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));}}}catch(error){console.warn('Unable to load RBAC user profile:',error.message);}
     try{await loadRootScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init();}catch(error){console.warn(error.message);}
     if(window.loadSiteContent)await window.loadSiteContent();
     if(window.loadMedia)await window.loadMedia();
