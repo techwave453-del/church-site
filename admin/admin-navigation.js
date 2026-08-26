@@ -5,7 +5,7 @@ const VIEWS=[
 ];
 const SITE_IDS=new Set(['identity','about','services','links','classes','mediaSettings','live','theme']);
 const GROUPS=[{id:'content',label:'Website Content',items:['identity','about','services','links','classes']},{id:'media',label:'Media',items:['mediaSettings','media']},{id:'live',label:'Live',items:['live','comments']},{id:'appearance',label:'Appearance',items:['theme']},{id:'admin',label:'Administration',items:['users']}];
-function permission(p){return window.AdminRBAC?.hasPermission?.(p)??false;}
+function permission(p){const u=window.AdminRBAC?.getCurrentUser?.();if(u?.role==='super_admin')return true;return window.AdminRBAC?.hasPermission?.(p)??false;}
 function hide(el,yes){if(!el)return;el.classList.toggle('admin-view-hidden',!!yes);el.classList.toggle('hidden',!!yes);}
 function loadStyles(){if(document.getElementById('admin-section-navigation-style'))return;const s=document.createElement('style');s.id='admin-section-navigation-style';s.textContent=`
 .admin-view-hidden{display:none!important}
