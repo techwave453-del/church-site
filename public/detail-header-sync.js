@@ -5,23 +5,27 @@
   const slug=v=>String(v||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   let siteData=null;
   async function loadSite(){if(siteData)return siteData;try{const r=await fetch('/api/site/content');siteData=r.ok?await r.json():{};}catch(_e){siteData={}}return siteData||{}}
+  async function loadMedia(){try{const r=await fetch('/api/media');return r.ok?await r.json():[]}catch(_e){return []}}
   async function applyDetailHero(){
     const hero=document.querySelector('.detailPage .detailHero');
     if(!hero)return;
     const title=hero.querySelector('h1')?.textContent||'';
     const key=slug(title);
     hero.classList.add(`detailHero--${key}`);
-    if(hero.dataset.heroApplied)return;
-    hero.dataset.heroApplied='1';
     const data=await loadSite();
     const saved=data?.detailContent?.[key]||data?.detailContent?.[title]||{};
     let image=String(saved?.heroImage||saved?.image||'').trim();
-    try{
-      const r=await fetch('/api/media');const items=r.ok?await r.json():[];
-      const images=(Array.isArray(items)?items:[]).filter(x=>x?.type==='image'&&x?.url);
-      if(!image){const tokens=key.split('-').filter(x=>x.length>2);const ranked=images.map(x=>{const text=slug(`${x.title||''} ${x.description||''} ${x.category||''}`);const score=tokens.filter(t=>text.includes(t)).length;return {...x,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);image=ranked[0]?.url||'';}
-      if(!image)image=images.find(x=>['general','gallery','resources'].includes(String(x.category||'').toLowerCase()))?.url||'';
-    }catch(_e){}
+    const items=await loadMedia();
+    const images=(Array.isArray(items)?items:[]).filter(x=>x?.type==='image'&&x?.url);
+    if(!image){
+      const exact=images.filter(x=>slug(x.title)===key || slug(x.description)===key);
+      image=exact[0]?.url||'';
+    }
+    if(!image){
+      const tokens=key.split('-').filter(x=>x.length>2);
+      const ranked=images.map(x=>{const text=slug(`${x.title||''} ${x.description||''} ${x.category||''}`);const score=tokens.reduce((n,t)=>n+(text.includes(t)?1:0),0);return {...x,score};}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+      image=ranked[0]?.url||'';
+    }
     if(image){hero.classList.add('detailHeroImage');hero.style.setProperty('--detail-hero-image',`url(${JSON.stringify(image)})`)}
   }
   async function install(){
