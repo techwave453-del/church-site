@@ -1,4 +1,4 @@
-/* Public navigation layout: desktop gets a taller church-identity row and a compact full-width menu row. */
+/* Desktop navigation: themed church ribbon + full-width white menu row. Mobile rules below are intentionally preserved. */
 @media (min-width: 701px) {
   header {
     height: 184px !important;
@@ -6,16 +6,27 @@
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: 126px 58px !important;
     align-items: center !important;
-    justify-items: center !important;
-    padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
+    justify-items: stretch !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-bottom: 0 !important;
   }
 
+  /* Top identity row: full-width website-theme ribbon. */
   header .brand {
     grid-row: 1;
-    justify-self: center;
-    align-self: center;
-    min-height: 104px;
+    width: 100% !important;
+    height: 126px !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+    justify-content: center !important;
     gap: 16px !important;
+    padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, #05204a 0%, var(--accent-3) 52%, var(--accent-1) 100%) !important;
+    border-bottom: 1px solid rgba(255,255,255,.22) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 8px 28px rgba(0,0,0,.16) !important;
   }
 
   header .brandLogo {
@@ -30,30 +41,56 @@
   header .brand b {
     font-size: 18px !important;
     letter-spacing: .14em !important;
+    color: #fff !important;
   }
 
   header .brand small {
     margin-top: 6px !important;
     font-size: 10px !important;
     letter-spacing: .34em !important;
+    color: rgba(255,255,255,.82) !important;
   }
 
+  /* Bottom navigation row: white and spanning the full width. */
   header .navLinks {
     grid-row: 2;
-    width: 100%;
+    width: 100% !important;
     min-width: 0;
-    height: 58px;
+    height: 58px !important;
     margin: 0 !important;
-    justify-content: center;
+    padding: 0 max(18px, calc((100vw - 1500px) / 2)) !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    align-self: stretch !important;
+    background: #fff !important;
+    border-bottom: 2px solid var(--accent-2) !important;
+  }
+
+  header .navLinks > a,
+  header .navLinks .site-nav-group-toggle {
+    display: flex !important;
     align-items: center !important;
-    gap: clamp(4px, 1.1vw, 18px) !important;
-    align-self: stretch;
+    justify-content: center !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    height: 58px !important;
+    padding: 0 clamp(8px, 1.25vw, 18px) !important;
+    border-radius: 0 !important;
+    color: #111 !important;
+    white-space: nowrap !important;
+  }
+
+  header .navLinks > a:hover,
+  header .navLinks .site-nav-group-toggle:hover,
+  header .navLinks .site-nav-group.open .site-nav-group-toggle {
+    background: rgba(77,166,255,.09) !important;
   }
 
   header > div:last-child {
     position: absolute !important;
     right: max(18px, calc((100vw - 1500px) / 2)) !important;
-    bottom: 8px !important;
+    bottom: 67px !important;
     z-index: 30;
   }
 
@@ -67,14 +104,14 @@
     white-space: nowrap;
   }
 
-  /* Keep the hero content clear of the two-row header while preserving its background. */
+  /* Keep the hero below the complete desktop header without changing its height. */
   .hero {
     padding-top: 214px !important;
     padding-bottom: 30px !important;
   }
 }
 
-/* Mobile: compact header plus a floating, translucent left drawer. */
+/* Mobile: existing compact header/drawer remains unchanged. */
 @media (max-width: 700px) {
   header {
     height: 70px !important;
