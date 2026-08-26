@@ -29,7 +29,9 @@ export function registerAdminAccessRoutes({app,supabase,requireSameOrigin,rbac})
     if(existing.error)throw existing.error;if(existing.data)return res.status(409).json({error:'That username is already in use.'});
     const requestToken=crypto.randomBytes(32).toString('hex');
     const expiresAt=new Date(Date.now()+REQUEST_TTL_MS).toISOString();
-    const inserted=await supabase.from('admin_access_requests').insert({username,request_token_hash:hash(requestToken),expires_at:expiresAt,status:'pending'}).select('id,username,expires_at,status').single();
+    // choice_one/two/three are retained as empty strings for compatibility with the existing
+    // Supabase NOT NULL columns. They are no longer used for verification.
+    const inserted=await supabase.from('admin_access_requests').insert({username,request_token_hash:hash(requestToken),choice_one:'',choice_two:'',choice_three:'',expires_at:expiresAt,status:'pending'}).select('id,username,expires_at,status').single();
     if(inserted.error)throw inserted.error;req.session.adminAccessRequestId=inserted.data.id;req.session.adminAccessToken=requestToken;res.status(201).json({requestId:inserted.data.id,expiresAt,status:'pending'});
   }catch(error){console.error(error);res.status(400).json({error:error.message||'Unable to start account setup.'});}});
 
