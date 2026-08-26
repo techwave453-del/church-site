@@ -7,11 +7,13 @@
   async function loadSite(){if(siteData)return siteData;try{const r=await fetch('/api/site/content');siteData=r.ok?await r.json():{};}catch(_e){siteData={}}return siteData||{}}
   async function applyDetailHero(){
     const hero=document.querySelector('.detailPage .detailHero');
-    if(!hero||hero.dataset.heroApplied)return;
-    hero.dataset.heroApplied='1';
+    if(!hero)return;
     const title=hero.querySelector('h1')?.textContent||'';
-    const data=await loadSite();
     const key=slug(title);
+    hero.classList.add(`detailHero--${key}`);
+    if(hero.dataset.heroApplied)return;
+    hero.dataset.heroApplied='1';
+    const data=await loadSite();
     const saved=data?.detailContent?.[key]||data?.detailContent?.[title]||{};
     let image=String(saved?.heroImage||saved?.image||'').trim();
     try{
