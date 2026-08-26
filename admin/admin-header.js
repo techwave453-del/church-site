@@ -14,9 +14,6 @@
     document.head.appendChild(link);
   }
 
-  // Keep the mobile Save Site Content controls visible even if the external
-  // admin-header stylesheet is delayed or cached. This is intentionally
-  // limited to the admin site's mobile save bar.
   if(!document.querySelector('style[data-admin-savebar-mobile]')){
     const style=document.createElement('style');
     style.dataset.adminSavebarMobile='true';
@@ -27,7 +24,7 @@
   if(!document.getElementById('adminModuleLoading')){
     const loading=document.createElement('div');
     loading.id='adminModuleLoading';
-    loading.hidden=true;
+    loading.hidden=false;
     loading.setAttribute('role','status');
     loading.setAttribute('aria-live','polite');
     loading.innerHTML='<div class="admin-module-loading-card"><span class="admin-module-spinner" aria-hidden="true"></span><strong data-loading-text>Loading admin panel…</strong><small>Please wait while the latest admin modules are loaded.</small></div>';
@@ -45,9 +42,7 @@
     loader.src='/admin/admin-loader.js?v='+encodeURIComponent(window.__ADMIN_BUILD_VERSION);
     loader.dataset.adminModule='admin-loader.js';
     loader.onload=function(){
-      if(window.loadAdminModules){
-        window.loadAdminModules().catch(e=>console.error(e));
-      }
+      if(window.loadAdminModules)window.loadAdminModules().catch(e=>console.error(e));
     };
     loader.onerror=function(){
       const loading=document.getElementById('adminModuleLoading');
@@ -57,9 +52,6 @@
     document.head.appendChild(loader);
   };
 
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',load,{once:true});
-  }else{
-    load();
-  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});
+  else load();
 })();
