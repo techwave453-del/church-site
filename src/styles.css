@@ -660,6 +660,10 @@ textarea {
 @media(max-width:900px){.servicesGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.linksGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.aboutSection{gap:35px}}
 @media(max-width:700px){header{top:10px;width:calc(100% - 22px)}.navLinks{gap:12px;height:62px;padding:0 14px}.navLinks a{font-size:14px}.brand{gap:8px;padding:16px 10px 14px}.brand b{font-size:18px;letter-spacing:.08em}.brand small{letter-spacing:.2em}.page.entered .hero.carousel{width:100%;height:50svh;margin:70px 0 0}.homeSection{padding:58px 26px}.aboutSection{display:block}.aboutSection p{margin-top:28px;font-size:18px;line-height:1.7}.sectionIntro h2{font-size:48px}.servicesGrid,.linksGrid,.classGrid{grid-template-columns:1fr;gap:14px;margin-top:30px}.imageTile{min-height:210px;padding:22px}.servicesGrid .imageTile{min-height:190px}.tileContent strong{font-size:27px}.tileContent em,.imageTile:hover .tileContent em{opacity:1;transform:none}.classTile{min-height:260px}.classTile strong{font-size:32px}.siteFooter{display:flex;flex-direction:column;padding:38px 26px}.siteFooter>small{padding-top:18px}}
 
+@media(min-width:701px){
+	.page.entered .hero h1{color:#fff!important}
+}
+
 /* Church logo sizing */
 .brandLogo {
   width: 52px;
