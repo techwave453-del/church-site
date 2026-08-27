@@ -7,7 +7,7 @@
     grid-template-rows: 126px 58px !important;
     align-items: center !important;
     justify-items: center !important;
-    padding: 0 max(24px, calc((100vw - 1500px) / 2)) !important;
+    padding: 0 !important;
   }
 
   header .brand {
