@@ -81,6 +81,11 @@
     white-space: nowrap;
   }
 
+  .site-nav-group-toggle {
+    font-size: clamp(12px, 1vw, 17px) !important;
+    font-weight: 800 !important;
+  }
+
   /* Keep the hero content clear of the two-row header while preserving its background. */
   .hero {
     padding-top: 214px !important;
