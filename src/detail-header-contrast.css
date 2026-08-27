@@ -73,11 +73,11 @@ header.detailHeader .detailBrand span{
 }
 
 @media(max-width:700px){
-  header.detailHeader{min-height:130px!important;height:130px!important;padding:0 14px 12px!important;gap:10px!important}
-  header.detailHeader>.detailBrand{width:100%;padding-right:48px}
-  header.detailHeader .detailBrandLogo{height:76px;max-width:120px;margin-bottom:3px}
-  header.detailHeader .detailBrand strong{font-size:12px;line-height:1.1;white-space:nowrap}
-  header.detailHeader .detailBrand span{font-size:7px;line-height:1.1;white-space:nowrap}
-  header.detailHeader>.detailBack{width:42px!important;height:42px!important;padding:0!important;gap:0!important;left:14px;bottom:10px}
+  header.detailHeader{width:100%!important;max-width:none!important;margin:0!important;min-height:130px!important;height:130px!important;padding:0 14px 12px!important;gap:10px!important}
+  header.detailHeader>.detailBrand{width:100%;height:100%;padding:8px 48px 42px 0;justify-content:flex-start}
+  header.detailHeader .detailBrandLogo{height:58px;max-width:110px;margin-bottom:3px}
+  header.detailHeader .detailBrand strong{font-size:10px;line-height:1.1;white-space:nowrap}
+  header.detailHeader .detailBrand span{font-size:6px;line-height:1.1;white-space:nowrap}
+  header.detailHeader>.detailBack{width:42px!important;height:42px!important;padding:0!important;gap:0!important;left:auto;right:14px;bottom:10px}
   header.detailHeader .detailBackLabel{display:none}
 }
