@@ -7,6 +7,13 @@ const file = path.join(root, 'src', 'main.jsx');
 let source = fs.readFileSync(file, 'utf8');
 
 function replaceOnce(from, to, label) {
+  const alreadyApplied = {
+    import: source.includes('LiveStream from"./LiveStream.jsx"'),
+    navigation: source.includes('Live:"live"'),
+    'live section': source.includes('<LiveStream liveStream={church.liveStream}/>'),
+    'admin fields': source.includes('className="adminLiveCard"')
+  }[label];
+  if (alreadyApplied) return;
   if (!source.includes(from)) throw new Error(`Live stream injection failed: pattern not found (${label})`);
   source = source.replace(from, to);
 }
