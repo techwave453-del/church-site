@@ -15,6 +15,7 @@ header.detailHeader>.detailBrand{
 }
 
 header.detailHeader{
+  position:relative!important;
   min-height:160px!important;
   height:160px!important;
 }
@@ -30,9 +31,32 @@ header.detailHeader .detailBrandLogo{
 }
 
 header.detailHeader>.detailBack{
+  position:absolute!important;
+  left:14px;
+  bottom:12px;
+  z-index:2;
   order:2;
   flex:0 0 auto;
 }
+
+header.detailHeader>.detailMenu{
+  position:absolute;
+  top:12px;
+  right:14px;
+  z-index:2;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.42);
+  border-radius:50%;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  cursor:pointer;
+}
+
+header.detailHeader>.detailMenu:hover{background:rgba(255,255,255,.24)}
 
 header.detailHeader .detailBackLabel{
   display:inline;
@@ -50,9 +74,10 @@ header.detailHeader .detailBrand span{
 
 @media(max-width:700px){
   header.detailHeader{min-height:130px!important;height:130px!important;padding:0 14px 12px!important;gap:10px!important}
+  header.detailHeader>.detailBrand{width:100%;padding-right:48px}
   header.detailHeader .detailBrandLogo{height:76px;max-width:120px;margin-bottom:3px}
   header.detailHeader .detailBrand strong{font-size:12px;line-height:1.1;white-space:nowrap}
   header.detailHeader .detailBrand span{font-size:7px;line-height:1.1;white-space:nowrap}
-  header.detailHeader>.detailBack{width:42px!important;height:42px!important;padding:0!important;gap:0!important}
+  header.detailHeader>.detailBack{width:42px!important;height:42px!important;padding:0!important;gap:0!important;left:14px;bottom:10px}
   header.detailHeader .detailBackLabel{display:none}
 }
