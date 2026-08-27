@@ -1,11 +1,23 @@
+header.detailHeader>.detailBrand{
+  position:static!important;
+  right:auto!important;
+  bottom:auto!important;
+  text-align:left;
+}
+
+header.detailHeader{
+  min-height:160px!important;
+  height:160px!important;
+}
+
 header.detailHeader .detailBrandLogo{
   display:block;
   width:auto;
-  height:clamp(48px,8vh,78px);
-  max-width:180px;
-  margin:0 0 10px auto;
+  height:112px;
+  max-width:220px;
+  margin:0 0 6px 0;
   object-fit:contain;
-  object-position:right center;
+  object-position:left center;
 }
 
 header.detailHeader .detailBrand span{
@@ -16,4 +28,9 @@ header.detailHeader .detailBrand span{
   background:#061a2b;
   color:#fff!important;
   text-shadow:none;
+}
+
+@media(max-width:700px){
+  header.detailHeader{min-height:130px!important;height:130px!important;padding:0 14px 12px!important}
+  header.detailHeader .detailBrandLogo{height:82px;max-width:150px;margin-bottom:4px}
 }
