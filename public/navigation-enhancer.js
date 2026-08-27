@@ -40,8 +40,29 @@
       button.addEventListener('click', () => { const open = wrapper.classList.toggle('open'); button.setAttribute('aria-expanded', String(open)); button.querySelector('span').textContent = open ? '−' : '+'; }); wrapper.append(button, submenu); nav.appendChild(wrapper);
     });
   }
+  function installDetailStyles() {
+    if (document.getElementById('detail-navigation-style')) return;
+    const style = document.createElement('style'); style.id = 'detail-navigation-style'; style.textContent = `
+      header.detailHeader { position: sticky !important; top: 0 !important; z-index: 120 !important; min-height: 184px !important; height: 184px !important; padding: 0 !important; display: grid !important; grid-template-columns: minmax(0,1fr) !important; grid-template-rows: 126px 58px !important; align-items: center !important; justify-items: center !important; border-bottom: 0 !important; }
+      header.detailHeader .detailBrand { grid-row: 1 !important; align-self: center !important; text-align: center !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important; }
+      header.detailHeader .detailBrandLogo { width: 88px !important; height: 88px !important; max-width: 88px !important; max-height: 88px !important; object-fit: contain !important; }
+      header.detailHeader .navLinks { grid-row: 2 !important; width: 100% !important; height: 58px !important; margin: 0 !important; padding: 0 24px !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; gap: clamp(8px,1.2vw,20px) !important; align-self: stretch !important; }
+      header.detailHeader .detailBack { display: none !important; }
+      header.detailHeader .detailMenu { display: none !important; }
+      @media (max-width: 700px) {
+        header.detailHeader { min-height: 70px !important; height: 70px !important; padding: 0 9px !important; display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
+        header.detailHeader .detailBrand { display: flex !important; width: auto !important; max-width: calc(100% - 58px) !important; height: 70px !important; min-height: 0 !important; padding: 10px 8px !important; justify-content: flex-start !important; text-align: left !important; gap: 8px !important; }
+        header.detailHeader .detailBrandLogo { width: 44px !important; height: 44px !important; max-width: 44px !important; max-height: 44px !important; flex: 0 0 44px !important; }
+        header.detailHeader .navLinks { display: none !important; }
+        header.detailHeader .detailBack { display: none !important; }
+        header.detailHeader .detailMenu { display: grid !important; flex: 0 0 44px !important; width: 44px !important; height: 44px !important; margin-left: auto !important; color: #111 !important; background: rgba(255,255,255,.72) !important; border: 1px solid rgba(17,17,17,.14) !important; border-radius: 50% !important; place-items: center !important; }
+      }
+    `; document.head.appendChild(style);
+  }
   function buildDetailDesktopHeader() {
-    const header = document.querySelector('.detailHeader'); if (!header || header.querySelector('.navLinks')) return;
+    const header = document.querySelector('.detailHeader'); if (!header) return;
+    installDetailStyles();
+    if (header.querySelector('.navLinks')) return;
     const nav = document.createElement('nav'); nav.className = 'navLinks'; nav.setAttribute('aria-label', 'Main navigation');
     const before = header.querySelector('.detailBack') || header.querySelector('.detailMenu'); header.insertBefore(nav, before || null); buildDesktop(nav);
   }
