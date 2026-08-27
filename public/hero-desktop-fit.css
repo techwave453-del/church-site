@@ -1,4 +1,4 @@
-/* Desktop hero framing: match the actual two-row public header. Mobile is untouched. */
+/* Desktop hero framing: keep the centered, scrollable card carousel used on mobile. */
 @media (min-width:701px){
   .hero.carousel{
     position:relative!important;
@@ -10,66 +10,31 @@
   }
 
   .hero.carousel .carousel-inner{
-    position:absolute!important;
-    inset:0!important;
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    align-items:center!important;
     width:100%!important;
     height:100%!important;
-    overflow:hidden!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:0 max(8vw,calc((100% - 420px)/2))!important;
+    gap:18px!important;
+    scroll-snap-type:x mandatory!important;
   }
 
   .hero.carousel .carousel-slide{
-    position:absolute!important;
-    inset:0!important;
-    width:100%!important;
-    height:100%!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    overflow:hidden!important;
-  }
-
-  .hero.carousel .carousel-slide::before{
-    content:"";
-    position:absolute!important;
-    inset:-48px!important;
-    z-index:0!important;
-    background-image:var(--hero-image)!important;
-    background-size:cover!important;
-    background-position:center center!important;
-    background-repeat:no-repeat!important;
-    filter:blur(30px) brightness(.58) saturate(.9)!important;
-    transform:scale(1.04)!important;
-    pointer-events:none!important;
-  }
-
-  .hero.carousel .carousel-slide::after{
-    content:"";
-    position:absolute!important;
-    inset:0!important;
-    z-index:1!important;
-    background:rgba(5,3,8,.12)!important;
-    pointer-events:none!important;
-  }
-
-  /* Fill the real hero rectangle while preserving the source image aspect ratio.
-     object-fit:cover scales uniformly; it never stretches the image. */
-  .hero.carousel .carousel-slide > .carousel-media{
     position:relative!important;
     inset:auto!important;
-    z-index:2!important;
     display:block!important;
-    width:100%!important;
-    height:100%!important;
-    max-width:none!important;
-    max-height:none!important;
-    object-fit:cover!important;
-    object-position:center center!important;
-    margin:0!important;
-    padding:0!important;
-    border:0!important;
-    filter:none!important;
-    flex:0 0 100%!important;
+    flex:0 0 clamp(250px,34vw,470px)!important;
+    width:auto!important;
+    height:76%!important;
+    overflow:visible!important;
+    scroll-snap-align:center!important;
   }
+
+  .hero.carousel .carousel-slide > .carousel-card{width:100%!important;height:100%!important}
 }
 
 @media (max-width:700px){
