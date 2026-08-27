@@ -1,9 +1,37 @@
-/* Desktop hero framing: keep the centered, scrollable card carousel used on mobile. */
+/* Desktop hero framing: full-width page, controlled hero height, and centered carousel. */
 @media (min-width:701px){
+  /* The entered page owns the scroll. Hide its scrollbar gutter so full-width
+     hero/content backgrounds reach the viewport edge without changing scrolling. */
+  .page.entered{
+    width:100%!important;
+    max-width:none!important;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+
+  .page.entered::-webkit-scrollbar{
+    width:0!important;
+    height:0!important;
+  }
+
+  .page.entered>header,
+  .page.entered>.hero,
+  .page.entered>.homeContent{
+    max-width:none!important;
+    min-width:0!important;
+  }
+
+  .page.entered>.hero,
+  .page.entered>.homeContent{
+    width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
   .hero.carousel{
     position:relative!important;
-    height:calc(100svh - 184px)!important;
-    min-height:0!important;
+    height:clamp(560px,calc(100svh - 184px),720px)!important;
+    min-height:560px!important;
     margin-top:184px!important;
     padding:0!important;
     overflow:hidden!important;
@@ -30,11 +58,26 @@
     flex:0 0 clamp(250px,34vw,470px)!important;
     width:auto!important;
     height:76%!important;
+    max-height:500px!important;
     overflow:visible!important;
     scroll-snap-align:center!important;
   }
 
-  .hero.carousel .carousel-slide > .carousel-card{width:100%!important;height:100%!important}
+  .hero.carousel .carousel-slide > .carousel-card{
+    width:100%!important;
+    height:100%!important;
+  }
+
+  /* All content sections use the same viewport width as the hero. */
+  .page.entered>.homeContent{
+    overflow:visible!important;
+  }
+
+  .page.entered>.homeContent .homeSection,
+  .page.entered>.homeContent .siteFooter{
+    width:100%!important;
+    max-width:none!important;
+  }
 }
 
 @media (max-width:700px){
