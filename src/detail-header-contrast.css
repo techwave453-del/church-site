@@ -1,3 +1,13 @@
+header.detailHeader .detailBrandLogo{
+  display:block;
+  width:auto;
+  height:clamp(48px,8vh,78px);
+  max-width:180px;
+  margin:0 0 10px auto;
+  object-fit:contain;
+  object-position:right center;
+}
+
 header.detailHeader .detailBrand span{
   display:inline-block;
   margin-top:6px;
