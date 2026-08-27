@@ -88,6 +88,39 @@
 
   header .brand {
     grid-row: auto;
+    width: auto;
+    max-width: calc(100% - 58px);
+    height: 70px;
+    min-height: 0;
+    padding: 10px 8px;
+    justify-content: flex-start;
+    gap: 8px !important;
+  }
+
+  header .brand b {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  header .brandLogo {
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    flex: 0 0 44px !important;
+  }
+
+  .mobile-menu-trigger {
+    display: grid !important;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    color: #111;
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(17,17,17,.14);
   }
 
   header .navLinks {
