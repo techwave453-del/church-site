@@ -2,9 +2,11 @@
   const groups = [
     { label: 'About', items: [{ label: 'About the Church', target: 'about' }, { label: 'Visit Us', target: 'visit' }] },
     { label: 'Ministries', items: [{ label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
-    { label: 'Sermons', items: [{ label: 'Sermons & Messages', href: '#detail/sermons' }] },
+    { label: 'Sermons', direct: true, href: '#detail/sermons' },
     { label: 'Events', items: [{ label: 'Church Events', target: 'events' }, { label: 'Visit Us', target: 'visit' }] },
     { label: 'Media', items: [{ label: 'Media & Church Resources', target: 'media' }] },
+    { label: 'Give', direct: true, target: 'give' },
+    { label: 'Contact', direct: true, target: 'contact' },
     { label: 'More', items: [{ label: 'Terms & Conditions', href: '/terms.html' }] }
   ];
   const scrollTo = (target) => {
@@ -20,15 +22,14 @@
     return a;
   };
   const createWatchLive = (closeMenu) => {
-    const a = document.createElement('a'); a.className = 'site-watch-live'; a.href = '/live.html';
-    a.innerHTML = '<span aria-hidden="true">▶</span><b>WATCH LIVE</b>';
-    if (closeMenu) a.addEventListener('click', closeMenu); return a;
+    const a = document.createElement('a'); a.className = 'site-watch-live'; a.href = '/live.html'; a.innerHTML = '<span aria-hidden="true">▶</span><b>WATCH LIVE</b>'; if (closeMenu) a.addEventListener('click', closeMenu); return a;
   };
   function buildDesktop(nav) {
     if (!nav || nav.dataset.groupedNavigation === 'true') return;
     nav.dataset.groupedNavigation = 'true'; nav.innerHTML = '';
     const home = document.createElement('a'); home.className = 'site-nav-home'; home.href = '#home'; home.textContent = 'Home'; home.addEventListener('click', (e) => { e.preventDefault(); scrollTo('home'); }); nav.appendChild(home);
     groups.forEach((group) => {
+      if (group.direct) { nav.appendChild(createLink(group)); return; }
       const wrapper = document.createElement('div'); wrapper.className = 'site-nav-group';
       const button = document.createElement('button'); button.type = 'button'; button.className = 'site-nav-group-toggle'; button.setAttribute('aria-expanded', 'false'); button.innerHTML = `${group.label}<span aria-hidden="true">+</span>`;
       const submenu = document.createElement('div'); submenu.className = 'site-nav-submenu'; group.items.forEach((item) => submenu.appendChild(createLink(item)));
@@ -42,6 +43,7 @@
     nav.dataset.groupedNavigation = 'true'; nav.innerHTML = ''; const closeMenu = () => drawer.querySelector('.close')?.click();
     const home = document.createElement('a'); home.href = '#home'; home.textContent = 'Home'; home.addEventListener('click', (e) => { e.preventDefault(); closeMenu(); scrollTo('home'); }); nav.appendChild(home);
     groups.forEach((group) => {
+      if (group.direct) { nav.appendChild(createLink(group, closeMenu)); return; }
       const wrapper = document.createElement('div'); wrapper.className = 'site-mobile-group';
       const button = document.createElement('button'); button.type = 'button'; button.className = 'site-mobile-group-toggle'; button.setAttribute('aria-expanded', 'false'); button.innerHTML = `${group.label}<span aria-hidden="true">+</span>`;
       const submenu = document.createElement('div'); submenu.className = 'site-mobile-submenu'; group.items.forEach((item) => submenu.appendChild(createLink(item, closeMenu)));
@@ -79,17 +81,12 @@
   }
   function buildDetailMobileDrawer() {
     const header = document.querySelector('.detailHeader'); if (!header || document.querySelector('.detailPage .drawer')) return;
-    const drawer = document.createElement('div'); drawer.className = 'drawer detail-mobile-drawer'; drawer.hidden = true;
-    drawer.innerHTML = '<div class="drawerTop"><b>Menu</b><button class="close" type="button" aria-label="Close menu">×</button></div><nav></nav>';
-    document.querySelector('.detailPage')?.appendChild(drawer);
-    const close = () => { drawer.hidden = true; drawer.classList.remove('open'); };
-    drawer.querySelector('.close')?.addEventListener('click', close);
-    header.querySelector('.detailMenu')?.addEventListener('click', (event) => { event.preventDefault(); event.stopImmediatePropagation(); drawer.hidden = false; drawer.classList.add('open'); }, true);
-    buildMobile(drawer);
+    const drawer = document.createElement('div'); drawer.className = 'drawer detail-mobile-drawer'; drawer.hidden = true; drawer.innerHTML = '<div class="drawerTop"><b>Menu</b><button class="close" type="button" aria-label="Close menu">×</button></div><nav></nav>';
+    document.querySelector('.detailPage')?.appendChild(drawer); const close = () => { drawer.hidden = true; drawer.classList.remove('open'); }; drawer.querySelector('.close')?.addEventListener('click', close);
+    header.querySelector('.detailMenu')?.addEventListener('click', (event) => { event.preventDefault(); event.stopImmediatePropagation(); drawer.hidden = false; drawer.classList.add('open'); }, true); buildMobile(drawer);
   }
   function buildDetailDesktopHeader() {
-    const header = document.querySelector('.detailHeader'); if (!header) return;
-    installDetailStyles();
+    const header = document.querySelector('.detailHeader'); if (!header) return; installDetailStyles();
     if (!header.querySelector('.navLinks')) { const nav = document.createElement('nav'); nav.className = 'navLinks'; nav.setAttribute('aria-label', 'Main navigation'); const before = header.querySelector('.detailBack') || header.querySelector('.detailMenu'); header.insertBefore(nav, before || null); buildDesktop(nav); }
     buildDetailMobileDrawer();
   }
