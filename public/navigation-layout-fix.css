@@ -44,11 +44,15 @@
     min-width: 0;
     height: 58px;
     margin: 0 !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     align-items: center !important;
-    gap: 0 !important;
+    gap: clamp(8px, 1.2vw, 20px) !important;
     padding: 0 24px !important;
     align-self: stretch;
+  }
+
+  header .mobile-menu-trigger {
+    display: none !important;
   }
 
   header > div:last-child {
