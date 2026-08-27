@@ -44,9 +44,10 @@
     min-width: 0;
     height: 58px;
     margin: 0 !important;
-    justify-content: center;
+    justify-content: space-between !important;
     align-items: center !important;
-    gap: clamp(4px, 1.1vw, 18px) !important;
+    gap: 0 !important;
+    padding: 0 24px !important;
     align-self: stretch;
   }
 
