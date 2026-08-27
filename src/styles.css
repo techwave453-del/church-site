@@ -680,3 +680,53 @@ textarea {
     flex-basis: 42px;
   }
 }
+
+@media (max-width: 700px) {
+	main.page.entered > header {
+		top: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		width: 100% !important;
+		padding: 0 8px !important;
+	}
+
+	main.page.entered > header .brand {
+		width: calc(100% - 52px) !important;
+		max-width: none !important;
+		height: 70px !important;
+		padding: 4px 6px !important;
+		gap: 8px !important;
+	}
+
+	main.page.entered > header .brandLogo {
+		width: 62px !important;
+		height: 62px !important;
+		max-width: 62px !important;
+		max-height: 62px !important;
+		flex-basis: 62px !important;
+	}
+
+	main.page.entered > header .brand > span:last-child {
+		min-width: 0;
+		text-align: left;
+	}
+
+	main.page.entered > header .brand b {
+		max-width: 100%;
+		font-size: 11px !important;
+		letter-spacing: .04em !important;
+		line-height: 1.15;
+	}
+
+	main.page.entered > header .brand small {
+		margin-top: 3px;
+		font-size: 7px !important;
+		letter-spacing: .12em !important;
+	}
+
+	main.page.entered > header .mobile-menu-trigger {
+		width: 42px;
+		height: 42px;
+		flex-basis: 42px;
+	}
+}
