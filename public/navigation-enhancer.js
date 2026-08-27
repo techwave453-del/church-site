@@ -44,7 +44,7 @@
       button.type = 'button';
       button.className = 'site-nav-group-toggle';
       button.setAttribute('aria-expanded', 'false');
-      button.innerHTML = `${group.label}<span aria-hidden="true">⌄</span>`;
+      button.innerHTML = `${group.label}<span aria-hidden="true">+</span>`;
       const submenu = document.createElement('div');
       submenu.className = 'site-nav-submenu';
       group.items.forEach((item) => submenu.appendChild(createLink(item)));
