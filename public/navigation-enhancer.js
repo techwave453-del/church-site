@@ -51,11 +51,22 @@
       header.detailHeader .detailMenu { display: none !important; }
       @media (max-width: 700px) {
         header.detailHeader { min-height: 70px !important; height: 70px !important; padding: 0 9px !important; display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
-        header.detailHeader .detailBrand { display: flex !important; width: auto !important; max-width: calc(100% - 58px) !important; height: 70px !important; min-height: 0 !important; padding: 10px 8px !important; justify-content: flex-start !important; text-align: left !important; gap: 8px !important; }
-        header.detailHeader .detailBrandLogo { width: 44px !important; height: 44px !important; max-width: 44px !important; max-height: 44px !important; flex: 0 0 44px !important; }
+        header.detailHeader .detailBrand { display: flex !important; width: auto !important; max-width: calc(100% - 58px) !important; height: 70px !important; min-height: 0 !important; padding: 8px 4px !important; justify-content: flex-start !important; text-align: left !important; gap: 8px !important; overflow: hidden !important; }
+        header.detailHeader .detailBrandLogo { width: 42px !important; height: 42px !important; max-width: 42px !important; max-height: 42px !important; flex: 0 0 42px !important; }
+        header.detailHeader .detailBrand > div { min-width: 0 !important; overflow: hidden !important; }
+        header.detailHeader .detailBrand strong { display: block !important; font-size: clamp(9px, 2.65vw, 12px) !important; line-height: 1.15 !important; letter-spacing: .07em !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+        header.detailHeader .detailBrand small { display: block !important; font-size: 7px !important; line-height: 1.2 !important; letter-spacing: .16em !important; margin-top: 3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
         header.detailHeader .navLinks { display: none !important; }
         header.detailHeader .detailBack { display: none !important; }
-        header.detailHeader .detailMenu { display: grid !important; flex: 0 0 44px !important; width: 44px !important; height: 44px !important; margin-left: auto !important; color: #111 !important; background: rgba(255,255,255,.72) !important; border: 1px solid rgba(17,17,17,.14) !important; border-radius: 50% !important; place-items: center !important; }
+        header.detailHeader .detailMenu { display: grid !important; flex: 0 0 42px !important; width: 42px !important; height: 42px !important; margin-left: 7px !important; color: #111 !important; background: color-mix(in srgb, var(--accent-2, #4da6ff) 92%, white 8%) !important; border: 1px solid color-mix(in srgb, var(--accent-2, #4da6ff) 70%, white 30%) !important; border-radius: 50% !important; place-items: center !important; }
+        header.detailHeader .detailMenu svg { color: #fff !important; stroke: #fff !important; }
+        .detail-mobile-drawer { background: linear-gradient(135deg, var(--accent-3, #9b6030) 0%, var(--accent-2, #4da6ff) 100%) !important; color: #fff !important; }
+        .detail-mobile-drawer .site-mobile-group-toggle, .detail-mobile-drawer nav > a { color: #fff !important; }
+      }
+      @media (max-width: 380px) {
+        header.detailHeader .detailBrand strong { font-size: 9px !important; letter-spacing: .045em !important; }
+        header.detailHeader .detailBrand small { font-size: 6.5px !important; letter-spacing: .11em !important; }
+        header.detailHeader .detailBrandLogo { width: 38px !important; height: 38px !important; flex-basis: 38px !important; }
       }
     `; document.head.appendChild(style);
   }
