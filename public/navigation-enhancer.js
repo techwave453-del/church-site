@@ -59,14 +59,23 @@
       }
     `; document.head.appendChild(style);
   }
+  function buildDetailMobileDrawer() {
+    const header = document.querySelector('.detailHeader'); if (!header || document.querySelector('.detailPage .drawer')) return;
+    const drawer = document.createElement('div'); drawer.className = 'drawer detail-mobile-drawer'; drawer.hidden = true;
+    drawer.innerHTML = '<div class="drawerTop"><b>Menu</b><button class="close" type="button" aria-label="Close menu">×</button></div><nav></nav>';
+    document.querySelector('.detailPage')?.appendChild(drawer);
+    const close = () => { drawer.hidden = true; drawer.classList.remove('open'); };
+    drawer.querySelector('.close')?.addEventListener('click', close);
+    header.querySelector('.detailMenu')?.addEventListener('click', (event) => { event.preventDefault(); event.stopImmediatePropagation(); drawer.hidden = false; drawer.classList.add('open'); }, true);
+    buildMobile(drawer);
+  }
   function buildDetailDesktopHeader() {
     const header = document.querySelector('.detailHeader'); if (!header) return;
     installDetailStyles();
-    if (header.querySelector('.navLinks')) return;
-    const nav = document.createElement('nav'); nav.className = 'navLinks'; nav.setAttribute('aria-label', 'Main navigation');
-    const before = header.querySelector('.detailBack') || header.querySelector('.detailMenu'); header.insertBefore(nav, before || null); buildDesktop(nav);
+    if (!header.querySelector('.navLinks')) { const nav = document.createElement('nav'); nav.className = 'navLinks'; nav.setAttribute('aria-label', 'Main navigation'); const before = header.querySelector('.detailBack') || header.querySelector('.detailMenu'); header.insertBefore(nav, before || null); buildDesktop(nav); }
+    buildDetailMobileDrawer();
   }
-  function enhance() { document.querySelectorAll('.navLinks').forEach(buildDesktop); buildDetailDesktopHeader(); buildMobile(document.querySelector('.drawer')); }
+  function enhance() { document.querySelectorAll('.navLinks').forEach(buildDesktop); buildDetailDesktopHeader(); buildMobile(document.querySelector('.drawer:not(.detail-mobile-drawer)')); }
   document.addEventListener('click', (event) => { if (!event.target.closest('.site-nav-group')) document.querySelectorAll('.site-nav-group.open').forEach((group) => { group.classList.remove('open'); group.querySelector('.site-nav-group-toggle')?.setAttribute('aria-expanded', 'false'); }); });
   const observer = new MutationObserver(enhance); observer.observe(document.documentElement, { childList: true, subtree: true }); enhance();
 })();
