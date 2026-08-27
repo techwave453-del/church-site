@@ -638,19 +638,19 @@ textarea {
 	}
 }
 
-/* Carousel styles for hero after entering */
-.carousel{position:relative;z-index:2;height:100%;overflow:hidden;display:block}
-.carousel-inner{position:relative;height:100%;width:100%}
-.carousel-slide{position:absolute;inset:0;display:flex;align-items:stretch;justify-content:center;transform:translateX(100%);transition:transform .75s cubic-bezier(.2,.9,.2,1),opacity .45s ease;opacity:0;will-change:transform,opacity}
-.carousel-slide.active{transform:translateX(0);opacity:1;z-index:2}
-.carousel-slide.exiting{transform:translateX(-100%);opacity:0;z-index:1}
-.carousel-slide.entering{transform:translateX(100%);opacity:0;z-index:0}
+.carousel{position:relative;z-index:2;height:100%;overflow:hidden;display:block;background:#16052e}
+.carousel-inner{display:flex;align-items:center;gap:18px;height:100%;width:100%;overflow-x:auto;overflow-y:hidden;padding:0 max(8vw,calc((100% - 420px)/2));scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.carousel-inner::-webkit-scrollbar{display:none}
+.carousel-slide{position:relative;flex:0 0 clamp(250px,34vw,470px);height:76%;display:block;overflow:visible;color:#fff;text-decoration:none;scroll-snap-align:center;transform:scale(.82) rotateY(0deg);opacity:.58;transition:transform .45s ease,opacity .45s ease;will-change:transform,opacity}
+.carousel-slide.active{transform:scale(1);opacity:1;z-index:2}
+.carousel-card{position:relative;width:100%;height:100%;overflow:hidden;background:#24103a;box-shadow:0 18px 50px rgba(0,0,0,.38)}
 .carousel-media{width:100%;height:100%;object-fit:cover;display:block}
+.carousel-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,3,18,.02) 38%,rgba(8,3,18,.86) 100%);pointer-events:none}
+.carousel-caption{position:absolute;z-index:1;right:22px;bottom:22px;left:22px;display:flex;flex-direction:column;gap:6px;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.carousel-caption strong{font-size:clamp(18px,2vw,29px);line-height:1.08}.carousel-caption small{font-size:12px;line-height:1.4}
+.carousel-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-50%);width:52px;height:52px;border:1px solid rgba(255,255,255,.5);border-radius:50%;background:rgba(10,4,25,.38);color:#fff;font-size:38px;line-height:1;cursor:pointer}.carousel-arrow:hover{background:rgba(10,4,25,.7)}.carousel-prev{left:22px}.carousel-next{right:22px}
 
-/* Remove hero padding when carousel is active so slides fill viewport */
-.hero.carousel{padding:0}
-.hero.carousel .carousel-inner{height:100%}
-.hero.carousel .carousel-slide{left:0;right:0}
+@media(max-width:700px){.carousel-inner{gap:10px;padding:0 calc((100% - 260px)/2)}.carousel-slide{flex-basis:260px;height:82%}.carousel-caption{right:14px;bottom:14px;left:14px}.carousel-caption strong{font-size:19px}.carousel-arrow{width:38px;height:38px;font-size:28px}.carousel-prev{left:8px}.carousel-next{right:8px}}
 
 /* End of file */
 
