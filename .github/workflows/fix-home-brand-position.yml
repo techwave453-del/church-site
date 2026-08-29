@@ -1,0 +1,37 @@
+name: One-time homepage brand layout fix
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix-brand:
+    if: github.event.head_commit.message != 'Fix homepage desktop brand layout'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply desktop-only brand layout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/styles.css')
+          s = p.read_text(encoding='utf-8-sig')
+          old = '.brand{grid-area:brand;display:flex;align-items:center;justify-content:center;gap:12px;padding:20px 28px 18px 26px;height:102px;width:100%;'
+          new = '.brand{grid-area:brand;display:flex;align-items:center;justify-content:flex-start;gap:14px;padding:0 28px 0 0;height:102px;width:100%;'
+          if old not in s:
+              raise SystemExit('Expected desktop .brand rule was not found; no change made.')
+          s = s.replace(old, new, 1)
+          marker = '@media(max-width:700px){header{grid-template-areas:"brand" "nav"}'
+          mobile = '@media(min-width:701px){.brandLogo{height:100%;width:auto;max-width:102px;object-fit:contain;display:block;flex:0 0 auto}.brand>span{min-width:0}}\n'
+          if mobile not in s:
+              s = s.replace(marker, mobile + marker, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/styles.css
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix homepage desktop brand layout'
+          git push
