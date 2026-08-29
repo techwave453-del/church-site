@@ -1,0 +1,34 @@
+/* Homepage top-ribbon church contact. Desktop only; mobile branding stays unchanged. */
+.page.entered > header .brand { position: relative !important; }
+.page.entered > header .brandContact {
+  position: absolute !important;
+  right: 28px !important;
+  bottom: 12px !important;
+  z-index: 2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: min(34vw, 360px) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #fff !important;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  opacity: .96 !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,.25) !important;
+}
+.page.entered > header .brandContact:hover,
+.page.entered > header .brandContact:focus-visible {
+  color: var(--accent-1, #e6c18f) !important;
+  text-decoration: underline !important;
+}
+@media (max-width: 1150px) and (min-width: 701px) {
+  .page.entered > header .brandContact { right: 18px !important; bottom: 9px !important; font-size: 9px !important; max-width: 30vw !important; }
+}
+@media (max-width: 700px) {
+  .page.entered > header .brandContact { display: none !important; }
+}
