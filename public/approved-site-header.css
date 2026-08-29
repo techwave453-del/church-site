@@ -3,8 +3,8 @@
 
 /* Main homepage header */
 .page.entered>header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100vw!important;z-index:200!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:112px 54px!important;height:166px!important;min-height:166px!important;padding:0!important;background:linear-gradient(100deg,var(--church-navy) 0%,#0b2437 25%,var(--accent-3,#9b6030) 62%,var(--accent-2,#4da6ff) 100%)!important;border:0!important;box-shadow:0 8px 28px rgba(0,0,0,.18)!important}
-.page.entered>header .brand{grid-row:1!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:112px!important;min-width:0!important;padding:7px 28px!important;gap:16px!important;background:transparent!important;border:0!important;color:#fff!important}
-.page.entered>header .brandLogo{display:block!important;width:92px!important;height:96px!important;max-width:92px!important;max-height:96px!important;flex:0 0 92px!important;object-fit:contain!important}
+.page.entered>header .brand{grid-row:1!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;height:112px!important;min-width:0!important;padding:0 28px 0 0!important;gap:14px!important;background:transparent!important;border:0!important;color:#fff!important}
+.page.entered>header .brandLogo{display:block!important;width:auto!important;height:112px!important;max-width:112px!important;max-height:112px!important;flex:0 0 auto!important;object-fit:contain!important;object-position:left center!important}
 .page.entered>header .brand>span:last-child{min-width:0!important;display:block!important}
 .page.entered>header .brand b{display:block!important;color:#fff!important;font-family:Fraunces,Georgia,serif!important;font-size:clamp(17px,1.45vw,25px)!important;line-height:1.08!important;letter-spacing:.095em!important;white-space:nowrap!important;text-shadow:0 2px 5px rgba(0,0,0,.2)!important}
 .page.entered>header .brand small{display:block!important;margin-top:8px!important;color:var(--accent-1,#e6c18f)!important;font-family:"Plus Jakarta Sans",system-ui,sans-serif!important;font-size:9px!important;line-height:1!important;letter-spacing:.34em!important;white-space:nowrap!important}
@@ -36,8 +36,9 @@
 .detailPage>.detailHeader .detailMenu{display:none!important}
 
 @media(max-width:1150px) and (min-width:701px){
- .page.entered>header .brand,.detailPage>.detailHeader .detailBrand{padding-left:18px;padding-right:18px;gap:11px}
- .page.entered>header .brandLogo,.detailPage>.detailHeader .detailBrandLogo{width:76px;height:90px;flex-basis:76px}
+ .page.entered>header .brand,.detailPage>.detailHeader .detailBrand{padding-left:0;padding-right:18px;gap:11px}
+ .page.entered>header .brandLogo{width:auto;height:112px;max-width:96px;max-height:112px;flex-basis:auto}
+ .detailPage>.detailHeader .detailBrandLogo{width:76px;height:90px;flex-basis:76px}
  .page.entered>header .brand b,.detailPage>.detailHeader .detailBrand strong{font-size:17px}
  .page.entered>header .brand small,.detailPage>.detailHeader .detailBrand span{font-size:7px}
  .page.entered>header .navLinks,.detailPage>.detailHeader .navLinks{gap:5px;padding-left:10px;padding-right:10px}
