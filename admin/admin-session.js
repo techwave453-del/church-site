@@ -1,9 +1,10 @@
 (function(){
   const api=()=>window.adminApi||((url,options)=>fetch(url,{credentials:'include',...(options||{})}));
 
-  // The old inline activation form is intentionally removed. First-time setup now
-  // lives on /admin/admin-access.html and starts with a requester-generated access
-  // request. This keeps activation codes out of alerts and out of the login page.
+  function setAuthenticatedUI(authenticated){
+    if(typeof window.setAdminAuthenticatedUI==='function')window.setAdminAuthenticatedUI(!!authenticated);
+  }
+
   function showSetup(username=''){
     const value=String(username||'').trim();
     const target=value
@@ -27,6 +28,13 @@
   function showApp(){
     document.getElementById('login')?.classList.add('hidden');
     document.getElementById('app')?.classList.remove('hidden');
+    setAuthenticatedUI(true);
+  }
+
+  function showLogin(){
+    document.getElementById('app')?.classList.add('hidden');
+    document.getElementById('login')?.classList.remove('hidden');
+    setAuthenticatedUI(false);
   }
 
   async function startAdmin(){
@@ -43,8 +51,8 @@
       const password=document.getElementById('password')?.value||'';
       const msg=document.getElementById('loginMsg');
       if(msg)msg.textContent='Signing in…';
+      setAuthenticatedUI(false);
 
-      // Empty password from the login screen means the user wants first-time setup.
       if(!password&&username){showSetup(username);return false;}
 
       try{
@@ -64,12 +72,15 @@
         showApp();
         return true;
       }catch(error){
+        setAuthenticatedUI(false);
+        showLogin();
         if(msg)msg.textContent=error.message||'Login failed.';
         return false;
       }
     },
 
     logout:async function(){
+      setAuthenticatedUI(false);
       try{await api()('/api/admin/logout',{method:'POST'});}
       finally{location.reload();}
     },
@@ -77,13 +88,16 @@
     check:async function(){
       const status=document.getElementById('apiStatus');
       try{
-        const r=await api()('/api/admin/session');
+        const r=await api()('/api/admin/session',{cache:'no-store'});
         if(!r.ok)throw new Error();
         const data=await r.json().catch(()=>({}));
         if(data.user?.password_setup_only)throw new Error('setup');
         if(status){status.textContent='API online';status.className='status ok';}
+        showApp();
         return true;
       }catch(error){
+        setAuthenticatedUI(false);
+        showLogin();
         if(status){status.textContent='API offline';status.className='status bad';}
         return false;
       }
@@ -95,4 +109,5 @@
   window.checkApi=()=>window.adminSession.check();
   window.initAdminSession=()=>window.adminSession.check();
   installSetupLink();
+  showLogin();
 })();
