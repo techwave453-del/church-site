@@ -35,7 +35,17 @@
     document.head.appendChild(style);
   }
 
-  mount.innerHTML='<header class="admin-header"><strong class="admin-header__title">Kingdom Fellowship Christian Church — Admin</strong><div class="admin-header__actions"><span id="apiStatus" class="admin-header__status">Checking…</span><a class="secondary small admin-header__back" href="/" aria-label="Back to website">← Back to Website</a><button class="secondary small" type="button" onclick="logout()">Log out</button></div></header>';
+  // The logout control is deliberately hidden until the server confirms that
+  // a valid authenticated session exists. The old implementation rendered Log
+  // out for every visitor, which made the login form and authenticated controls
+  // appear together on a fresh/expired session.
+  mount.innerHTML='<header class="admin-header"><strong class="admin-header__title">Kingdom Fellowship Christian Church — Admin</strong><div class="admin-header__actions"><span id="apiStatus" class="admin-header__status">Checking…</span><a class="secondary small admin-header__back" href="/" aria-label="Back to website">← Back to Website</a><button id="adminLogout" class="secondary small" type="button" onclick="logout()" hidden>Log out</button></div></header>';
+
+  window.setAdminAuthenticatedUI=function(authenticated){
+    const logoutButton=document.getElementById('adminLogout');
+    if(logoutButton)logoutButton.hidden=!authenticated;
+    document.body.classList.toggle('admin-authenticated',!!authenticated);
+  };
 
   const load=()=>{
     const loader=document.createElement('script');
