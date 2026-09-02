@@ -1,0 +1,42 @@
+/* Keep the homepage header visually tied to the active hero image. */
+.page.entered>header{
+  position:fixed!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:rgba(6,26,43,.78)!important;
+}
+.page.entered>header::before{
+  content:"";
+  position:absolute!important;
+  inset:-28px!important;
+  z-index:-1!important;
+  background-image:linear-gradient(100deg,rgba(6,26,43,.88),rgba(6,26,43,.62) 48%,rgba(6,26,43,.74)),var(--header-hero-image)!important;
+  background-position:center!important;
+  background-size:cover!important;
+  background-repeat:no-repeat!important;
+  filter:blur(18px) saturate(.95)!important;
+  transform:scale(1.08)!important;
+  opacity:1!important;
+  transition:background-image .7s ease,opacity .35s ease!important;
+  pointer-events:none!important;
+}
+.page.entered>header::after{
+  content:"";
+  position:absolute!important;
+  inset:0!important;
+  z-index:-1!important;
+  background:linear-gradient(100deg,rgba(6,26,43,.20),rgba(10,30,55,.08) 52%,rgba(20,4,40,.18))!important;
+  pointer-events:none!important;
+}
+.page.entered>header .brand,
+.page.entered>header .navLinks,
+.page.entered>header .mobile-menu-trigger{
+  position:relative!important;
+  z-index:1!important;
+}
+
+@media(max-width:700px){
+  .page.entered>header::before{
+    filter:blur(16px) saturate(.95)!important;
+  }
+}
