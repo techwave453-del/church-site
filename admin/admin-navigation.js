@@ -36,6 +36,14 @@ html.admin-section-mode,html.admin-section-mode body{height:100%;overflow:hidden
 .admin-no-permissions .card{width:min(620px,100%);padding:28px}
 @media(max-width:700px){
 .admin-section-mode .admin-navigation{display:block;padding:8px 0;margin-bottom:12px;box-shadow:0 3px 10px #0000000d}
+.admin-section-mode main{height:auto!important;min-height:100vh;overflow:visible!important;padding-bottom:24px}
+.admin-section-mode,.admin-section-mode body{height:auto!important;min-height:100%;overflow-y:auto!important;overflow-x:hidden!important}
+.admin-section-mode #app{height:auto!important;min-height:0;overflow:visible!important}
+.admin-section-mode #site{height:auto!important;min-height:0;overflow:visible!important;padding-bottom:24px}
+.admin-section-mode #site>.section{height:auto!important;max-height:none!important;overflow:visible!important;flex:none!important}
+.admin-section-mode #site>.savebar{position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;z-index:2;margin:16px 0 24px!important}
+.admin-section-mode #detailPageEditors{height:auto!important;min-height:0;overflow:visible!important}
+.admin-section-mode #detailPageEditors>.section{height:auto!important;max-height:none!important;overflow:visible!important}
 .admin-section-mode .admin-menu{display:none;width:100%;padding:0}
 .admin-section-mode .admin-navigation.mobile-menu-open .admin-menu{display:block;position:relative}
 .admin-section-mode .admin-menu-button{display:none;width:100%;justify-content:space-between;text-align:left;margin:0 0 3px}
