@@ -1,0 +1,57 @@
+/* High-contrast text for image-backed box tiles. Keep text white and add a readable shadow/overlay over every image. */
+.imageTile,
+.imageTile:visited,
+.imageTile:hover,
+.imageTile:focus,
+.imageTile:active,
+.imageTile .tileContent,
+.imageTile .tileContent strong,
+.imageTile .tileContent small,
+.imageTile .tileContent em {
+  color: #fff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,.92), 0 1px 12px rgba(0,0,0,.75);
+}
+
+.imageTile:after {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.18) 0%,
+    rgba(0,0,0,.28) 38%,
+    rgba(0,0,0,.88) 100%
+  ) !important;
+}
+
+.imageTile:hover:after,
+.imageTile:focus-visible:after {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.24) 0%,
+    rgba(0,0,0,.34) 38%,
+    rgba(0,0,0,.92) 100%
+  ) !important;
+}
+
+.classTile,
+.classTile strong,
+.classTile button,
+.classTile a {
+  color: #fff !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,.92), 0 1px 12px rgba(0,0,0,.75);
+}
+
+.classTile:before {
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,.18) 0%,
+    rgba(0,0,0,.30) 38%,
+    rgba(0,0,0,.88) 100%
+  ) !important;
+}
+
+/* The CTA itself remains a solid high-contrast surface rather than inheriting the shadowed tile text. */
+.classTile button,
+.classTile a {
+  text-shadow: none;
+  background: rgba(0,0,0,.72);
+  border: 1px solid rgba(255,255,255,.72);
+}
