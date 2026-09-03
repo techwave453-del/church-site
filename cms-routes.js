@@ -20,7 +20,7 @@ function cleanNavigation(input = {}) {
   const label = String(input.label || '').trim().slice(0, 80);
   const href = String(input.href || '').trim().slice(0, 300);
   if (!label || !href || (!href.startsWith('/') && !href.startsWith('#') && !/^https?:\/\//i.test(href))) throw new Error('Navigation items need a label and a safe URL.');
-  return { label, href, parent_id: input.parent_id ? Number(input.parent_id) : null, position: Math.max(0, Number(input.position) || 0), is_visible: input.is_visible !== false };
+  return { label, href, parent_id: input.parent_id ? Number(input.parent_id) : null, parent_index: Number.isInteger(input.parent_index) ? input.parent_index : null, position: Math.max(0, Number(input.position) || 0), is_visible: input.is_visible !== false };
 }
 
 export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, requireSameOrigin, requirePermission }) {
@@ -67,5 +67,18 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
   app.put('/api/cms/pages/:id', requireSameOrigin, requireAdmin, permission('pages.edit'), requirePublishIfNeeded, async (req, res) => { try { res.json(await savePage(req.body || {}, Number(req.params.id))); } catch (error) { res.status(400).json({ error: error.message || 'Unable to update page.' }); } });
   app.delete('/api/cms/pages/:id', requireSameOrigin, requireAdmin, permission('pages.delete'), async (req, res) => { try { const id = Number(req.params.id); if (useSupabase) { const result = await supabase.from('cms_pages').delete().eq('id', id); if (result.error) throw result.error; } else sqlite.prepare('DELETE FROM cms_pages WHERE id=?').run(id); res.json({ ok: true }); } catch (error) { res.status(400).json({ error: error.message || 'Unable to delete page.' }); } });
   app.get('/api/cms/admin/navigation', requireAdmin, permission('navigation.edit'), async (_req, res) => { try { res.json(await listNavigation()); } catch (error) { res.status(500).json({ error: 'Unable to load navigation.' }); } });
-  app.put('/api/cms/navigation', requireSameOrigin, requireAdmin, permission('navigation.edit'), async (req, res) => { try { const items = Array.isArray(req.body) ? req.body.map(cleanNavigation) : []; if (useSupabase) { const removed = await supabase.from('cms_navigation').delete().neq('id', 0); if (removed.error) throw removed.error; if (items.length) { const result = await supabase.from('cms_navigation').insert(items); if (result.error) throw result.error; } } else { sqlite.prepare('DELETE FROM cms_navigation').run(); const insert = sqlite.prepare('INSERT INTO cms_navigation (label,href,parent_id,position,is_visible,page_id) VALUES (?,?,?,?,?,?)'); items.forEach(item => insert.run(item.label, item.href, item.parent_id, item.position, item.is_visible ? 1 : 0, null)); } res.json(await listNavigation()); } catch (error) { res.status(400).json({ error: error.message || 'Unable to save navigation.' }); } });
+  app.put('/api/cms/navigation', requireSameOrigin, requireAdmin, permission('navigation.edit'), async (req, res) => { try {
+    const items = Array.isArray(req.body) ? req.body.map(cleanNavigation) : [];
+    const ordered = [...items].sort((a, b) => (a.parent_index === null ? -1 : 0) - (b.parent_index === null ? -1 : 0));
+    if (useSupabase) {
+      const removed = await supabase.from('cms_navigation').delete().neq('id', 0); if (removed.error) throw removed.error;
+      const ids = new Map();
+      for (const item of ordered) { const parentId = item.parent_index === null ? null : ids.get(item.parent_index) || null; const result = await supabase.from('cms_navigation').insert({ label: item.label, href: item.href, parent_id: parentId, position: item.position, is_visible: item.is_visible }).select('id').single(); if (result.error) throw result.error; ids.set(items.indexOf(item), result.data.id); }
+    } else {
+      sqlite.prepare('DELETE FROM cms_navigation').run(); const ids = new Map();
+      const insert = sqlite.prepare('INSERT INTO cms_navigation (label,href,parent_id,position,is_visible,page_id) VALUES (?,?,?,?,?,?)');
+      ordered.forEach(item => { const parentId = item.parent_index === null ? null : ids.get(item.parent_index) || null; const result = insert.run(item.label, item.href, parentId, item.position, item.is_visible ? 1 : 0, null); ids.set(items.indexOf(item), result.lastInsertRowid); });
+    }
+    res.json(await listNavigation());
+  } catch (error) { res.status(400).json({ error: error.message || 'Unable to save navigation.' }); } });
 }
