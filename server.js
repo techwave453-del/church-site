@@ -45,12 +45,13 @@ async function ensureDefaultCmsPages() {
 		{ slug: 'resources', internal_name: 'Resources', menu_label: 'Resources', fallback: { eyebrow: content.membershipEyebrow, title: content.membershipTitle, summary: 'Grow in faith through classes and practical resources.', sections: (content.membershipClasses || []).map(item => ({ section_type: 'image_text', content: { heading: item.title, body: item.description, media: item.image } })) } },
 		{ slug: 'give', internal_name: 'Give', menu_label: 'Give', fallback: { eyebrow: 'Support the Ministry', title: 'Give', summary: 'Thank you for supporting the work of the church. Contact the church office for giving details.', sections: [{ section_type: 'giving', content: { heading: 'Give with purpose', body: 'Your generosity helps the church serve people and reveal Christ to nations.' } }] } },
 		{ slug: 'contact', internal_name: 'Contact', menu_label: 'Contact', fallback: { eyebrow: 'Get in Touch', title: 'Contact', summary: `Phone: ${content.phone || ''}\nEmail: ${content.email || ''}`, sections: [{ section_type: 'contact', content: { heading: 'Church office', body: `Phone: ${content.phone || ''}\nEmail: ${content.email || ''}` } }] } }
+		, { slug: 'terms', internal_name: 'Terms & Conditions', menu_label: 'Terms & Conditions', fallback: { eyebrow: 'Legal Information', title: 'Terms & Conditions', summary: 'Edit and publish the website terms from the Pages & Navigation editor.', sections: [['About These Terms', 'These terms govern use of the Kingdom Fellowship Christian Church website. Review the existing legal page and update this CMS draft before publishing.'], ['Contact', `Questions about these terms can be sent to ${content.email || 'the church office'}.`] ] } }
 	];
 	const getPage = async slug => useSupabase ? (await supabase.from('cms_pages').select('id').eq('slug', slug).maybeSingle()).data : sqlite.prepare('SELECT id FROM cms_pages WHERE slug=?').get(slug);
 	for (const definition of pages) {
 		if (await getPage(definition.slug)) continue;
 		const source = definition.source && typeof definition.source === 'object' ? definition.source : definition.fallback;
-		const page = { slug: definition.slug, internal_name: definition.internal_name, menu_label: definition.menu_label, status: 'published', show_in_navigation: true };
+		const page = { slug: definition.slug, internal_name: definition.internal_name, menu_label: definition.menu_label, status: definition.slug === 'terms' ? 'draft' : 'published', show_in_navigation: definition.slug !== 'terms' };
 		let pageId;
 		if (useSupabase) { const result = await supabase.from('cms_pages').insert(page).select('id').single(); if (result.error) throw result.error; pageId = result.data.id; }
 		else pageId = sqlite.prepare('INSERT INTO cms_pages (slug,internal_name,menu_label,status,show_in_navigation) VALUES (?,?,?,?,1)').run(page.slug, page.internal_name, page.menu_label, page.status).lastInsertRowid;
