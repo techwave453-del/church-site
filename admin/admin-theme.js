@@ -15,6 +15,9 @@
     const accent=validAccent(value)?value:DEFAULT_ACCENT;
     if(accentEl)accentEl.value=accent;
     document.documentElement.style.setProperty('--accent',accent);
+    // The full-screen admin startup/loading screen uses the same live accent.
+    document.documentElement.style.setProperty('--loader-accent',accent);
+    document.documentElement.style.setProperty('--accent-glow',accent+'33');
     document.querySelectorAll('.theme-option[data-accent]').forEach(el=>el.classList.toggle('active',(el.dataset.accent||'').toLowerCase()===accent.toLowerCase()));
   }
   function initTheme(){
