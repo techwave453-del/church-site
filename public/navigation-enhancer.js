@@ -176,10 +176,12 @@
       if (logo && logoEl) {
         logoEl.src = logo;
         logoEl.hidden = false;
-        if (markEl) markEl.hidden = true;
+        logoEl.style.display = 'block';
+        if (markEl) { markEl.hidden = true; markEl.style.display = 'none'; }
         logoEl.onerror = () => {
           logoEl.hidden = true;
-          if (markEl) markEl.hidden = false;
+          logoEl.style.display = 'none';
+          if (markEl) { markEl.hidden = false; markEl.style.display = 'grid'; }
         };
       }
     } catch (_) {
