@@ -12,7 +12,7 @@ body.admin-login-page .login-hero{position:relative;padding:34px 34px 30px;color
 body.admin-login-page .login-hero:before{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(255,255,255,.18);border-radius:50%;right:-65px;top:-80px;box-shadow:0 0 0 30px rgba(255,255,255,.025),0 0 0 60px rgba(255,255,255,.018);z-index:-1}
 body.admin-login-page .login-brand{display:flex;align-items:center;gap:14px;margin-bottom:25px}
 body.admin-login-page .login-logo{width:58px;height:58px;border-radius:17px;object-fit:contain;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);padding:7px;box-shadow:0 10px 28px rgba(0,0,0,.2)}
-body.admin-login-page .login-logo-fallback{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;font-size:25px;font-weight:800;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25)}
+body.admin-login-page .login-logo-fallback{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25)}
 body.admin-login-page .login-kicker{margin:0 0 3px;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
 body.admin-login-page .login-brand-name{margin:0;font-size:15px;font-weight:750;line-height:1.25}
 body.admin-login-page .login h1{margin:0;font-size:30px;line-height:1.08;letter-spacing:-.03em}
@@ -21,8 +21,14 @@ body.admin-login-page .login-form-wrap{padding:30px 34px 28px;background:var(--a
 body.admin-login-page .login-form-wrap label{margin:0 0 7px;font-size:13px;color:var(--admin-login-ink)}
 body.admin-login-page .login-field{position:relative;margin-bottom:17px}
 body.admin-login-page .login-field input{height:50px;padding:12px 14px 12px 43px;border:1px solid color-mix(in srgb,var(--admin-login-accent) 16%,#d7dee7);border-radius:13px;background:color-mix(in srgb,var(--admin-login-card) 86%,#f8fafc);color:var(--admin-login-ink);transition:border-color .2s,box-shadow .2s,background .2s}
+body.admin-login-page .password-field input{padding-right:48px}
 body.admin-login-page .login-field input:focus{outline:0;border-color:var(--admin-login-accent);background:var(--admin-login-card);box-shadow:0 0 0 4px color-mix(in srgb,var(--admin-login-accent) 14%,transparent)}
 body.admin-login-page .login-field-icon{position:absolute;left:14px;top:36px;width:18px;height:18px;color:color-mix(in srgb,var(--admin-login-accent) 55%,#7b8795);pointer-events:none}
+body.admin-login-page .login-field-icon svg,body.admin-login-page .password-toggle svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.admin-login-page .password-toggle{position:absolute;right:8px;top:32px;width:36px;height:36px;padding:8px;border:0;border-radius:9px;background:transparent;color:var(--admin-login-muted);display:grid;place-items:center;cursor:pointer;transition:background .18s,color .18s,transform .18s}
+body.admin-login-page .password-toggle:hover{background:color-mix(in srgb,var(--admin-login-accent) 9%,transparent);color:var(--admin-login-accent)}
+body.admin-login-page .password-toggle:focus-visible{outline:2px solid var(--admin-login-accent);outline-offset:1px}
+body.admin-login-page .password-toggle:active{transform:scale(.94)}
 body.admin-login-page .login-submit{width:100%;height:50px;border-radius:13px;background:linear-gradient(135deg,var(--admin-login-accent),color-mix(in srgb,var(--admin-login-accent) 70%,#1559a0));box-shadow:0 10px 22px color-mix(in srgb,var(--admin-login-accent) 28%,transparent);font-size:14px;transition:transform .2s,box-shadow .2s}
 body.admin-login-page .login-submit:hover{transform:translateY(-1px);box-shadow:0 13px 26px color-mix(in srgb,var(--admin-login-accent) 34%,transparent)}
 body.admin-login-page .login-submit:active{transform:translateY(0)}
