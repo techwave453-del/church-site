@@ -1,13 +1,43 @@
 (function(){
   'use strict';
   const FALLBACK_NAME='Church Administration';
+  const DEFAULT_ACCENT='#0b6bcb';
+
+  function validAccent(value){return typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)}
+  function applyLoginTheme(theme){
+    const settings=theme||{};
+    const accent=validAccent(settings.accent)?settings.accent:DEFAULT_ACCENT;
+    const mode=settings.mode==='dark'?'dark':'light';
+    document.documentElement.style.setProperty('--accent',accent);
+    document.documentElement.style.setProperty('--admin-accent',accent);
+    document.documentElement.dataset.theme=mode;
+    try{localStorage.setItem('church-site-theme',JSON.stringify({mode,accent}));}catch(_){ }
+  }
+
+  function loadCachedTheme(){
+    try{
+      const cached=JSON.parse(localStorage.getItem('church-site-theme')||'null');
+      if(cached)applyLoginTheme(cached);
+    }catch(_){ }
+  }
+
+  async function loadSavedTheme(){
+    try{
+      const response=await fetch('/api/site/content',{credentials:'include',cache:'no-store'});
+      if(!response.ok)return;
+      const payload=await response.json().catch(()=>null);
+      const data=payload?.content||payload||{};
+      if(data.theme)applyLoginTheme(data.theme);
+      window.refreshAdminLoginBranding?.(payload);
+    }catch(_){ }
+  }
 
   function loadStyles(){
     if(document.getElementById('adminLoginStyles'))return;
     const link=document.createElement('link');
     link.id='adminLoginStyles';
     link.rel='stylesheet';
-    link.href='/admin/admin-login.css?v=3';
+    link.href='/admin/admin-login.css?v=4';
     document.head.appendChild(link);
   }
 
@@ -17,6 +47,7 @@
   }
 
   function apply(){
+    loadCachedTheme();
     loadStyles();
     const login=document.getElementById('login');
     if(!login||login.dataset.loginUi==='v2')return;
@@ -41,6 +72,7 @@
         <p id="loginMsg" role="status" aria-live="polite"></p>
         <div class="login-footer"><span class="login-footer-dot"></span><span>Protected administrator access</span></div>
       </div>`;
+    loadSavedTheme();
   }
 
   window.applyAdminLoginUI=apply;
@@ -56,7 +88,5 @@
     }
   };
 
-  // admin.html loads this after the login markup, so transform immediately.
-  // Waiting for DOMContentLoaded caused the original login card to flash first.
   apply();
 })();
