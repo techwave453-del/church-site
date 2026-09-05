@@ -1,4 +1,13 @@
 (function(){
+  // Hide the server-rendered legacy login before any asynchronous module can load.
+  // admin-login-ui.js removes this gate synchronously once it replaces the markup.
+  if(!document.getElementById('adminLoginCriticalStyle')){
+    const critical=document.createElement('style');
+    critical.id='adminLoginCriticalStyle';
+    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}';
+    (document.head||document.documentElement).appendChild(critical);
+  }
+
   // The new section-by-section navigation owns the admin UI. Do not load the
   // legacy admin-tabs module because it can re-apply the old three-tab behavior.
   const modules=['admin-utils.js','admin-session.js','admin-theme.js','admin-media.js','admin-comments.js','admin-site-content.js','admin-services.js','admin-homepage-links.js','admin-classes.js','admin-gallery.js','admin-live.js','admin-bridge.js','admin-cms.js'];
@@ -48,5 +57,5 @@
     setLoadingState('Almost ready…');
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     finishLoadingState();return true;
-  }catch(error){console.error('Admin modules failed to initialize:',error);started=false;setLoadingState('Unable to finish loading the admin panel. Please refresh and try again.');const loading=document.getElementById('adminModuleLoading');if(loading){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Unable to finish loading the admin panel. Please refresh and try again. Please refresh and try again.';const errorText=loading.querySelector('[data-loading-error]');if(errorText){errorText.hidden=false;errorText.textContent='Please refresh the page and try again.'}loading.querySelector('[data-loading-retry]')?.classList.add('show');}return false;}};
+  }catch(error){console.error('Admin modules failed to initialize:',error);started=false;setLoadingState('Unable to finish loading the admin panel. Please refresh and try again.');const loading=document.getElementById('adminModuleLoading');if(loading){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Unable to finish loading the admin panel. Please refresh and try again.';const errorText=loading.querySelector('[data-loading-error]');if(errorText){errorText.hidden=false;errorText.textContent='Please refresh the page and try again.'}loading.querySelector('[data-loading-retry]')?.classList.add('show');}return false;}};
 })();
