@@ -9,21 +9,45 @@
     { label: 'Contact', direct: true, target: 'contact' },
     { label: 'More', items: [{ label: 'Terms & Conditions', href: '/terms.html' }] }
   ];
+
+  const isTermsPage = () => /(^|\/)terms\.html$/i.test(window.location.pathname);
+
   const scrollTo = (target) => {
+    if (isTermsPage()) {
+      if (target === 'home') window.location.href = '/?entered=1#home';
+      else if (target === 'give' || target === 'contact') window.location.href = `/?entered=1#${target}`;
+      else window.location.href = `/?entered=1#detail/${target}`;
+      return;
+    }
     const el = document.getElementById(target);
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (target === 'home') window.location.href = '/?entered=1#home';
     else window.location.hash = `detail/${target}`;
   };
+
   const createLink = (item, closeMenu) => {
-    const a = document.createElement('a'); a.href = item.href || `#${item.target}`; a.textContent = item.label;
-    if (item.target) a.addEventListener('click', (event) => { event.preventDefault(); closeMenu?.(); scrollTo(item.target); });
-    else if (item.href?.startsWith('#detail/')) a.addEventListener('click', () => closeMenu?.());
+    const a = document.createElement('a');
+    a.href = item.href || `#${item.target}`;
+    a.textContent = item.label;
+    if (item.target) {
+      a.addEventListener('click', (event) => { event.preventDefault(); closeMenu?.(); scrollTo(item.target); });
+    } else if (item.href?.startsWith('#detail/')) {
+      a.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeMenu?.();
+        const target = item.href.slice('#detail/'.length);
+        scrollTo(target);
+      });
+    } else if (item.href === '/terms.html') {
+      a.addEventListener('click', () => closeMenu?.());
+    }
     return a;
   };
+
   const createWatchLive = (closeMenu) => {
     const a = document.createElement('a'); a.className = 'site-watch-live'; a.href = '/live.html'; a.innerHTML = '<span aria-hidden="true">▶</span><b>WATCH LIVE</b>'; if (closeMenu) a.addEventListener('click', closeMenu); return a;
   };
+
   function buildDesktop(nav) {
     if (!nav || nav.dataset.groupedNavigation === 'true') return;
     nav.dataset.groupedNavigation = 'true'; nav.innerHTML = '';
@@ -38,6 +62,7 @@
     });
     nav.appendChild(createWatchLive());
   }
+
   function buildMobile(drawer) {
     if (!drawer) return; const nav = drawer.querySelector('nav'); if (!nav || nav.dataset.groupedNavigation === 'true') return;
     nav.dataset.groupedNavigation = 'true'; nav.innerHTML = ''; const closeMenu = () => drawer.querySelector('.close')?.click();
@@ -51,6 +76,7 @@
     });
     nav.appendChild(createWatchLive(closeMenu));
   }
+
   function installDetailStyles() {
     if (document.getElementById('detail-navigation-style')) return;
     const style = document.createElement('style'); style.id = 'detail-navigation-style'; style.textContent = `
@@ -79,18 +105,100 @@
       }
     `; document.head.appendChild(style);
   }
+
   function buildDetailMobileDrawer() {
     const header = document.querySelector('.detailHeader'); if (!header || document.querySelector('.detailPage .drawer')) return;
     const drawer = document.createElement('div'); drawer.className = 'drawer detail-mobile-drawer'; drawer.hidden = true; drawer.innerHTML = '<div class="drawerTop"><b>Menu</b><button class="close" type="button" aria-label="Close menu">×</button></div><nav></nav>';
     document.querySelector('.detailPage')?.appendChild(drawer); const close = () => { drawer.hidden = true; drawer.classList.remove('open'); }; drawer.querySelector('.close')?.addEventListener('click', close);
     header.querySelector('.detailMenu')?.addEventListener('click', (event) => { event.preventDefault(); event.stopImmediatePropagation(); drawer.hidden = false; drawer.classList.add('open'); }, true); buildMobile(drawer);
   }
+
   function buildDetailDesktopHeader() {
     const header = document.querySelector('.detailHeader'); if (!header) return; installDetailStyles();
     if (!header.querySelector('.navLinks')) { const nav = document.createElement('nav'); nav.className = 'navLinks'; nav.setAttribute('aria-label', 'Main navigation'); const before = header.querySelector('.detailBack') || header.querySelector('.detailMenu'); header.insertBefore(nav, before || null); buildDesktop(nav); }
     buildDetailMobileDrawer();
   }
-  function enhance() { document.querySelectorAll('.navLinks').forEach(buildDesktop); buildDetailDesktopHeader(); buildMobile(document.querySelector('.drawer:not(.detail-mobile-drawer)')); }
-  document.addEventListener('click', (event) => { if (!event.target.closest('.site-nav-group')) document.querySelectorAll('.site-nav-group.open').forEach((group) => { group.classList.remove('open'); group.querySelector('.site-nav-group-toggle')?.setAttribute('aria-expanded', 'false'); }); });
-  const observer = new MutationObserver(enhance); observer.observe(document.documentElement, { childList: true, subtree: true }); enhance();
+
+  function resolveLogo(value, depth = 0) {
+    if (depth > 6 || value == null) return '';
+    if (Array.isArray(value)) {
+      for (const item of value) { const found = resolveLogo(item, depth + 1); if (found) return found; }
+      return '';
+    }
+    if (typeof value === 'object') {
+      for (const key of ['url','src','publicUrl','public_url','logoUrl','logo_url','fileUrl','file_url','href','path','logo','image','value']) {
+        const found = resolveLogo(value[key], depth + 1); if (found) return found;
+      }
+      return '';
+    }
+    const raw = String(value).trim();
+    if (!raw) return '';
+    if (/^data:image\//i.test(raw) || /^blob:/i.test(raw)) return raw;
+    try {
+      const url = new URL(raw, window.location.origin);
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch (_) { return ''; }
+  }
+
+  function resolveMediaUrl(item) {
+    return resolveLogo(item?.url || item?.publicUrl || item?.public_url || item?.fileUrl || item?.file_url || item?.path || item?.src || item?.image || item?.thumbnail || '');
+  }
+
+  async function hydrateTermsBrand() {
+    if (!isTermsPage() || document.documentElement.dataset.termsBrandHydrated === 'true') return;
+    document.documentElement.dataset.termsBrandHydrated = 'true';
+    try {
+      const response = await fetch('/api/site/content', { credentials: 'same-origin', cache: 'no-store' });
+      const site = response.ok ? await response.json() : {};
+      const name = String(site.churchName || site.name || '').trim();
+      const tagline = String(site.tagline || '').trim();
+      const nameEl = document.getElementById('churchName');
+      const taglineEl = document.getElementById('churchTagline');
+      const logoEl = document.getElementById('termsBrandLogo');
+      const markEl = document.getElementById('termsBrandMark');
+      if (name && nameEl) nameEl.textContent = name;
+      if (tagline && taglineEl) taglineEl.textContent = tagline;
+      if (name && logoEl) logoEl.alt = `${name} logo`;
+
+      let logo = resolveLogo(site.logo || site.churchLogo || site.logoUrl);
+      if (!logo) {
+        const mediaResponse = await fetch('/api/media', { credentials: 'same-origin', cache: 'no-store' });
+        const media = mediaResponse.ok ? await mediaResponse.json() : [];
+        const list = Array.isArray(media) ? media : [];
+        const item = list.find(entry => {
+          const url = resolveMediaUrl(entry);
+          const category = String(entry?.category || '').trim().toLowerCase();
+          const title = String(entry?.title || entry?.name || '').trim().toLowerCase();
+          return url && (category === 'logo' || title === 'logo' || title.includes('church logo'));
+        });
+        logo = resolveMediaUrl(item);
+      }
+      if (logo && logoEl) {
+        logoEl.src = logo;
+        logoEl.hidden = false;
+        if (markEl) markEl.hidden = true;
+        logoEl.onerror = () => {
+          logoEl.hidden = true;
+          if (markEl) markEl.hidden = false;
+        };
+      }
+    } catch (_) {
+      // Keep the existing placeholder if the public content endpoint is unavailable.
+    }
+  }
+
+  function enhance() {
+    document.querySelectorAll('.navLinks').forEach(buildDesktop);
+    buildDetailDesktopHeader();
+    buildMobile(document.querySelector('.drawer:not(.detail-mobile-drawer)'));
+    hydrateTermsBrand();
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.site-nav-group')) document.querySelectorAll('.site-nav-group.open').forEach((group) => { group.classList.remove('open'); group.querySelector('.site-nav-group-toggle')?.setAttribute('aria-expanded', 'false'); });
+  });
+
+  const observer = new MutationObserver(enhance);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  enhance();
 })();
