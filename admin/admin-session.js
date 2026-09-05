@@ -2,47 +2,7 @@
   const api=()=>window.adminApi||((url,options)=>fetch(url,{credentials:'include',...(options||{})}));
 
   function installLoginDesign(){
-    document.body.classList.add('admin-login-page');
-    if(!document.getElementById('adminLoginStyles')){
-      const link=document.createElement('link');link.id='adminLoginStyles';link.rel='stylesheet';link.href='/admin/admin-login.css?v=2';document.head.appendChild(link);
-    }
-    const login=document.getElementById('login');
-    if(!login||login.dataset.redesigned==='1')return;
-    login.dataset.redesigned='1';
-    const form=login.querySelector('form');
-    if(!form)return;
-    const heading=login.querySelector('h1');
-    const intro=login.querySelector('.muted');
-    const hero=document.createElement('div');hero.className='login-hero';
-    const brand=document.createElement('div');brand.className='login-brand';
-    const logoWrap=document.createElement('div');logoWrap.className='login-logo-wrap';
-    const fallback=document.createElement('div');fallback.className='login-logo-fallback';fallback.textContent='✦';
-    logoWrap.appendChild(fallback);brand.appendChild(logoWrap);
-    const brandText=document.createElement('div');brandText.innerHTML='<p class="login-kicker">Administration</p><p class="login-brand-name" data-login-brand>Church Administration</p>';
-    brand.appendChild(brandText);hero.appendChild(brand);
-    if(heading){heading.textContent='Welcome back';hero.appendChild(heading)}
-    if(intro){intro.className='login-subtitle';intro.textContent='Sign in securely to manage your church website, media and live ministry.';hero.appendChild(intro)}
-    login.insertBefore(hero,login.firstChild);
-    const wrap=document.createElement('div');wrap.className='login-form-wrap';
-    while(form.firstChild){
-      const node=form.firstChild;
-      if(node.nodeType===1&&node.tagName==='LABEL'){
-        const field=document.createElement('div');field.className='login-field';
-        const label=node;const input=node.nextElementSibling;
-        field.appendChild(label);field.appendChild(input);
-        const icon=document.createElement('span');icon.className='login-field-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=input?.id==='username'?'◉':'▣';field.appendChild(icon);
-        wrap.appendChild(field);continue;
-      }
-      wrap.appendChild(node);
-    }
-    form.parentNode.insertBefore(wrap,form);wrap.appendChild(form);
-    form.className='admin-login-form';
-    const toolbar=form.querySelector('.toolbar');
-    if(toolbar){toolbar.className='login-actions';const button=toolbar.querySelector('button');if(button){button.className='login-submit';button.textContent='Sign in to Administration';}}
-    const footer=document.createElement('div');footer.className='login-footer';footer.innerHTML='<span class="login-footer-dot"></span><span>Secure administrator access</span>';
-    wrap.appendChild(footer);
-    const password=document.getElementById('password');
-    if(password)password.required=false;
+    if(typeof window.applyAdminLoginUI==='function')window.applyAdminLoginUI();
   }
 
   async function loadLoginBranding(){
@@ -50,12 +10,7 @@
       const r=await fetch('/api/site/content',{credentials:'include',cache:'no-store'});
       if(!r.ok)return;
       const payload=await r.json().catch(()=>null);
-      const data=payload?.content||payload||{};
-      const name=data.churchName||data.church_name||data.name||data.site?.churchName||data.site?.church_name;
-      if(name)document.querySelectorAll('[data-login-brand]').forEach(el=>el.textContent=String(name));
-      const logo=data.logo||data.logoUrl||data.logo_url||data.site?.logo||data.site?.logoUrl;
-      const url=typeof logo==='string'?logo:(logo?.url||logo?.src||logo?.publicUrl||logo?.public_url||logo?.path);
-      if(url)document.querySelectorAll('.login-logo-wrap').forEach(el=>{el.innerHTML='<img class="login-logo" alt="" src="'+String(url).replace(/"/g,'&quot;')+'">';});
+      window.refreshAdminLoginBranding?.(payload);
     }catch(error){console.debug('Admin login branding unavailable:',error.message)}
   }
 
@@ -102,7 +57,7 @@
   async function startAdmin(){
     if(window.__adminModulesStarting)return window.__adminModulesStarting;
     window.__adminModulesStarting=window.loadAdminModules?window.loadAdminModules():Promise.resolve(false);
-    try{return await window.__adminModulesStarting;}
+    try{return await window.__adminModulesStarting}
     finally{window.__adminModulesStarting=null;}
   }
 
