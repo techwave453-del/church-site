@@ -1,24 +1,32 @@
-(function(){
-  const mount=document.getElementById('adminHeader');
-  if(!mount)return;
-  window.__ADMIN_BUILD_VERSION=Date.now().toString();
-  if(!document.querySelector('link[data-admin-header-css]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/admin/admin-header.css?v='+encodeURIComponent(window.__ADMIN_BUILD_VERSION);link.dataset.adminHeaderCss='true';document.head.appendChild(link)}
-  mount.innerHTML='<header class="admin-header"><div class="admin-header__brand"><img class="admin-header__logo" data-admin-header-logo alt="Church logo"><div class="admin-header__brand-text"><strong class="admin-header__church-name" data-admin-header-name>Kingdom Fellowship Christian Church</strong><span class="admin-header__admin-label">Admin</span></div></div><div class="admin-header__actions"><span id="apiStatus" class="admin-header__status">Checking…</span><a class="secondary small admin-header__back" href="/" aria-label="Back to website">← Back to Website</a><button id="adminLogout" class="secondary small" type="button" onclick="logout()" hidden>Log out</button></div></header>';
-  function isImageMedia(item){if(!item||typeof item!=='object')return false;const type=String(item.type||item.mimeType||item.mime||'').toLowerCase();const url=String(item.url||item.src||item.path||item.fileUrl||'').toLowerCase().split('?')[0].split('#')[0];return type==='image'||type.startsWith('image/')||/\.(png|jpe?g|webp|gif|svg|avif|bmp|ico|tiff?)$/.test(url)}
-  function mediaIsLogo(item){if(!item||!isImageMedia(item))return false;const category=String(item.category||item.mediaCategory||item.folder||'').toLowerCase();const name=String(item.name||item.filename||item.fileName||item.title||'').toLowerCase();return category==='logo'||category.includes('logo')||name.includes('logo')}
-  function firstValue(obj,keys){for(const key of keys){const value=obj?.[key];if(typeof value==='string'&&value.trim())return value.trim()}return ''}
-  function setHeaderBranding(content,mediaItems){
-    const name=document.querySelector('[data-admin-header-name]');
-    const img=document.querySelector('[data-admin-header-logo]');
-    if(name){name.textContent=firstValue(content,['churchName','church_name','siteName','site_name'])||'Kingdom Fellowship Christian Church'}
-    const mediaLogo=mediaItems.find(mediaIsLogo)||mediaItems.find(isImageMedia);
-    const logoUrl=mediaLogo?.url||mediaLogo?.src||mediaLogo?.path||mediaLogo?.fileUrl||firstValue(content,['logoUrl','logo_url','logo','churchLogo','church_logo']);
-    if(img&&logoUrl){img.onload=()=>img.classList.add('is-ready');img.onerror=()=>img.classList.remove('is-ready');img.src=String(logoUrl)}
-  }
-  window.loadAdminBranding=async function(){try{const [r,m]=await Promise.all([fetch('/api/site/content',{credentials:'same-origin',cache:'no-store'}).catch(()=>null),fetch('/api/media',{credentials:'same-origin',cache:'no-store'}).catch(()=>null)]);const content=r?.ok?await r.json().catch(()=>({})):{};const media=m?.ok?await m.json().catch(()=>[]):[];const mediaItems=Array.isArray(media)?media:(Array.isArray(media?.items)?media.items:Array.isArray(media?.media)?media.media:[]);setHeaderBranding(content,mediaItems);return content}catch(e){return {}}};
+(()=>{
+  const root=document.getElementById('adminHeader');
+  if(!root)return;
+  root.innerHTML=`<header class="admin-header"><div class="admin-header__brand"><img class="admin-header__logo" data-admin-header-logo alt="Church logo"><div class="admin-header__brand-text"><strong class="admin-header__church-name" data-admin-header-name>Kingdom Fellowship Christian Church</strong><span class="admin-header__admin-label">Admin</span></div></div><div class="admin-header__actions"><span id="apiStatus" class="status">API…</span><a class="secondary" href="/">Back to Website</a><button type="button" class="secondary" id="logoutBtn">Log out</button></div></header>`;
+
+  const mediaUrl=item=>item?.url||item?.src||item?.path||item?.fileUrl||item?.publicUrl||'';
+  const firstImage=items=>(items||[]).find(item=>String(item?.type||'').toLowerCase().startsWith('image/')||['image','logo'].includes(String(item?.category||'').toLowerCase()));
+  const setHeaderBranding=(content,mediaItems=[])=>{
+    const name=content?.churchName||content?.church_name||content?.siteName||content?.site_name||'Kingdom Fellowship Christian Church';
+    const logo=content?.logoUrl||content?.logo_url||content?.logo||content?.churchLogo||content?.church_logo||mediaUrl(firstImage(mediaItems));
+    const nameEl=root.querySelector('[data-admin-header-name]');
+    const logoEl=root.querySelector('[data-admin-header-logo]');
+    if(nameEl)nameEl.textContent=name;
+    if(logoEl){if(logo){logoEl.src=logo;logoEl.style.display='block';}else{logoEl.removeAttribute('src');logoEl.style.display='none';}}
+  };
+  const loadAdminBranding=async()=>{
+    let content={};let media=[];
+    try{const r=await fetch('/api/site/content',{credentials:'same-origin'});if(r.ok)content=await r.json();}catch(_){ }
+    try{const r=await fetch('/api/media',{credentials:'same-origin'});if(r.ok){const data=await r.json();media=Array.isArray(data)?data:(data.items||data.media||[]);}}catch(_){ }
+    setHeaderBranding(content,media);
+  };
   loadAdminBranding();
-  window.setAdminAuthenticatedUI=function(authenticated){const b=document.getElementById('adminLogout');if(b)b.hidden=!authenticated;document.body.classList.toggle('admin-authenticated',!!authenticated)};
-  function installPasswordToggles(){document.querySelectorAll('input[type="password"]').forEach(input=>{if(input.dataset.passwordToggleReady)return;input.dataset.passwordToggleReady='true';const wrap=document.createElement('div');wrap.className='admin-password-wrap';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);const b=document.createElement('button');b.type='button';b.className='admin-password-toggle';b.textContent='Show';b.onclick=()=>{const show=input.type==='password';input.type=show?'text':'password';b.textContent=show?'Hide':'Show'};wrap.appendChild(b)})}installPasswordToggles();new MutationObserver(installPasswordToggles).observe(document.body,{childList:true,subtree:true});
-  const load=()=>{const s=document.createElement('script');s.src='/admin/admin-loader.js?v='+encodeURIComponent(window.__ADMIN_BUILD_VERSION);s.dataset.adminModule='admin-loader.js';s.onload=()=>window.loadAdminModules?.().catch(console.error);s.onerror=()=>{};document.head.appendChild(s)};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+
+  const status=document.getElementById('apiStatus');
+  fetch('/api/health',{credentials:'same-origin'}).then(r=>{if(!r.ok)throw new Error();status.textContent='API online';status.className='status ok';}).catch(()=>{status.textContent='API offline';status.className='status bad';});
+  document.getElementById('logoutBtn')?.addEventListener('click',async()=>{try{await fetch('/api/admin/logout',{method:'POST',credentials:'same-origin'});}finally{location.reload();}});
+
+  const installPasswordToggles=()=>{document.querySelectorAll('input[type="password"]').forEach(input=>{if(input.dataset.peekReady)return;input.dataset.peekReady='1';const wrap=input.parentElement;if(!wrap)return;wrap.style.position='relative';const btn=document.createElement('button');btn.type='button';btn.className='admin-password-peek';btn.setAttribute('aria-label','Show password');btn.textContent='◉';btn.addEventListener('click',()=>{const shown=input.type==='text';input.type=shown?'password':'text';btn.setAttribute('aria-label',shown?'Show password':'Hide password');});wrap.appendChild(btn);});};
+  installPasswordToggles();
+  new MutationObserver(installPasswordToggles).observe(document.body,{subtree:true,childList:true});
+  const script=document.createElement('script');script.src='/admin/admin-loader.js?v=20260906-2';document.head.appendChild(script);
 })();
