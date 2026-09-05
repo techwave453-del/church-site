@@ -2,91 +2,18 @@
   'use strict';
   const FALLBACK_NAME='Church Administration';
   const DEFAULT_ACCENT='#0b6bcb';
-
+  const resolveLogo=(value,depth=0)=>{if(depth>6||value==null)return '';if(Array.isArray(value)){for(const v of value){const r=resolveLogo(v,depth+1);if(r)return r}return ''}if(typeof value==='object'){for(const k of ['url','src','publicUrl','public_url','logoUrl','logo_url','fileUrl','file_url','href','path','logo','image','thumbnail','value']){const r=resolveLogo(value[k],depth+1);if(r)return r}return ''}const raw=String(value).trim();if(!raw)return '';try{const u=new URL(raw,location.origin);return ['http:','https:','data:','blob:'].includes(u.protocol)?u.href:''}catch(_){return ''}};
+  const isImage=(url,type)=>{const s=String(url||'').split(/[?#]/)[0].toLowerCase(),t=String(type||'').toLowerCase();return /^data:image\//i.test(s)||/^blob:/i.test(s)||/^image\//i.test(t)||/\.(png|jpe?g|webp|gif|svg|avif|bmp|ico|tiff?)$/i.test(s)||s.includes('/uploads/')||s.includes('/storage/v1/object/public/')};
   function validAccent(value){return typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)}
-  function applyLoginTheme(theme){
-    const settings=theme||{};
-    const accent=validAccent(settings.accent)?settings.accent:DEFAULT_ACCENT;
-    const mode=settings.mode==='dark'?'dark':'light';
-    document.documentElement.style.setProperty('--accent',accent);
-    document.documentElement.style.setProperty('--admin-accent',accent);
-    document.documentElement.dataset.theme=mode;
-    try{localStorage.setItem('church-site-theme',JSON.stringify({mode,accent}));}catch(_){ }
-  }
-
-  function loadCachedTheme(){
-    try{
-      const cached=JSON.parse(localStorage.getItem('church-site-theme')||'null');
-      if(cached)applyLoginTheme(cached);
-    }catch(_){ }
-  }
-
-  async function loadSavedTheme(){
-    try{
-      const response=await fetch('/api/site/content',{credentials:'include',cache:'no-store'});
-      if(!response.ok)return;
-      const payload=await response.json().catch(()=>null);
-      const data=payload?.content||payload||{};
-      if(data.theme)applyLoginTheme(data.theme);
-      window.refreshAdminLoginBranding?.(payload);
-    }catch(_){ }
-  }
-
-  function loadStyles(){
-    if(document.getElementById('adminLoginStyles'))return;
-    const link=document.createElement('link');
-    link.id='adminLoginStyles';
-    link.rel='stylesheet';
-    link.href='/admin/admin-login.css?v=4';
-    document.head.appendChild(link);
-  }
-
-  function icon(type){
-    if(type==='user')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>';
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M8 15h.01M12 15h.01M16 15h.01"/></svg>';
-  }
-
-  function apply(){
-    loadCachedTheme();
-    loadStyles();
-    const login=document.getElementById('login');
-    if(!login||login.dataset.loginUi==='v2')return;
-    login.dataset.loginUi='v2';
-    document.documentElement.classList.add('admin-login-ready');
-    document.body.classList.add('admin-login-page');
-    login.innerHTML=`
-      <div class="login-hero">
-        <div class="login-brand">
-          <div class="login-logo-wrap"><div class="login-logo-fallback" aria-hidden="true">✦</div></div>
-          <div><p class="login-kicker">Secure portal</p><p class="login-brand-name" data-login-brand>${FALLBACK_NAME}</p></div>
-        </div>
-        <h1>Welcome back.</h1>
-        <p class="login-subtitle">Sign in to manage your church website, media, services and live ministry content.</p>
-      </div>
-      <div class="login-form-wrap">
-        <form onsubmit="login(event)">
-          <div class="login-field"><label for="username">Username</label><span class="login-field-icon">${icon('user')}</span><input id="username" autocomplete="username" placeholder="Enter your username" required></div>
-          <div class="login-field"><label for="password">Password</label><span class="login-field-icon">${icon('lock')}</span><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></div>
-          <button class="login-submit" type="submit">Sign in to Administration <span aria-hidden="true">→</span></button>
-        </form>
-        <p id="loginMsg" role="status" aria-live="polite"></p>
-        <div class="login-footer"><span class="login-footer-dot"></span><span>Protected administrator access</span></div>
-      </div>`;
-    loadSavedTheme();
-  }
-
+  function applyLoginTheme(theme){const settings=theme||{};const accent=validAccent(settings.accent)?settings.accent:DEFAULT_ACCENT;const mode=settings.mode==='dark'?'dark':'light';document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--admin-accent',accent);document.documentElement.dataset.theme=mode;try{localStorage.setItem('church-site-theme',JSON.stringify({mode,accent}))}catch(_){} }
+  function loadCachedTheme(){try{const cached=JSON.parse(localStorage.getItem('church-site-theme')||'null');if(cached)applyLoginTheme(cached)}catch(_){} }
+  async function loadSavedTheme(){try{const response=await fetch('/api/site/content',{credentials:'include',cache:'no-store'});if(!response.ok)return;const payload=await response.json().catch(()=>null);const data=payload?.content||payload||{};if(data.theme)applyLoginTheme(data.theme);await loadLogo(payload||data);window.refreshAdminLoginBranding?.(payload)}catch(_){} }
+  async function loadLogo(content){const data=content?.content||content||{};let logo=resolveLogo(data.logo||data.churchLogo||data.logoUrl||data.logo_url||data.site?.logo||data.site?.logoUrl);if(logo&&isImage(logo))return setLoginLogo(logo);try{const response=await fetch('/api/media',{credentials:'include',cache:'no-store'});if(!response.ok)return;const media=await response.json().catch(()=>[]);const list=Array.isArray(media)?media:media?.items||media?.media||[];const item=list.find(x=>{const url=resolveLogo(x);const category=String(x?.category||x?.mediaCategory||'').toLowerCase();const title=String(x?.title||x?.name||x?.filename||'').toLowerCase();return url&&isImage(url,x?.type||x?.mimeType||x?.mime_type)&&(category.includes('logo')||title==='logo'||title.includes('church logo')||title.includes('church_logo'))});if(item){const url=resolveLogo(item);if(url)setLoginLogo(url)}}catch(_){} }
+  function setLoginLogo(url){document.querySelectorAll('.login-logo-wrap').forEach(el=>{const img=document.createElement('img');img.className='login-logo';img.alt='Church logo';img.src=url;img.onload=()=>{el.replaceChildren(img)};img.onerror=()=>{img.remove()}})}
+  function loadStyles(){if(document.getElementById('adminLoginStyles'))return;const link=document.createElement('link');link.id='adminLoginStyles';link.rel='stylesheet';link.href='/admin/admin-login.css?v=5';document.head.appendChild(link)}
+  function icon(type){if(type==='user')return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>';return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M8 15h.01M12 15h.01M16 15h.01"/></svg>'}
+  function apply(){loadCachedTheme();loadStyles();const login=document.getElementById('login');if(!login||login.dataset.loginUi==='v2')return;login.dataset.loginUi='v2';document.documentElement.classList.add('admin-login-ready');document.body.classList.add('admin-login-page');login.innerHTML=`<div class="login-hero"><div class="login-brand"><div class="login-logo-wrap"><div class="login-logo-fallback" aria-hidden="true"></div></div><div><p class="login-kicker">Secure portal</p><p class="login-brand-name" data-login-brand>${FALLBACK_NAME}</p></div></div><h1>Welcome back.</h1><p class="login-subtitle">Sign in to manage your church website, media, services and live ministry content.</p></div><div class="login-form-wrap"><form onsubmit="login(event)"><div class="login-field"><label for="username">Username</label><span class="login-field-icon">${icon('user')}</span><input id="username" autocomplete="username" placeholder="Enter your username" required></div><div class="login-field"><label for="password">Password</label><span class="login-field-icon">${icon('lock')}</span><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></div><button class="login-submit" type="submit">Sign in to Administration <span aria-hidden="true">→</span></button></form><p id="loginMsg" role="status" aria-live="polite"></p><div class="login-footer"><span class="login-footer-dot"></span><span>Protected administrator access</span></div></div>`;loadSavedTheme()}
   window.applyAdminLoginUI=apply;
-
-  window.refreshAdminLoginBranding=function(content){
-    const data=content?.content||content||{};
-    const name=data.churchName||data.church_name||data.name||data.site?.churchName||data.site?.church_name;
-    if(name)document.querySelectorAll('[data-login-brand]').forEach(el=>el.textContent=String(name));
-    const logo=data.logo||data.logoUrl||data.logo_url||data.site?.logo||data.site?.logoUrl;
-    if(logo){
-      const url=typeof logo==='string'?logo:(logo.url||logo.src||logo.publicUrl||logo.public_url||logo.path);
-      if(url)document.querySelectorAll('.login-logo-wrap').forEach(el=>{el.innerHTML='<img class="login-logo" alt="" src="'+String(url).replace(/"/g,'&quot;')+'">';});
-    }
-  };
-
+  window.refreshAdminLoginBranding=function(content){const data=content?.content||content||{};const name=data.churchName||data.church_name||data.name||data.site?.churchName||data.site?.church_name;if(name)document.querySelectorAll('[data-login-brand]').forEach(el=>el.textContent=String(name));const logo=resolveLogo(data.logo||data.logoUrl||data.logo_url||data.site?.logo||data.site?.logoUrl);if(logo)setLoginLogo(logo);else loadLogo(data)};
   apply();
 })();
