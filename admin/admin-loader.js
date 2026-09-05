@@ -10,6 +10,10 @@
   async function loadCurrentUserIntoRBAC(){try{const meResponse=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});if(!meResponse.ok)return false;const me=await meResponse.json();if(window.AdminRBAC){window.AdminRBAC.getCurrentUser=()=>me.user;window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));}return !!me.user;}catch(error){console.warn('Unable to load RBAC user profile:',error.message);return false;}}
   function hasPermission(permission){const user=window.AdminRBAC?.getCurrentUser?.();return user?.role==='super_admin'||window.AdminRBAC?.hasPermission?.(permission)===true;}
   window.loadAdminModules=async function(){if(started)return true;started=true;setLoadingState('Loading Administration…');try{
+    // The login UI must be available before admin-session runs. Loading the
+    // session first previously allowed its legacy login renderer to win the
+    // first paint and produce a visible login-screen flash.
+    await loadScript('admin-login-ui.js');
     await loadScript('admin-utils.js');
     setLoadingState('Connecting to administration server…');
     await loadScript('admin-session.js');
@@ -44,5 +48,5 @@
     setLoadingState('Almost ready…');
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     finishLoadingState();return true;
-  }catch(error){console.error('Admin modules failed to initialize:',error);started=false;setLoadingState('Unable to finish loading the admin panel. Please refresh and try again.');const loading=document.getElementById('adminModuleLoading');if(loading){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Unable to finish loading the admin panel. Please refresh and try again.';const errorText=loading.querySelector('[data-loading-error]');if(errorText){errorText.hidden=false;errorText.textContent='Please refresh the page and try again.'}loading.querySelector('[data-loading-retry]')?.classList.add('show');}return false;}};
+  }catch(error){console.error('Admin modules failed to initialize:',error);started=false;setLoadingState('Unable to finish loading the admin panel. Please refresh and try again.');const loading=document.getElementById('adminModuleLoading');if(loading){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Unable to finish loading the admin panel. Please refresh and try again. Please refresh and try again.';const errorText=loading.querySelector('[data-loading-error]');if(errorText){errorText.hidden=false;errorText.textContent='Please refresh the page and try again.'}loading.querySelector('[data-loading-retry]')?.classList.add('show');}return false;}};
 })();
