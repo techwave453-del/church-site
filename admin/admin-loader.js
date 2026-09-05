@@ -26,6 +26,8 @@
     // Load the module code, but do not trigger protected data requests until
     // the authenticated user's permissions are known.
     for(const name of modules.slice(2))await loadScript(name);
+    // Keep Media Center independent from site-content failures.
+    await loadScript('admin-media-runtime-fix.js');
 
     await loadScript('admin-navigation.js');
     window.AdminNavigation?.applyVisibility?.();
