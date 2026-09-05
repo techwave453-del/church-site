@@ -1,13 +1,18 @@
 (function(){
   'use strict';
-  // Media must remain usable even if the separate site-content request fails.
-  // The media module previously used Promise.all(/api/media + /api/site/content),
-  // so an unrelated site-content error prevented the existing library from rendering.
+  // Keep the Media Center independent from site-content failures and make the
+  // patch resilient to the order in which the admin modules finish loading.
   function install(){
-    if(typeof window.loadMedia!=='function'||window.__mediaRuntimeFixInstalled)return;
-    window.__mediaRuntimeFixInstalled=true;
+    if(window.__mediaRuntimeFixInstalled)return;
+    if(typeof window.loadMedia!=='function'||typeof window.adminApi!=='function')return;
+
     const originalApi=window.adminApi;
-    if(typeof originalApi!=='function')return;
+    const originalLoadMedia=window.loadMedia;
+    if(typeof originalLoadMedia!=='function')return;
+
+    window.__mediaRuntimeFixInstalled=true;
+    window.__originalAdminLoadMedia=originalLoadMedia;
+
     window.loadMedia=async function(){
       const wrappedApi=async function(url,options={}){
         const method=String(options.method||'GET').toUpperCase();
@@ -17,19 +22,28 @@
             if(response.ok)return response;
             console.warn('Media Center: site content unavailable; continuing with media library.',response.status);
           }catch(error){
-            console.warn('Media Center: site content request failed; continuing with media library.',error.message);
+            console.warn('Media Center: site content request failed; continuing with media library.',error?.message||error);
           }
           return new Response('{}',{status:200,headers:{'Content-Type':'application/json'}});
         }
         return originalApi(url,options);
       };
+
       window.adminApi=wrappedApi;
-      try{return await window.__originalAdminLoadMedia();}
-      finally{window.adminApi=originalApi;}
+      try{
+        return await originalLoadMedia();
+      }finally{
+        window.adminApi=originalApi;
+      }
     };
-    window.__originalAdminLoadMedia=original;
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
+
   const observer=new MutationObserver(install);
   observer.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(install,0);
+  setTimeout(install,250);
+  setTimeout(install,1000);
 })();
