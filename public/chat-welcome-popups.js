@@ -1,5 +1,5 @@
 (() => {
-  // Friendly, lightweight chat invitations. They appear briefly and never block the page.
+  // Friendly, lightweight chat invitations. They use the live site theme and never block the page.
   const STORAGE_KEY = 'church_chat_welcome_seen';
   const MAX_SHOWS = 3;
   const DISPLAY_MS = 8500;
@@ -10,14 +10,14 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .church-chat-welcome{position:fixed;right:24px;bottom:158px;z-index:100000;width:min(340px,calc(100vw - 34px));padding:16px 18px 15px;border-radius:20px;background:linear-gradient(135deg,#0b3028,#286451 58%,var(--accent-2,#4da6ff));color:#fff;box-shadow:0 18px 55px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.14);font-family:inherit;cursor:pointer;animation:chatWelcomeIn .55s cubic-bezier(.2,.8,.2,1);overflow:hidden}
-    .church-chat-welcome:before{content:'';position:absolute;width:120px;height:120px;right:-38px;top:-55px;border-radius:50%;background:rgba(255,255,255,.13);animation:chatWelcomePulse 3s ease-in-out infinite}
-    .church-chat-welcome:after{content:'✦';position:absolute;right:17px;top:12px;font-size:17px;color:rgba(255,255,255,.75);animation:chatWelcomeSpark 2.2s ease-in-out infinite}
+    .church-chat-welcome{position:fixed;right:24px;bottom:158px;z-index:100000;width:min(340px,calc(100vw - 34px));padding:16px 18px 15px;border-radius:20px;background:linear-gradient(135deg,var(--accent-3,#24537d),var(--accent-2,#4da6ff) 68%,var(--accent-1,#d9ecff));color:#fff;box-shadow:0 18px 55px var(--accent-shadow,rgba(77,166,255,.4)),0 0 0 1px color-mix(in srgb,var(--accent-2,#4da6ff) 45%,transparent);font-family:inherit;cursor:pointer;animation:chatWelcomeIn .55s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+    .church-chat-welcome:before{content:'';position:absolute;width:120px;height:120px;right:-38px;top:-55px;border-radius:50%;background:color-mix(in srgb,var(--accent-1,#fff) 22%,transparent);animation:chatWelcomePulse 3s ease-in-out infinite}
+    .church-chat-welcome:after{content:'✦';position:absolute;right:17px;top:12px;font-size:17px;color:var(--accent-1,#fff);animation:chatWelcomeSpark 2.2s ease-in-out infinite}
     .church-chat-welcome-inner{position:relative;display:flex;align-items:flex-start;gap:12px}
-    .church-chat-welcome-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:21px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
-    .church-chat-welcome-title{font-weight:800;font-size:14px;line-height:1.25;margin:1px 26px 4px 0}.church-chat-welcome-text{font-size:12px;line-height:1.5;color:rgba(255,255,255,.92)}
-    .church-chat-welcome-cta{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.15);font-size:10px;font-weight:800;letter-spacing:.03em}
-    .church-chat-welcome-close{position:absolute;right:8px;bottom:7px;width:25px;height:25px;border:0;border-radius:50%;background:transparent;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;z-index:2}.church-chat-welcome-close:hover{background:rgba(255,255,255,.12);color:#fff}
+    .church-chat-welcome-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent-1,#fff) 20%,transparent);font-size:21px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent-1,#fff) 22%,transparent)}
+    .church-chat-welcome-title{font-weight:800;font-size:14px;line-height:1.25;margin:1px 26px 4px 0}.church-chat-welcome-text{font-size:12px;line-height:1.5;color:color-mix(in srgb,#fff 92%,var(--accent-1,#fff))}
+    .church-chat-welcome-cta{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent-1,#fff) 20%,transparent);border:1px solid color-mix(in srgb,var(--accent-1,#fff) 28%,transparent);font-size:10px;font-weight:800;letter-spacing:.03em}
+    .church-chat-welcome-close{position:absolute;right:8px;bottom:7px;width:25px;height:25px;border:0;border-radius:50%;background:transparent;color:color-mix(in srgb,#fff 82%,var(--accent-1,#fff));font-size:17px;cursor:pointer;z-index:2}.church-chat-welcome-close:hover{background:color-mix(in srgb,var(--accent-1,#fff) 18%,transparent);color:#fff}
     .church-chat-welcome.is-leaving{animation:chatWelcomeOut .4s ease forwards}
     @keyframes chatWelcomeIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
     @keyframes chatWelcomeOut{to{opacity:0;transform:translateY(14px) scale(.96)}}
