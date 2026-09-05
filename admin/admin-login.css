@@ -25,6 +25,7 @@ body.admin-login-page .password-field input{padding-right:48px}
 body.admin-login-page .login-field input:focus{outline:0;border-color:var(--admin-login-accent);background:var(--admin-login-card);box-shadow:0 0 0 4px color-mix(in srgb,var(--admin-login-accent) 14%,transparent)}
 body.admin-login-page .login-field-icon{position:absolute;left:14px;top:36px;width:18px;height:18px;color:color-mix(in srgb,var(--admin-login-accent) 55%,#7b8795);pointer-events:none}
 body.admin-login-page .login-field-icon svg,body.admin-login-page .password-toggle svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.admin-login-page .password-field button:not(.password-toggle){display:none!important}
 body.admin-login-page .password-toggle{position:absolute;right:8px;top:32px;width:36px;height:36px;padding:8px;border:0;border-radius:9px;background:transparent;color:var(--admin-login-muted);display:grid;place-items:center;cursor:pointer;transition:background .18s,color .18s,transform .18s}
 body.admin-login-page .password-toggle:hover{background:color-mix(in srgb,var(--admin-login-accent) 9%,transparent);color:var(--admin-login-accent)}
 body.admin-login-page .password-toggle:focus-visible{outline:2px solid var(--admin-login-accent);outline-offset:1px}
