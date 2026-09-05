@@ -19,19 +19,89 @@
     document.head.appendChild(style);
   }
 
+  const stepIcons=[
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="7" cy="7" r="1"/><circle cx="7" cy="12" r="1"/><circle cx="7" cy="17" r="1"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
+  ];
+
   if(!document.getElementById('adminModuleLoading')){
     const loading=document.createElement('div');
     loading.id='adminModuleLoading';
     loading.hidden=false;
     loading.setAttribute('role','status');
     loading.setAttribute('aria-live','polite');
-    loading.innerHTML='<div class="admin-module-loading-card"><span class="admin-module-spinner" aria-hidden="true"></span><strong data-loading-text>Loading admin panel…</strong><small>Please wait while the latest admin modules are loaded.</small></div>';
+    loading.innerHTML='<div class="admin-module-loading-card">'+
+      '<div class="admin-module-logo-placeholder" data-logo-placeholder aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M6 9l6-6 6 6M5 21h14M8 21V11h8v10"/><path d="M7 16h10"/></svg></div>'+
+      '<img class="admin-module-logo" data-admin-logo alt="Kingdom Fellowship Christian Church logo">'+
+      '<h1 class="admin-module-brand" data-admin-brand>Kingdom Fellowship Christian Church</h1>'+
+      '<div class="admin-module-divider" aria-hidden="true"></div>'+
+      '<p class="admin-module-tagline" data-admin-tagline>Revealing Christ to Nations</p>'+
+      '<h2 class="admin-module-title" data-loading-text>Loading Administration…</h2>'+
+      '<p class="admin-module-subtitle" data-loading-subtitle>Preparing your workspace</p>'+
+      '<div class="admin-module-dots" aria-hidden="true"><span class="admin-module-dot active"></span><span class="admin-module-dot"></span><span class="admin-module-dot"></span><span class="admin-module-dot"></span></div>'+
+      '<div class="admin-module-steps" aria-hidden="true">'+[0,1,2,3].map((i)=>'<div class="admin-module-step" data-loading-step="'+i+'"><span class="admin-module-step-icon">'+stepIcons[i]+'</span><span>'+['Connecting<br>to server…','Initializing<br>components…','Checking<br>permissions…','Almost ready…'][i]+'</span></div>').join('')+'</div>'+ 
+      '<p class="admin-module-quote">“For God gives wisdom…” <span>James 1:5</span></p>'+
+      '<p class="admin-module-error" data-loading-error hidden></p><button class="admin-module-retry" data-loading-retry type="button">Retry connection</button>'+ 
+      '</div>';
     document.body.appendChild(loading);
-    const style=document.createElement('style');
-    style.dataset.adminLoadingState='true';
-    style.textContent='#adminModuleLoading{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(245,247,249,.96);text-align:center}#adminModuleLoading[hidden]{display:none!important}.admin-module-loading-card{width:min(360px,100%);padding:24px 20px;background:#fff;border:1px solid #dfe4e8;border-radius:16px;box-shadow:0 14px 45px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;gap:8px}.admin-module-loading-card small{color:#66717d}.admin-module-spinner{width:30px;height:30px;border:3px solid #dfe4e8;border-top-color:#0b6bcb;border-radius:50%;animation:adminModuleSpin .8s linear infinite}@keyframes adminModuleSpin{to{transform:rotate(360deg)}}@media(max-width:650px){#adminModuleLoading{padding:14px}.admin-module-loading-card{padding:22px 16px;border-radius:14px}}';
-    document.head.appendChild(style);
   }
+
+  function setLoadingStep(message){
+    const text=document.querySelector('[data-loading-text]');
+    const subtitle=document.querySelector('[data-loading-subtitle]');
+    const dots=[...document.querySelectorAll('.admin-module-dot')];
+    const steps=[...document.querySelectorAll('.admin-module-step')];
+    const value=String(message||'Loading Administration…');
+    const lower=value.toLowerCase();
+    let index=0;
+    if(lower.includes('access')||lower.includes('permission')||lower.includes('user access'))index=2;
+    else if(lower.includes('permitted')||lower.includes('section')||lower.includes('components')||lower.includes('modules'))index=3;
+    else if(lower.includes('initial')||lower.includes('admin panel'))index=1;
+    if(lower.includes('finish loading')||lower.includes('unable'))index=3;
+    if(text)text.textContent=value;
+    if(subtitle)subtitle.textContent=index===0?'Connecting to the administration service':index===1?'Initializing your administration workspace':index===2?'Verifying your administrator permissions':'Preparing your permitted sections';
+    dots.forEach((dot,i)=>{dot.classList.toggle('active',i===index);dot.classList.toggle('done',i<index)});
+    steps.forEach((step,i)=>{step.classList.toggle('active',i===index);step.classList.toggle('done',i<index)});
+  }
+  window.setAdminLoadingState=setLoadingStep;
+
+  window.loadAdminBranding=async function(){
+    try{
+      const [contentResponse,mediaResponse]=await Promise.all([
+        fetch('/api/site/content',{credentials:'same-origin',cache:'no-store'}).catch(()=>null),
+        fetch('/api/media',{credentials:'same-origin',cache:'no-store'}).catch(()=>null)
+      ]);
+      let content={};
+      if(contentResponse?.ok)content=await contentResponse.json().catch(()=>({}));
+      const logoCandidates=[];
+      if(content.logoUrl)logoCandidates.push(content.logoUrl);
+      if(content.logo)logoCandidates.push(content.logo);
+      if(content.churchLogo)logoCandidates.push(content.churchLogo);
+      if(mediaResponse?.ok){
+        const items=await mediaResponse.json().catch(()=>[]);
+        const logo=Array.isArray(items)?items.find(item=>item&&item.type==='image'&&String(item.category||'').toLowerCase()==='logo'):null;
+        if(logo?.url)logoCandidates.unshift(logo.url);
+      }
+      const logoUrl=logoCandidates.find(Boolean);
+      if(logoUrl){
+        const img=document.querySelector('[data-admin-logo]');
+        const placeholder=document.querySelector('[data-logo-placeholder]');
+        if(img){img.onload=()=>{img.classList.add('is-ready');if(placeholder)placeholder.hidden=true};img.onerror=()=>{img.removeAttribute('src');img.classList.remove('is-ready');if(placeholder)placeholder.hidden=false};img.src=logoUrl}
+      }
+      const brand=document.querySelector('[data-admin-brand]');
+      const tagline=document.querySelector('[data-admin-tagline]');
+      if(brand&&content.churchName)brand.textContent=content.churchName;
+      if(tagline&&content.tagline)tagline.textContent=content.tagline;
+      if(content.fallbackImage){
+        const loader=document.getElementById('adminModuleLoading');
+        if(loader)loader.style.backgroundImage='url("'+String(content.fallbackImage).replace(/"/g,'\\"')+'")';
+      }
+      return {logoUrl,content};
+    }catch(error){return {logoUrl:null,content:{}}}
+  };
+  loadAdminBranding();
 
   mount.innerHTML='<header class="admin-header"><strong class="admin-header__title">Kingdom Fellowship Christian Church — Admin</strong><div class="admin-header__actions"><span id="apiStatus" class="admin-header__status">Checking…</span><a class="secondary small admin-header__back" href="/" aria-label="Back to website">← Back to Website</a><button id="adminLogout" class="secondary small" type="button" onclick="logout()" hidden>Log out</button></div></header>';
 
@@ -84,7 +154,7 @@
     loader.onload=function(){if(window.loadAdminModules)window.loadAdminModules().catch(e=>console.error(e));};
     loader.onerror=function(){
       const loading=document.getElementById('adminModuleLoading');
-      if(loading){loading.hidden=false;const text=loading.querySelector('[data-loading-text]');if(text)text.textContent='Unable to load the admin loader. Please refresh and try again.';}
+      if(loading){loading.hidden=false;setLoadingStep('Unable to load the admin loader. Please refresh and try again.');const error=loading.querySelector('[data-loading-error]');if(error){error.hidden=false;error.textContent='The administration modules could not be loaded.'}loading.querySelector('[data-loading-retry]')?.classList.add('show');}
       console.error('Failed to load admin module loader.');
     };
     document.head.appendChild(loader);
