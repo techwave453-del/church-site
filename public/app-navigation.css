@@ -1,10 +1,12 @@
 /* Bottom navigation shown only when the church website is installed as an app */
 @media (display-mode: standalone){
   body{padding-bottom:82px}
-  #kfcc-mobile-app-nav{position:fixed;left:0;right:0;bottom:0;z-index:9997;height:72px;padding:6px max(10px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right));box-sizing:content-box;display:flex;align-items:center;justify-content:space-around;background:rgba(255,255,255,.97);border-top:1px solid rgba(23,59,103,.12);box-shadow:0 -5px 22px rgba(0,0,0,.09);backdrop-filter:blur(14px)}
+  #kfcc-mobile-app-nav{position:fixed;left:0;right:0;bottom:0;z-index:9997;height:72px;padding:6px max(10px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-right));box-sizing:content-box;display:flex;align-items:center;justify-content:space-around;background:rgba(255,255,255,.97);border-top:1px solid color-mix(in srgb,var(--accent-2,#173b67) 18%,transparent);box-shadow:0 -5px 22px rgba(0,0,0,.09);backdrop-filter:blur(14px)}
   #kfcc-mobile-app-nav button{appearance:none;border:0;background:transparent;color:#64748b;min-width:56px;min-height:58px;padding:5px 7px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 11px system-ui,sans-serif;cursor:pointer}
-  #kfcc-mobile-app-nav button.active{color:#173b67;background:rgba(23,59,103,.09)}
-  .kfcc-app-nav-icon{font-size:22px;line-height:22px;font-family:Arial,sans-serif}
+  #kfcc-mobile-app-nav button.active{color:var(--accent-2,#173b67);background:color-mix(in srgb,var(--accent-2,#173b67) 10%,transparent)}
+  .kfcc-app-nav-icon{width:22px;height:22px;display:grid;place-items:center}
+  .kfcc-app-nav-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .kfcc-app-nav-icon svg circle,.kfcc-app-nav-icon svg:first-child path:first-child{vector-effect:non-scaling-stroke}
   #pwa-install-button{display:none!important}
 }
 @media (display-mode: browser){#kfcc-mobile-app-nav{display:none!important}}
