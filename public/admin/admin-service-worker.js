@@ -4,7 +4,7 @@ const OFFLINE_URL = '/admin/admin.html';
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll([OFFLINE_URL, '/public/admin/admin-pwa.webmanifest']))
+      .then((cache) => cache.addAll([OFFLINE_URL, '/admin/admin-pwa.webmanifest']))
       .catch(() => {})
       .then(() => self.skipWaiting())
   );
