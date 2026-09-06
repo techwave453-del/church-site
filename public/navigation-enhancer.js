@@ -189,11 +189,21 @@
     }
   }
 
+  function loadPublicPwaInstaller() {
+    if (document.querySelector('script[data-public-pwa-installer]')) return;
+    const script = document.createElement('script');
+    script.src = '/pwa-install.js?v=1';
+    script.dataset.publicPwaInstaller = 'true';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+
   function enhance() {
     document.querySelectorAll('.navLinks').forEach(buildDesktop);
     buildDetailDesktopHeader();
     buildMobile(document.querySelector('.drawer:not(.detail-mobile-drawer)'));
     hydrateTermsBrand();
+    loadPublicPwaInstaller();
   }
 
   document.addEventListener('click', (event) => {
