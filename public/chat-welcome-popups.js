@@ -1,109 +1,58 @@
 (() => {
-  const STORAGE_KEY = 'church_chat_welcome_seen_v2';
-  const MAX_SHOWS = 3;
-  const DISPLAY_MS = 10000;
-  const FIRST_DELAY_MS = 3500;
-  const REPEAT_DELAY_MS = 48000;
+  const KEY='church_chat_welcome_v3', MAX=3, FIRST=3500, REPEAT=48000;
+  const mobile=()=>matchMedia('(max-width:600px)').matches, device=()=>mobile()?'mobile':'desktop';
+  const countKey=()=>`${KEY}_count_${device()}`, doneKey=()=>`${KEY}_${device()}`;
+  let shown=Number(sessionStorage.getItem(countKey())||0), hidden=false, timer;
 
-  const isMobile = () => window.matchMedia('(max-width: 600px)').matches;
-  const deviceKey = () => isMobile() ? 'mobile' : 'desktop';
-  const countKey = () => `${STORAGE_KEY}_count_${deviceKey()}`;
-  const doneKey = () => `${STORAGE_KEY}_${deviceKey()}`;
-
-  if (sessionStorage.getItem(doneKey()) === 'done') return;
-
-  const style = document.createElement('style');
-  style.textContent = `
-    .church-chat-welcome{
-      position:fixed!important;right:24px!important;bottom:158px!important;z-index:2147483000!important;
-      width:min(365px,calc(100vw - 34px))!important;display:block!important;visibility:visible!important;
-      opacity:1;font-family:inherit;cursor:pointer;pointer-events:auto!important;
-      animation:chatWelcomeIn .52s cubic-bezier(.2,.85,.2,1);filter:drop-shadow(0 16px 34px var(--accent-shadow,rgba(0,0,0,.22)));
-    }
-    .church-chat-welcome-bubble{
-      position:relative;padding:16px 17px 15px;border-radius:20px 20px 6px 20px;
-      background:var(--chat-welcome-bg,#fff);color:#17212b;
-      border:1px solid color-mix(in srgb,var(--accent-2,#4da6ff) 18%,#fff);
-      box-shadow:0 10px 30px rgba(0,0,0,.11);overflow:hidden;
-    }
-    .church-chat-welcome-bubble:before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent-1,#d9ecff),var(--accent-2,#4da6ff),var(--accent-3,#24537d));}
-    .church-chat-welcome-bubble:after{content:'';position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;background:var(--chat-welcome-bg,#fff);clip-path:polygon(0 0,100% 100%,0 100%);transform:translateY(1px);}
-    .church-chat-welcome-top{display:flex;align-items:center;gap:10px;padding-right:24px;margin-bottom:12px}
-    .church-chat-welcome-avatar{position:relative;width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--accent-1,#d9ecff),var(--accent-2,#4da6ff));color:#fff;font-size:18px;font-weight:800;box-shadow:0 4px 12px var(--accent-shadow,rgba(77,166,255,.24));border:2px solid #fff;overflow:hidden;}
-    .church-chat-welcome-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-    .church-chat-welcome-online{position:absolute;right:-1px;bottom:0;width:10px;height:10px;border-radius:50%;background:#2fb86b;border:2px solid #fff;z-index:2}
-    .church-chat-welcome-name{font-size:12px;font-weight:800;color:var(--accent-3,#24537d);line-height:1.15}
-    .church-chat-welcome-role{font-size:10px;color:#71808c;margin-top:3px}
-    .church-chat-welcome-time{margin-left:auto;align-self:flex-start;font-size:9px;color:#98a3ac;padding-top:2px}
-    .church-chat-welcome-close{position:absolute;right:8px;top:8px;width:25px;height:25px;border:0;border-radius:50%;background:rgba(0,0,0,.045);color:#71808c;font-size:17px;line-height:1;cursor:pointer;z-index:4;}
-    .church-chat-welcome-close:hover{background:rgba(0,0,0,.09)}
-    .church-chat-welcome-heading{font-size:15px;font-weight:800;color:#18242c;margin:0 0 5px 3px;letter-spacing:-.1px}
-    .church-chat-welcome-text{font-size:12.5px;line-height:1.55;color:#3a4650;padding-left:3px;max-width:330px}
-    .church-chat-welcome-text strong{color:var(--accent-3,#24537d)}
-    .church-chat-welcome-actions{display:flex;align-items:center;gap:9px;margin:13px 0 0 3px}
-    .church-chat-welcome-cta{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 13px;border-radius:999px;background:linear-gradient(135deg,var(--accent-2,#4da6ff),var(--accent-3,#24537d));color:#fff;font-size:10.5px;font-weight:800;box-shadow:0 6px 14px var(--accent-shadow,rgba(77,166,255,.23));}
-    .church-chat-welcome-cta span{font-size:14px;line-height:1;transition:transform .2s ease}.church-chat-welcome:hover .church-chat-welcome-cta span{transform:translateX(2px)}
-    .church-chat-welcome-later{font-size:10px;color:#7a8790;font-weight:700}
-    .church-chat-welcome-typing{display:flex;align-items:center;gap:3px;margin:10px 0 0 3px;height:7px}
-    .church-chat-welcome-typing i{display:block;width:4px;height:4px;border-radius:50%;background:var(--accent-2,#4da6ff);animation:chatWelcomeTyping 1.25s ease-in-out infinite}
-    .church-chat-welcome-typing i:nth-child(2){animation-delay:.16s}.church-chat-welcome-typing i:nth-child(3){animation-delay:.32s}
-    .church-chat-welcome.is-leaving{animation:chatWelcomeOut .36s ease forwards}
-    @keyframes chatWelcomeIn{from{opacity:0;transform:translateY(18px) scale(.95)}to{opacity:1;transform:none}}
-    @keyframes chatWelcomeOut{to{opacity:0;transform:translateY(12px) scale(.97)}}
-    @keyframes chatWelcomeTyping{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-3px);opacity:1}}
-    :root[data-site-theme="dark"] .church-chat-welcome-bubble{--chat-welcome-bg:#111c27;color:#f8fafc;border-color:color-mix(in srgb,var(--accent-2,#4da6ff) 28%,#111c27);box-shadow:0 14px 38px rgba(0,0,0,.45)}
-    :root[data-site-theme="dark"] .church-chat-welcome-bubble:after{background:#111c27}
-    :root[data-site-theme="dark"] .church-chat-welcome-heading,:root[data-site-theme="dark"] .church-chat-welcome-text{color:#f4f7fa}
-    :root[data-site-theme="dark"] .church-chat-welcome-name{color:#bfe0ff}
-    :root[data-site-theme="dark"] .church-chat-welcome-role,:root[data-site-theme="dark"] .church-chat-welcome-time,:root[data-site-theme="dark"] .church-chat-welcome-later{color:#9fb0bf}
-    :root[data-site-theme="dark"] .church-chat-welcome-close{background:rgba(255,255,255,.07);color:#cbd5e1}
-    @media(max-width:600px){.church-chat-welcome{right:10px!important;left:10px!important;bottom:calc(116px + env(safe-area-inset-bottom))!important;width:auto!important;max-width:none!important}.church-chat-welcome-bubble{border-radius:18px 18px 6px 18px;padding:14px 14px 13px}.church-chat-welcome-avatar{width:38px;height:38px;flex-basis:38px}.church-chat-welcome-heading{font-size:14px}.church-chat-welcome-text{font-size:12px}.church-chat-welcome-actions{margin-top:11px}}
-    @media(prefers-reduced-motion:reduce){.church-chat-welcome,.church-chat-welcome-typing i{animation:none!important}.church-chat-welcome-cta span{transition:none}}
+  const style=document.createElement('style');
+  style.textContent=`
+  .church-chat-welcome{position:fixed;right:24px;bottom:158px;z-index:2147483000;width:min(390px,calc(100vw - 34px));font-family:inherit;animation:ccwIn .45s cubic-bezier(.2,.85,.2,1);filter:drop-shadow(0 16px 34px rgba(0,0,0,.22))}
+  .church-chat-welcome-bubble{position:relative;padding:18px;border-radius:20px 20px 7px 20px;background:#fff;color:#18242c;border:1px solid color-mix(in srgb,var(--accent-2,#4da6ff) 20%,#fff);box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden}
+  .church-chat-welcome-bubble:before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent-1,#d9ecff),var(--accent-2,#4da6ff),var(--accent-3,#24537d))}
+  .church-chat-welcome-close{position:absolute;right:8px;top:8px;width:28px;height:28px;border:0;border-radius:50%;background:rgba(0,0,0,.05);color:#66747e;font-size:18px;cursor:pointer;z-index:2}
+  .church-chat-welcome-top{display:flex;align-items:center;gap:10px;padding-right:28px;margin-bottom:12px}.church-chat-welcome-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--accent-1,#d9ecff),var(--accent-2,#4da6ff));color:#fff;font-size:18px;font-weight:800;overflow:hidden;position:relative}.church-chat-welcome-avatar img{width:100%;height:100%;object-fit:cover}.church-chat-welcome-online{position:absolute;right:0;bottom:0;width:10px;height:10px;border-radius:50%;background:#2fb86b;border:2px solid #fff}.church-chat-welcome-name{font-size:12px;font-weight:800;color:var(--accent-3,#24537d)}.church-chat-welcome-role{font-size:10px;color:#7a8790;margin-top:3px}.church-chat-welcome-time{margin-left:auto;font-size:9px;color:#98a3ac;align-self:flex-start}
+  .church-chat-welcome-heading{font-size:16px;font-weight:800;margin:0 0 5px 3px}.church-chat-welcome-text{font-size:12.5px;line-height:1.5;color:#46535d;margin-left:3px}.church-chat-welcome-text strong{color:var(--accent-3,#24537d)}
+  .church-chat-welcome-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:15px 0 0 3px}.church-chat-welcome-action{min-height:42px;border:0;border-radius:12px;padding:7px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:inherit;font-size:10px;font-weight:800;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}.church-chat-welcome-action:hover{transform:translateY(-2px);box-shadow:0 7px 16px rgba(0,0,0,.12)}.church-chat-welcome-chat{background:linear-gradient(135deg,var(--accent-2,#4da6ff),var(--accent-3,#24537d));color:#fff}.church-chat-welcome-tour{background:#edf6ff;color:#24537d;border:1px solid #cfe5fa}.church-chat-welcome-exit{background:#f5f6f7;color:#65727b;border:1px solid #e1e5e8}.church-chat-welcome-action .ico{font-size:16px;line-height:1}
+  .church-site-tour{position:fixed;inset:0;z-index:2147482990;pointer-events:none}.church-site-tour-backdrop{position:absolute;inset:0;background:rgba(5,12,18,.66);pointer-events:auto}.church-site-tour-hole{position:absolute;border-radius:14px;box-shadow:0 0 0 4px rgba(255,255,255,.95),0 0 0 9999px rgba(5,12,18,.66);pointer-events:none;transition:all .35s ease}.church-site-tour-card{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);width:min(520px,calc(100vw - 28px));background:#fff;color:#17212b;border-radius:18px;padding:18px;box-shadow:0 20px 70px rgba(0,0,0,.35);pointer-events:auto}.church-site-tour-card small{display:block;color:#687782;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}.church-site-tour-card h3{margin:0 0 6px;font-size:18px}.church-site-tour-card p{margin:0;color:#53616b;font-size:13px;line-height:1.5}.church-site-tour-controls{display:flex;gap:8px;align-items:center;margin-top:14px}.church-site-tour-controls button{border:1px solid #d7e0e5;background:#f7f9fa;color:#26343d;border-radius:10px;padding:9px 13px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.church-site-tour-controls .tour-next{margin-left:auto;background:var(--accent-3,#24537d);color:#fff;border-color:var(--accent-3,#24537d)}.church-site-tour-progress{font-size:10px;color:#7c8991;font-weight:700;margin-right:auto}.church-site-tour-focus{scroll-margin-top:130px}
+  @keyframes ccwIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+  @media(max-width:600px){.church-chat-welcome{left:10px;right:10px;bottom:calc(116px + env(safe-area-inset-bottom));width:auto}.church-chat-welcome-bubble{padding:15px;border-radius:18px 18px 7px 18px}.church-chat-welcome-actions{gap:6px}.church-chat-welcome-action{font-size:9.5px}.church-site-tour-card{bottom:14px}.church-site-tour-card h3{font-size:16px}.church-site-tour-card p{font-size:12px}}
+  @media(prefers-reduced-motion:reduce){.church-chat-welcome,.church-site-tour-hole{animation:none;transition:none!important}.church-chat-welcome-action{transition:none}}
+  :root[data-site-theme="dark"] .church-chat-welcome-bubble,:root[data-site-theme="dark"] .church-site-tour-card{background:#111c27;color:#f4f7fa}:root[data-site-theme="dark"] .church-site-tour-card p{color:#b7c3cc}
   `;
   document.head.appendChild(style);
 
-  let shown = Number(sessionStorage.getItem(countKey()) || 0);
-  let timer = null;
-  let hiddenByUser = false;
+  const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]));
+  const logoOf=v=>{if(!v)return'';if(typeof v==='string')return v.trim();if(Array.isArray(v)){for(const x of v){const r=logoOf(x);if(r)return r}}if(typeof v==='object')for(const k of ['url','src','publicUrl','public_url','logoUrl','logo_url','fileUrl','file_url','href','path','logo','image']){const r=logoOf(v[k]);if(r)return r}return''};
+  const site=()=>fetch('/api/site/content',{headers:{Accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+  const openChat=()=>{const p=document.querySelector('.church-chat-panel');if(p){p.style.display='flex';p.querySelector('.church-chat-input')?.focus();return}const b=document.querySelector('.page .chat,.chat,[aria-label*="chat" i],[title*="chat" i]');if(b&&!b.closest('.church-chat-welcome'))b.click()};
 
-  function resolveLogo(value){
-    if(!value)return '';
-    if(typeof value==='string')return value.trim();
-    if(Array.isArray(value)){for(const item of value){const found=resolveLogo(item);if(found)return found;}return '';}
-    if(typeof value==='object'){for(const key of ['url','src','publicUrl','public_url','logoUrl','logo_url','fileUrl','file_url','href','path','logo','image','thumbnail','value']){const found=resolveLogo(value[key]);if(found)return found;}}
-    return '';
+  const steps=[
+    ['header','Your church navigation','Use the top navigation to move around the website quickly.'],
+    ['#home','Welcome home','The homepage hero introduces the church and provides quick access to the main areas.'],
+    ['#about','About the church','Learn about the church, its story, vision and what you can expect when you visit.'],
+    ['#live','Live worship','When enabled, the live section lets you watch the current service directly on the website.'],
+    ['#events','Services & events','Explore gatherings, service times and programmes published by the church.'],
+    ['#media','Media & more','Find media, practical information, testimonies and other useful church content.'],
+    ['#resources','Faith & resources','Explore membership classes and resources for your next step.'],
+    ['#visit','Plan your visit','Find useful visit information and current published contact details.'],
+    ['#give','Give online','View the current giving information configured by the church.'],
+    ['#contact','Stay connected','Find the published ways to contact and connect with the church.']
+  ];
+
+  function startTour(){
+    document.querySelector('.church-chat-welcome')?.remove();let i=0;
+    const root=document.createElement('div');root.className='church-site-tour';root.innerHTML='<div class="church-site-tour-backdrop"></div><div class="church-site-tour-hole"></div><div class="church-site-tour-card"><small></small><h3></h3><p></p><div class="church-site-tour-controls"><button class="tour-skip">Skip</button><span class="church-site-tour-progress"></span><button class="tour-back">Back</button><button class="tour-next">Next</button></div></div>';document.body.appendChild(root);
+    const hole=root.querySelector('.church-site-tour-hole'),small=root.querySelector('small'),title=root.querySelector('h3'),text=root.querySelector('p'),progress=root.querySelector('.church-site-tour-progress'),back=root.querySelector('.tour-back'),next=root.querySelector('.tour-next');
+    const finish=()=>{root.remove();document.body.style.removeProperty('overflow');window.removeEventListener('resize',render)};
+    function render(){const s=steps[i],el=document.querySelector(s[0]);if(!el){if(i<steps.length-1){i++;render()}else finish();return}el.classList.add('church-site-tour-focus');el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{const r=el.getBoundingClientRect(),p=5;hole.style.left=`${Math.max(4,r.left-p)}px`;hole.style.top=`${Math.max(4,r.top-p)}px`;hole.style.width=`${Math.max(20,r.width+p*2)}px`;hole.style.height=`${Math.max(20,r.height+p*2)}px`},140);small.textContent=`Website tour · ${i+1} of ${steps.length}`;title.textContent=s[1];text.textContent=s[2];progress.textContent=`${i+1}/${steps.length}`;back.disabled=i===0;next.textContent=i===steps.length-1?'Finish':'Next'}
+    root.querySelector('.church-site-tour-backdrop').onclick=finish;root.querySelector('.tour-skip').onclick=finish;back.onclick=()=>{if(i>0){i--;render()}};next.onclick=()=>{if(i<steps.length-1){i++;render()}else finish()};window.addEventListener('resize',render);render();
   }
 
-  function getSite(){return fetch('/api/site/content',{headers:{Accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():{}).catch(()=>({}));}
-  function findChatLauncher(){return document.querySelector('.page .chat')||document.querySelector('[aria-label*="chat" i]')||document.querySelector('[title*="chat" i]')||document.querySelector('button[class*="chat" i]');}
-  function openChat(){const panel=document.querySelector('.church-chat-panel');if(panel){panel.style.display='flex';panel.querySelector('.church-chat-input')?.focus();return;}findChatLauncher()?.click();}
-  function removePopup(popup){if(!popup||popup.classList.contains('is-leaving'))return;popup.classList.add('is-leaving');setTimeout(()=>popup.remove(),380);}
-  function escapeHtml(value){return String(value??'').replace(/[&<>\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[ch]));}
-
-  async function showPopup(){
-    if(hiddenByUser||shown>=MAX_SHOWS||document.querySelector('.church-chat-welcome'))return;
-    const site=await getSite();
-    if(hiddenByUser||document.querySelector('.church-chat-welcome'))return;
-    shown++;sessionStorage.setItem(countKey(),String(shown));
-    const church=String(site?.churchName||'our church').trim()||'our church';
-    const logo=resolveLogo(site?.logo||site?.churchLogo||site?.logoUrl);
-    const messages=[
-      {heading:'Need a little help?',text:`Hi! 👋 Welcome to <strong>${escapeHtml(church)}</strong>. Have a question about visiting, services, prayer, giving or anything else? We’re here for you.`,cta:'Chat with us'},
-      {heading:'We’re glad you’re here 👋',text:`If this is your first time visiting <strong>${escapeHtml(church)}</strong>, feel free to ask us anything. We’d love to help you feel at home.`,cta:'Talk to us'},
-      {heading:'Can we help you today?',text:`Whether you need service times, directions, prayer or more information about <strong>${escapeHtml(church)}</strong>, just start a conversation. 🙏`,cta:'Start a chat'}
-    ];
-    const message=messages[Math.min(shown-1,messages.length-1)];
-    const popup=document.createElement('aside');
-    popup.className='church-chat-welcome';popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Church chat invitation');
-    popup.innerHTML=`<div class="church-chat-welcome-bubble"><button class="church-chat-welcome-close" type="button" aria-label="Close chat invitation">×</button><div class="church-chat-welcome-top"><div class="church-chat-welcome-avatar">${logo?`<img src="${escapeHtml(logo)}" alt="">`:'✦'}<span class="church-chat-welcome-online"></span></div><div><div class="church-chat-welcome-name">Church Team</div><div class="church-chat-welcome-role">Online · Ready to help</div></div><span class="church-chat-welcome-time">now</span></div><div class="church-chat-welcome-heading">${message.heading}</div><div class="church-chat-welcome-text">${message.text}</div><div class="church-chat-welcome-typing" aria-hidden="true"><i></i><i></i><i></i></div><div class="church-chat-welcome-actions"><span class="church-chat-welcome-cta">${message.cta} <span>›</span></span><span class="church-chat-welcome-later">or close for now</span></div></div>`;
-    document.body.appendChild(popup);
-    popup.addEventListener('click',e=>{if(e.target.closest('.church-chat-welcome-close'))return;openChat();removePopup(popup);});
-    popup.querySelector('.church-chat-welcome-close').addEventListener('click',e=>{e.stopPropagation();hiddenByUser=true;sessionStorage.setItem(doneKey(),'done');removePopup(popup);});
-    clearTimeout(timer);timer=setTimeout(()=>removePopup(popup),DISPLAY_MS);
-    if(shown>=MAX_SHOWS)sessionStorage.setItem(doneKey(),'done');
+  async function show(){
+    if(hidden||shown>=MAX||document.querySelector('.church-chat-welcome'))return;const data=await site();if(hidden||document.querySelector('.church-chat-welcome'))return;shown++;sessionStorage.setItem(countKey(),String(shown));
+    const name=String(data?.churchName||'our church').trim()||'our church',logo=logoOf(data?.logo||data?.churchLogo||data?.logoUrl),p=document.createElement('aside');p.className='church-chat-welcome';p.setAttribute('role','dialog');p.innerHTML=`<div class="church-chat-welcome-bubble"><button class="church-chat-welcome-close" type="button" aria-label="Close">×</button><div class="church-chat-welcome-top"><div class="church-chat-welcome-avatar">${logo?`<img src="${esc(logo)}" alt="">`:'✦'}<span class="church-chat-welcome-online"></span></div><div><div class="church-chat-welcome-name">${esc(name)}</div><div class="church-chat-welcome-role">Online · Ready to help</div></div><span class="church-chat-welcome-time">now</span></div><div class="church-chat-welcome-heading">Welcome! 👋</div><div class="church-chat-welcome-text">How would you like to get started? Chat with the church or take a quick tour of the website.</div><div class="church-chat-welcome-actions"><button class="church-chat-welcome-action church-chat-welcome-chat"><span class="ico">💬</span><span>Start Chat</span></button><button class="church-chat-welcome-action church-chat-welcome-tour"><span class="ico">🚀</span><span>Take a Tour</span></button><button class="church-chat-welcome-action church-chat-welcome-exit"><span class="ico">✕</span><span>Exit</span></button></div></div>`;
+    document.body.appendChild(p);p.querySelector('.church-chat-welcome-chat').onclick=()=>{openChat();p.remove()};p.querySelector('.church-chat-welcome-tour').onclick=startTour;
+    const exit=()=>{hidden=true;sessionStorage.setItem(doneKey(),'done');clearTimeout(timer);p.remove()};p.querySelector('.church-chat-welcome-exit').onclick=exit;p.querySelector('.church-chat-welcome-close').onclick=exit;clearTimeout(timer);timer=setTimeout(()=>p.remove(),15000);if(shown>=MAX)sessionStorage.setItem(doneKey(),'done');
   }
-
-  setTimeout(showPopup,FIRST_DELAY_MS);
-  function scheduleRepeat(){if(shown<MAX_SHOWS&&!hiddenByUser){setTimeout(()=>{showPopup();scheduleRepeat();},REPEAT_DELAY_MS);}}
-  setTimeout(scheduleRepeat,FIRST_DELAY_MS+DISPLAY_MS+4000);
+  setTimeout(show,FIRST);function repeat(){if(shown<MAX&&!hidden)setTimeout(()=>{show();repeat()},REPEAT)}setTimeout(repeat,FIRST+20000);
 })();
