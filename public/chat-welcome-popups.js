@@ -98,7 +98,7 @@
     let closed=false;
     const cleanupTarget=()=>{if(previousTarget){previousTarget.classList.remove('church-site-tour-targeting');previousTarget=null}};
     const finish=()=>{closed=true;clearTimeout(typingTimer);cleanupTarget();root.remove();document.body.style.removeProperty('overflow');window.removeEventListener('resize',render);window.removeEventListener('scroll',reposition,true)};
-    const typeText=(value)=>{clearTimeout(typingTimer);text.textContent='';const caret=document.createElement('span');caret.className='tour-typing';text.appendChild(caret);let n=0;const tick=()=>{if(closed)return;if(n<value.length){text.insertBefore(document.createTextNode(value[n++]),caret);typingTimer=setTimeout(tick,12)}else caret.remove()};tick()};
+    const typeText=(value)=>{clearTimeout(typingTimer);text.textContent='';const caret=document.createElement('span');caret.className='tour-typing';text.appendChild(caret);let n=0;const tick=()=>{if(closed)return;if(n<value.length){text.insertBefore(document.createTextNode(value[n++]),caret);typingTimer=setTimeout(tick,4)}else caret.remove()};tick()};
     function positionGuide(r){
       const vw=innerWidth,vh=innerHeight,gw=Math.min(360,vw-28),gh=125;
       guide.classList.remove('guide-right');
