@@ -35,5 +35,6 @@
 </section></main>
 <div id="mediaModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="mediaModalTitle"><div class="modal-card"><div class="modal-head"><div><h2 id="mediaModalTitle">Edit Media</h2><div id="mediaModalMeta" class="meta"></div></div><button type="button" class="secondary small" onclick="closeMediaEditor()">Close</button></div><form onsubmit="saveMediaEdit(event)"><input type="hidden" id="editMediaId"><label>Title</label><input id="editMediaTitle" maxlength="200" required><label>Description</label><textarea id="editMediaDescription" maxlength="2000" placeholder="Describe this image for visitors and future site editors."></textarea><label>Category</label><select id="editMediaCategory"><option>general</option><option>hero</option><option>logo</option><option>gallery</option><option>services</option><option>about</option><option>events</option><option>resources</option><option>other</option></select><div class="toolbar" style="margin-top:14px;justify-content:flex-end"><button type="button" class="secondary" onclick="closeMediaEditor()">Cancel</button><button class="primary">Save Changes</button></div></form></div></div>
 <script src="/admin/admin-pwa.js?v=admin-2"></script>
+<script src="/admin/admin-login-enhancements.js?v=1"></script>
 <script src="/admin/admin-header.js"></script>
 </body></html>
