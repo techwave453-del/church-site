@@ -11,9 +11,9 @@
   document.documentElement.classList.remove('admin-ui-ready','admin-login-ready');
   document.documentElement.classList.add('admin-login-skeleton');
 
-  // Never hide #login here. The skeleton is the visual loading layer and the
-  // branded login UI removes it synchronously. Hiding #login was causing a
-  // mobile white screen when a stylesheet/script handoff was delayed.
+  // The skeleton is the only first-paint login layer. admin-login-ui.js replaces
+  // the legacy #login contents with the current branded interface before the
+  // skeleton is dismissed, preventing the old form from flashing on screen.
   if(!document.getElementById('adminLoginCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminLoginCriticalStyle';
@@ -33,54 +33,26 @@
 
   function setLoadingState(message){
     document.documentElement.classList.add('admin-modules-loading');
-    const loading=document.getElementById('adminModuleLoading');
-    if(loading){
-      const text=loading.querySelector('[data-loading-text]');
-      if(text)text.textContent=message||'Loading admin panel…';
-      loading.hidden=false;
-    }
+    if(window.adminLoadingScreen?.visible)window.adminLoadingScreen.setMessage(message||'Loading admin panel…');
     if(window.setAdminLoadingState)window.setAdminLoadingState(message);
   }
 
   function finishLoadingState(){
     document.documentElement.classList.add('admin-ui-ready');
     document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
-    const loading=document.getElementById('adminModuleLoading');
-    if(loading){
-      loading.classList.add('is-complete');
-      setTimeout(()=>{
-        loading.hidden=true;
-        loading.classList.remove('is-complete');
-      },380);
-    }
-  }
-
-  function ensureBootstrapErrorStyles(){
-    if(document.getElementById('adminBootstrapErrorStyle'))return;
-    const style=document.createElement('style');
-    style.id='adminBootstrapErrorStyle';
-    style.textContent='\n      #adminBootstrapError{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:24px;background:var(--bg,#f5f7f9);color:var(--ink,#18202a);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}\n      #adminBootstrapError .admin-bootstrap-error-card{width:min(520px,100%);background:#fff;border:1px solid #dfe4e8;border-radius:18px;padding:28px;box-shadow:0 18px 60px #0002;text-align:center}\n      #adminBootstrapError h2{margin:0 0 8px;font-size:22px}\n      #adminBootstrapError p{margin:0 0 18px;color:#66717d}\n      #adminBootstrapError button{border:0;border-radius:10px;padding:11px 18px;background:#17202b;color:#fff;font:inherit;font-weight:700;cursor:pointer}\n      #adminBootstrapError button:focus-visible{outline:3px solid #0b6bcb;outline-offset:2px}\n    ';
-    (document.head||document.documentElement).appendChild(style);
+    window.adminLoadingScreen?.hide();
   }
 
   function showBootstrapError(error){
     console.error('Admin modules failed to initialize:',error);
-    document.documentElement.classList.add('admin-ui-ready','admin-login-ready');
+    document.documentElement.classList.add('admin-ui-ready');
     document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
-    const existing=document.getElementById('adminBootstrapError');
-    if(existing)existing.remove();
-    ensureBootstrapErrorStyles();
-    const panel=document.createElement('div');
-    panel.id='adminBootstrapError';
-    panel.setAttribute('role','alert');
-    panel.innerHTML='<div class="admin-bootstrap-error-card"><h2>Admin panel could not finish loading</h2><p>The latest administrator interface is still intact, but one of its components did not initialize correctly. Refresh and try again.</p><button type="button" data-admin-bootstrap-retry>Retry</button></div>';
-    document.body.appendChild(panel);
-    panel.querySelector('[data-admin-bootstrap-retry]').addEventListener('click',()=>{
-      panel.remove();
+    window.adminLoadingScreen?.showError('A required administrator component did not initialize correctly.',()=>{
       started=false;
       authenticated=false;
       document.documentElement.classList.remove('admin-ui-ready','admin-login-ready');
       document.documentElement.classList.add('admin-login-skeleton');
+      window.adminLoadingScreen?.hide();
       window.loadAdminModules();
     });
   }
@@ -89,8 +61,9 @@
     console.warn('Admin pre-auth bootstrap warning:',error);
     document.documentElement.classList.add('admin-ui-ready','admin-login-ready');
     document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
+    window.adminLoadingScreen?.hide();
     const login=document.getElementById('login');
-    if(!login)return showBootstrapError(error);
+    if(!login)return;
     let warning=document.getElementById('adminBootstrapWarning');
     if(!warning){
       warning=document.createElement('div');
@@ -158,6 +131,7 @@
     authenticated=false;
     setLoadingState('Loading Administration…');
     try{
+      await loadScript('admin-loading.js');
       await loadScript('admin-login-ui.js');
       await loadScript('admin-utils.js');
       setLoadingState('Connecting to administration server…');
@@ -168,6 +142,10 @@
         finishLoadingState();
         return false;
       }
+      // This is the dedicated post-authentication screen. It is intentionally
+      // separate from the login skeleton and remains visible until the full
+      // dashboard and permitted modules are ready.
+      window.adminLoadingScreen?.show('Loading your administration workspace…');
       if(window.loadAdminBranding)await window.loadAdminBranding();
       setLoadingState('Initializing administration components…');
       await loadScript('admin-users.js');
@@ -175,7 +153,7 @@
       const hasUser=await loadCurrentUserIntoRBAC();
       if(!hasUser){
         started=false;
-        finishLoadingState();
+        window.adminLoadingScreen?.showError('Your administrator session could not be verified.',()=>location.reload());
         return false;
       }
       setLoadingState('Checking administrator permissions…');
