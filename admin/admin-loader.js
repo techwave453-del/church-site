@@ -8,14 +8,14 @@
     critical.textContent='html:not(.admin-ui-ready) #adminHeader,html:not(.admin-ui-ready) #app{visibility:hidden!important}';
     (document.head||document.documentElement).appendChild(critical);
   }
-  document.documentElement.classList.remove('admin-ui-ready');
+  document.documentElement.classList.remove('admin-ui-ready');\n  document.documentElement.classList.add('admin-login-skeleton');
 
   // Hide the server-rendered legacy login before any asynchronous module can load.
   // admin-login-ui.js removes this gate synchronously once it replaces the markup.
   if(!document.getElementById('adminLoginCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminLoginCriticalStyle';
-    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}';
+    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}\nhtml.admin-login-skeleton #login{visibility:hidden!important}';
     (document.head||document.documentElement).appendChild(critical);
   }
 
@@ -23,7 +23,7 @@
   let started=false;
   const buildVersion=window.__ADMIN_BUILD_VERSION||Date.now().toString();
   function setLoadingState(message){document.documentElement.classList.add('admin-modules-loading');const loading=document.getElementById('adminModuleLoading');if(loading){const text=loading.querySelector('[data-loading-text]');if(text)text.textContent=message||'Loading admin panel…';loading.hidden=false;}if(window.setAdminLoadingState)window.setAdminLoadingState(message);}
-  function finishLoadingState(){document.documentElement.classList.add('admin-ui-ready');document.documentElement.classList.remove('admin-modules-loading');const loading=document.getElementById('adminModuleLoading');if(loading)loading.hidden=true;}
+  function finishLoadingState(){document.documentElement.classList.add('admin-ui-ready');document.documentElement.classList.remove('admin-modules-loading');const loading=document.getElementById('adminModuleLoading');if(loading){loading.classList.add('is-complete');setTimeout(()=>{loading.hidden=true;loading.classList.remove('is-complete')},380);}}
   function loadScript(name){return new Promise((resolve,reject)=>{const existing=document.querySelector(`script[data-admin-module="${name}"]`);if(existing)return resolve();const s=document.createElement('script');s.src='/admin/'+name+'?v='+encodeURIComponent(buildVersion);s.dataset.adminModule=name;s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load '+name));document.head.appendChild(s);});}
   async function loadCurrentUserIntoRBAC(){try{const meResponse=await fetch('/api/admin/me',{credentials:'same-origin',cache:'no-store'});if(!meResponse.ok)return false;const me=await meResponse.json();if(window.AdminRBAC){window.AdminRBAC.getCurrentUser=()=>me.user;window.AdminRBAC.hasPermission=(permission)=>me.user?.role==='super_admin'||(Array.isArray(me.user?.permissions)&&me.user.permissions.includes(permission));}return !!me.user;}catch(error){console.warn('Unable to load RBAC user profile:',error.message);return false;}}
   function hasPermission(permission){const user=window.AdminRBAC?.getCurrentUser?.();return user?.role==='super_admin'||window.AdminRBAC?.hasPermission?.(permission)===true;}
