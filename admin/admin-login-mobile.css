@@ -1,0 +1,37 @@
+/* Mobile login refinement: keeps the login compact, touch-friendly and stable on small Android screens. */
+@media(max-width:900px){
+  body.admin-login-page main{min-height:100dvh!important}
+  body.admin-login-page .login{min-height:100dvh!important;justify-content:flex-start!important}
+  body.admin-login-page .login-hero{padding:24px 20px 22px!important}
+  body.admin-login-page .login-brand{gap:11px;margin-bottom:18px}
+  body.admin-login-page .login-logo{width:52px;height:52px;border-radius:15px}
+  body.admin-login-page .login-logo-fallback{width:52px;height:52px;border-radius:15px}
+  body.admin-login-page .login-brand-name{font-size:14px;max-width:calc(100vw - 100px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.admin-login-page .login h1{font-size:clamp(25px,7vw,30px)}
+  body.admin-login-page .login-hero .login-subtitle{font-size:13px;line-height:1.45;margin-top:8px}
+  body.admin-login-page .login-form-wrap{padding:22px 20px 26px!important}
+  body.admin-login-page .login-field{margin-bottom:15px}
+  body.admin-login-page .login-field input{height:52px;font-size:16px}
+  body.admin-login-page .login-submit{height:52px;font-size:14px}
+  body.admin-login-page #firstSetupLink{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:10px;padding:10px 14px;text-decoration:none;font-weight:700}
+  body.admin-login-page .login-footer{margin-top:17px;padding-top:13px}
+}
+@media(max-width:390px){
+  body.admin-login-page .login-hero{padding:20px 16px 18px!important}
+  body.admin-login-page .login-form-wrap{padding:19px 16px 22px!important}
+  body.admin-login-page .login-brand{margin-bottom:14px}
+  body.admin-login-page .login-logo,body.admin-login-page .login-logo-fallback{width:46px;height:46px;border-radius:13px}
+  body.admin-login-page .login-kicker{font-size:10px}
+  body.admin-login-page .login-brand-name{font-size:13px}
+  body.admin-login-page .login h1{font-size:24px}
+  body.admin-login-page .login-hero .login-subtitle{font-size:12.5px}
+  body.admin-login-page .login-field input{height:50px}
+  body.admin-login-page .login-submit{height:50px}
+}
+@media(max-height:700px) and (max-width:900px){
+  body.admin-login-page .login-hero{padding-top:17px!important;padding-bottom:16px!important}
+  body.admin-login-page .login-brand{margin-bottom:11px}
+  body.admin-login-page .login-form-wrap{padding-top:17px!important}
+  body.admin-login-page .login-field{margin-bottom:11px}
+  body.admin-login-page .login-footer{margin-top:12px;padding-top:9px}
+}
