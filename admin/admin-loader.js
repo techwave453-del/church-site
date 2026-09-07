@@ -8,14 +8,16 @@
     critical.textContent='html:not(.admin-ui-ready) #adminHeader,html:not(.admin-ui-ready) #app{visibility:hidden!important}';
     (document.head||document.documentElement).appendChild(critical);
   }
-  document.documentElement.classList.remove('admin-ui-ready');\n  document.documentElement.classList.add('admin-login-skeleton');
+  document.documentElement.classList.remove('admin-ui-ready');
+  document.documentElement.classList.add('admin-login-skeleton');
 
   // Hide the server-rendered legacy login before any asynchronous module can load.
   // admin-login-ui.js removes this gate synchronously once it replaces the markup.
   if(!document.getElementById('adminLoginCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminLoginCriticalStyle';
-    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}\nhtml.admin-login-skeleton #login{visibility:hidden!important}';
+    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}
+html.admin-login-skeleton #login{visibility:hidden!important}';
     (document.head||document.documentElement).appendChild(critical);
   }
 
