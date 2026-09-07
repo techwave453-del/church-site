@@ -16,8 +16,7 @@
   if(!document.getElementById('adminLoginCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminLoginCriticalStyle';
-    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}
-html.admin-login-skeleton #login{visibility:hidden!important}';
+    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}\\nhtml.admin-login-skeleton #login{visibility:hidden!important}';
     (document.head||document.documentElement).appendChild(critical);
   }
 
