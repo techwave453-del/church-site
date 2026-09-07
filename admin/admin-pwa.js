@@ -2,85 +2,43 @@
   'use strict';
   let deferredPrompt=null;
   let installed=false;
+  let initialized=false;
+  const ADMIN_MANIFEST='/admin-pwa.webmanifest?v=admin-3';
 
-  function isStandalone(){
-    return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  function isAdminStandalone(){
+    return window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true || document.referrer.startsWith('android-app://');
   }
-
   function addManifest(){
     let link=document.querySelector('link[rel="manifest"][data-admin-pwa]');
-    if(!link){
-      link=document.createElement('link');
-      link.rel='manifest';
-      link.href='/admin-pwa.webmanifest?v=admin-2';
-      link.dataset.adminPwa='true';
-      document.head.appendChild(link);
-    }
+    if(!link){link=document.createElement('link');link.rel='manifest';link.dataset.adminPwa='true';document.head.appendChild(link)}
+    link.href=ADMIN_MANIFEST;
   }
-
+  function button(){return document.getElementById('adminPwaInstall')}
   function setButtonState(){
-    const button=document.getElementById('adminPwaInstall');
-    if(!button)return;
-    button.hidden=false;
-    button.disabled=false;
-    button.setAttribute('aria-label',installed||isStandalone()?'Admin App Installed':'Install Admin App');
-    button.title=installed||isStandalone()?'Admin App Installed':'Install Admin App';
-    button.classList.toggle('is-installed',installed||isStandalone());
-    button.innerHTML=installed||isStandalone()
-      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
-      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>';
+    const b=button();if(!b)return;
+    const standalone=installed||isAdminStandalone();
+    b.hidden=false;b.disabled=false;b.dataset.installReady=deferredPrompt?'true':'false';
+    b.setAttribute('aria-label',standalone?'Admin App Installed':'Install Admin App');
+    b.title=standalone?'Admin App Installed':'Install Admin App';
+    b.classList.toggle('is-installed',standalone);
+    b.classList.toggle('is-ready',!!deferredPrompt&&!standalone);
+    b.innerHTML=standalone?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>';
   }
-
   function addInstallEntry(){
-    const actions=document.querySelector('.admin-header__actions');
-    if(!actions || document.getElementById('adminPwaInstall'))return;
-    const button=document.createElement('button');
-    button.id='adminPwaInstall';
-    button.type='button';
-    button.className='admin-header__icon-button admin-pwa-install admin-header__tooltip';
-    button.setAttribute('aria-label','Install Admin App');
-    button.title='Install Admin App';
-    button.addEventListener('click',install);
-    actions.insertBefore(button,actions.firstChild);
-    setButtonState();
+    const actions=document.querySelector('.admin-header__actions');if(!actions||button())return;
+    const b=document.createElement('button');b.id='adminPwaInstall';b.type='button';b.className='admin-header__icon-button admin-pwa-install admin-header__tooltip';b.setAttribute('aria-label','Install Admin App');b.title='Install Admin App';b.addEventListener('click',install);actions.insertBefore(b,actions.firstChild);setButtonState();
   }
-
-  function ensureEntry(){addInstallEntry();}
-
+  function ensure(){addInstallEntry();setButtonState()}
   async function install(){
-    if(installed||isStandalone())return;
-    if(deferredPrompt){
-      deferredPrompt.prompt();
-      const result=await deferredPrompt.userChoice.catch(()=>null);
-      deferredPrompt=null;
-      if(result?.outcome==='accepted'){
-        installed=true;
-        setButtonState();
-      }
-      return;
-    }
+    if(installed||isAdminStandalone())return;
+    if(deferredPrompt){const prompt=deferredPrompt;deferredPrompt=null;prompt.prompt();const result=await prompt.userChoice.catch(()=>null);if(result?.outcome==='accepted')installed=true;setButtonState();return}
+    // Chrome may expose installation only through its browser UI when the
+    // install prompt is unavailable. Give the user an explicit Admin-only
+    // installation guide instead of pretending the public site is installed.
     window.location.assign('/admin-install.html');
   }
-
-  window.addEventListener('beforeinstallprompt',function(event){
-    event.preventDefault();
-    deferredPrompt=event;
-    ensureEntry();
-  });
-
-  window.addEventListener('appinstalled',function(){
-    installed=true;
-    deferredPrompt=null;
-    setButtonState();
-  });
-
-  function init(){
-    addManifest();
-    if(isStandalone())installed=true;
-    ensureEntry();
-    new MutationObserver(ensureEntry).observe(document.body,{childList:true,subtree:true});
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;ensure()});
+  window.addEventListener('appinstalled',()=>{installed=true;deferredPrompt=null;setButtonState()});
+  function init(){if(initialized)return;initialized=true;addManifest();if(isAdminStandalone())installed=true;ensure();setTimeout(ensure,250);setTimeout(ensure,1000);new MutationObserver(ensure).observe(document.body,{childList:true,subtree:true})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
