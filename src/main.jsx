@@ -5,6 +5,7 @@ import{DEFAULT_SITE_CONTENT}from"../site-config.js";
 import LiveStream from"./LiveStream.jsx";
 import{DetailRouter,detailSlug}from"./DetailPages.jsx";
 import"./styles.css";
+import"./entry-video-loading.css";
 import"./cms-public.js";
 
 const DEFAULT_CHURCH={...DEFAULT_SITE_CONTENT,name:DEFAULT_SITE_CONTENT.churchName,slides:DEFAULT_SITE_CONTENT.gallery};
