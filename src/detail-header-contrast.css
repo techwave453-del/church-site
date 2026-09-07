@@ -1,137 +1,28 @@
-/* Detail-page navigation correction.
-   DetailPages.jsx owns the navigation. Keep the header in normal flow so the
-   desktop nav and mobile trigger cannot overlap or inherit the legacy header layout. */
-header.detailHeader {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 50 !important;
-  width: auto !important;
-  max-width: none !important;
-  min-height: 82px !important;
-  height: auto !important;
-  margin: 0 !important;
-  padding: 0 max(18px, calc((100vw - 1240px) / 2)) !important;
-  box-sizing: border-box !important;
+/* Detail-page navigation correction. DetailPages.jsx owns the navigation. */
+header.detailHeader{position:sticky!important;top:0!important;z-index:50!important;width:auto!important;max-width:none!important;min-height:82px!important;height:auto!important;margin:0!important;padding:0 max(18px,calc((100vw - 1240px)/2))!important;box-sizing:border-box!important}
+header.detailHeader .detailHeaderInner{position:relative!important;min-height:82px!important;height:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;width:100%!important;box-sizing:border-box!important}
+header.detailHeader>.detailBrand{position:static!important;transform:none!important;width:auto!important;max-width:none!important;height:auto!important;padding:0!important;margin:0!important;min-width:245px!important;flex:0 1 245px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;text-align:left!important;visibility:visible!important;opacity:1!important}
+header.detailHeader .detailBrandLogo{width:42px!important;height:42px!important;max-width:42px!important;margin:0!important;object-fit:cover!important}
+header.detailHeader .detailBrand span{display:flex!important;flex-direction:column!important;margin:0!important;padding:0!important;background:transparent!important;color:inherit!important;text-shadow:none!important}
+/* This button is legacy; the standalone .detailMobileTrigger is the only hamburger. */
+header.detailHeader .detailSiteNav .detailNavMenu{display:none!important}
+header.detailHeader .detailSiteNav{position:static!important;flex:1 1 auto!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:4px!important}
+header.detailHeader>.detailMobileTrigger{position:static!important;display:none!important;flex:0 0 42px!important}
+
+/* Desktop and tablet: full navigation only. */
+@media (min-width:701px){
+ header.detailHeader .detailSiteNav{display:flex!important}
+ header.detailHeader .detailSiteNav a{display:inline-flex!important}
+ header.detailHeader>.detailMobileTrigger,
+ header.detailHeader .detailMobileMenu{display:none!important}
 }
 
-header.detailHeader .detailHeaderInner {
-  position: relative !important;
-  min-height: 82px !important;
-  height: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 20px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-header.detailHeader > .detailBrand {
-  position: static !important;
-  left: auto !important;
-  top: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  transform: none !important;
-  width: auto !important;
-  max-width: none !important;
-  height: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  min-width: 245px !important;
-  flex: 0 1 245px !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  text-align: left !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-header.detailHeader .detailBrandLogo {
-  width: 42px !important;
-  height: 42px !important;
-  max-width: 42px !important;
-  margin: 0 !important;
-  object-fit: cover !important;
-}
-
-header.detailHeader .detailBrand span {
-  display: flex !important;
-  flex-direction: column !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  color: inherit !important;
-  text-shadow: none !important;
-}
-
-header.detailHeader .detailSiteNav {
-  position: static !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-}
-
-header.detailHeader > .detailMobileTrigger {
-  position: static !important;
-  display: none !important;
-  flex: 0 0 42px !important;
-}
-
-@media (max-width: 700px) {
-  header.detailHeader {
-    min-height: 68px !important;
-    height: auto !important;
-    padding: 0 12px !important;
-  }
-
-  header.detailHeader .detailHeaderInner {
-    min-height: 68px !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
-  }
-
-  header.detailHeader > .detailBrand {
-    min-width: 0 !important;
-    flex: 1 1 auto !important;
-    width: auto !important;
-    max-width: calc(100% - 52px) !important;
-    padding: 0 !important;
-    align-items: center !important;
-    flex-direction: row !important;
-    text-align: left !important;
-  }
-
-  header.detailHeader .detailBrandLogo {
-    width: 38px !important;
-    height: 38px !important;
-    max-width: 38px !important;
-  }
-
-  header.detailHeader > .detailSiteNav {
-    display: none !important;
-  }
-
-  header.detailHeader > .detailMobileTrigger {
-    display: grid !important;
-    width: 42px !important;
-    height: 42px !important;
-    margin: 0 !important;
-    place-items: center !important;
-  }
-}
-
-@media (min-width: 701px) {
-  header.detailHeader > .detailSiteNav {
-    display: flex !important;
-  }
-
-  header.detailHeader > .detailMobileTrigger,
-  header.detailHeader .detailMobileMenu {
-    display: none !important;
-  }
+/* Mobile: link bar hidden, standalone hamburger shown. */
+@media (max-width:700px){
+ header.detailHeader{min-height:68px!important;padding:0 12px!important}
+ header.detailHeader .detailHeaderInner{min-height:68px!important;gap:10px!important}
+ header.detailHeader>.detailBrand{min-width:0!important;flex:1 1 auto!important;max-width:calc(100% - 52px)!important;align-items:center!important}
+ header.detailHeader .detailBrandLogo{width:38px!important;height:38px!important;max-width:38px!important}
+ header.detailHeader .detailSiteNav{display:none!important}
+ header.detailHeader>.detailMobileTrigger{display:grid!important;width:42px!important;height:42px!important;margin:0!important;padding:0!important;place-items:center!important}
 }
