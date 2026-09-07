@@ -10,9 +10,16 @@
   function loadScript(name){return new Promise((resolve,reject)=>{const existing=document.querySelector(`script[data-admin-module="${name}"]`);if(existing)return resolve();const s=document.createElement('script');let settled=false;const timer=setTimeout(()=>{if(settled)return;settled=true;s.remove();reject(new Error('Timed out while loading '+name))},15000);s.src='/admin/'+name+'?v='+encodeURIComponent(buildVersion);s.dataset.adminModule=name;s.onload=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve()};s.onerror=()=>{if(settled)return;settled=true;clearTimeout(timer);reject(new Error('Failed to load '+name))};document.head.appendChild(s)})}
   function hasPermission(permission){const user=window.__adminUser||window.AdminRBAC?.getCurrentUser?.();return user?.role==='super_admin'||(Array.isArray(user?.permissions)&&user.permissions.includes(permission))||window.AdminRBAC?.hasPermission?.(permission)===true}
   window.loadAdminModules=async function(){if(started)return !!window.__adminAuthenticated;started=true;try{
-    await loadScript('admin-loading.js');await loadScript('admin-login-ui.js');await loadScript('admin-utils.js');
+    await loadScript('admin-loading.js');
+    // Load the session bridge before the login UI. The new login form uses the
+    // global login(event) handler immediately when the user submits it; waiting
+    // until after the first click caused the browser to execute the legacy
+    // handler/throw because login() did not exist yet.
+    await loadScript('admin-session.js');
+    await loadScript('admin-login-ui.js');
+    await loadScript('admin-utils.js');
     if(!window.__adminExplicitLogin){started=false;finishLoadingState();return false}
-    setLoadingState('Loading your administration workspace…');await loadScript('admin-session.js');
+    setLoadingState('Loading your administration workspace…');
     if(!window.__adminAuthenticated){started=false;finishLoadingState();return false}
     window.adminLoadingScreen?.show('Initializing administration components…');if(window.loadAdminBranding)await window.loadAdminBranding();
     await loadScript('admin-users.js');if(window.AdminRBAC)await window.AdminRBAC.init();if(window.__adminUser&&window.AdminRBAC)window.AdminRBAC.getCurrentUser=()=>window.__adminUser;
