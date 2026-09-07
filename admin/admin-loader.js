@@ -142,9 +142,6 @@
         finishLoadingState();
         return false;
       }
-      // This is the dedicated post-authentication screen. It is intentionally
-      // separate from the login skeleton and remains visible until the full
-      // dashboard and permitted modules are ready.
       window.adminLoadingScreen?.show('Loading your administration workspace…');
       if(window.loadAdminBranding)await window.loadAdminBranding();
       setLoadingState('Initializing administration components…');
@@ -166,7 +163,7 @@
         if(window.AdminAccessRequests)await window.AdminAccessRequests.init();
       }catch(error){console.warn(error.message)}
       await loadScript('admin-pwa.js');
-      setLoadingState('Preparing your permitted sections…');
+      setLoadingState('Preparing sections…');
       if(hasPermission('site.view')&&window.loadSiteContent)await window.loadSiteContent();
       if(hasPermission('media.view')&&window.loadMedia)await window.loadMedia();
       if(hasPermission('comments.view')&&window.loadAdminComments)await window.loadAdminComments();
