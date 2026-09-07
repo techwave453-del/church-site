@@ -1,5 +1,13 @@
 (function(){
   'use strict';
+  function addMobileStyles(){
+    if(document.getElementById('adminLoginMobileStyles'))return;
+    const link=document.createElement('link');
+    link.id='adminLoginMobileStyles';
+    link.rel='stylesheet';
+    link.href='/admin/admin-login-mobile.css?v=1';
+    document.head.appendChild(link);
+  }
   function addAccessLink(){
     const form=document.querySelector('#login .login-form-wrap form');
     if(!form||document.getElementById('firstSetupLink'))return;
@@ -12,8 +20,9 @@
     form.insertAdjacentElement('afterend',link);
   }
   function init(){
+    addMobileStyles();
     addAccessLink();
-    new MutationObserver(addAccessLink).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(()=>{addMobileStyles();addAccessLink()}).observe(document.body,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
