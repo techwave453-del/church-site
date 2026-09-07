@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="/admin-pwa-icon.svg" type="image/svg+xml">
 <title>Kingdom Fellowship Christian Church — Admin</title>
-<link id="adminLoginStyles" rel="stylesheet" href="/admin/admin-login.css?v=11">
+<link id="adminLoginStyles" rel="stylesheet" href="/admin/admin-login.css?v=12">
 <link id="adminLoginMobileStyles" rel="stylesheet" href="/admin/admin-login-mobile.css?v=1">
 <style id="adminFirstPaintStyle">
 /* First-paint guard: prevents legacy admin markup from flashing before JS starts. */
@@ -18,6 +18,21 @@ html.admin-login-skeleton #mediaModal{visibility:hidden!important}
 html.admin-login-skeleton #adminLoginSkeleton{
   display:grid!important;position:fixed;inset:0;z-index:99999;
   min-height:100vh;min-height:100dvh;background:linear-gradient(145deg,#07111f,#0b1d33)
+}
+@media(max-width:900px){
+  html.admin-login-skeleton #adminLoginSkeleton{
+    display:flex!important;align-items:center;justify-content:center;
+    min-height:100dvh;min-height:100svh;
+    padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+    background:radial-gradient(circle at 50% 0%,rgba(11,107,203,.28),transparent 42%),linear-gradient(160deg,#07111f,#0b1d33)
+  }
+  html.admin-login-skeleton .admin-login-skeleton__visual{display:none!important}
+  html.admin-login-skeleton .admin-login-skeleton__panel{
+    width:min(100%,430px);min-height:0;padding:0;display:block;
+    background:#fff;border-radius:28px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.34)
+  }
+  html.admin-login-skeleton .admin-login-skeleton__stack{width:100%;max-width:none;margin:0;padding:26px 22px 24px}
 }
 </style>
 <style>
