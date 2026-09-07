@@ -1,0 +1,13 @@
+/* Detail pages: only one navigation mode may be visible at a time. */
+@media (min-width: 701px) {
+  .detailPage .detailSiteNav { display: flex !important; }
+  .detailPage .detailMobileTrigger { display: none !important; }
+  .detailPage .detailMobileMenu,
+  .detailPage .detail-mobile-drawer { display: none !important; }
+}
+
+@media (max-width: 700px) {
+  .detailPage .detailSiteNav { display: none !important; }
+  .detailPage .detailMobileTrigger { display: grid !important; }
+  .detailPage .detailMobileMenu { display: flex !important; }
+}
