@@ -1,12 +1,15 @@
 {
-  "id": "/admin-pwa",
+  "id": "/admin.html",
   "name": "Kingdom Fellowship Christian Church Admin",
   "short_name": "KFCC Admin",
   "description": "Administration app for Kingdom Fellowship Christian Church.",
   "start_url": "/admin.html",
-  "scope": "/",
+  "scope": "/admin",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "theme_color": "#17202b",
   "background_color": "#f5f7f9",
