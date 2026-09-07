@@ -1,7 +1,6 @@
 (function(){
-  // Keep the server-rendered legacy admin shell invisible until the modular UI
-  // has finished bootstrapping. This prevents the old UI from flashing before
-  // the current section-by-section interface takes over.
+  // Keep only the authenticated admin shell hidden during bootstrap. The login
+  // screen must remain paintable on every viewport while the branded UI loads.
   if(!document.getElementById('adminAppCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminAppCriticalStyle';
@@ -9,15 +8,16 @@
     (document.head||document.documentElement).appendChild(critical);
   }
 
-  document.documentElement.classList.remove('admin-ui-ready');
+  document.documentElement.classList.remove('admin-ui-ready','admin-login-ready');
   document.documentElement.classList.add('admin-login-skeleton');
 
-  // Hide the server-rendered legacy login before any asynchronous module can load.
-  // admin-login-ui.js removes this gate synchronously once it replaces the markup.
+  // Never hide #login here. The skeleton is the visual loading layer and the
+  // branded login UI removes it synchronously. Hiding #login was causing a
+  // mobile white screen when a stylesheet/script handoff was delayed.
   if(!document.getElementById('adminLoginCriticalStyle')){
     const critical=document.createElement('style');
     critical.id='adminLoginCriticalStyle';
-    critical.textContent='html:not(.admin-login-ready) #login{visibility:hidden!important}\nhtml.admin-login-skeleton #login{visibility:hidden!important}';
+    critical.textContent='html.admin-login-skeleton #login{visibility:visible!important;opacity:1!important}\n@media(max-width:900px){body.admin-login-page{min-height:100dvh;background:#07111f}body.admin-login-page main{width:100%;min-height:100dvh}}';
     (document.head||document.documentElement).appendChild(critical);
   }
 
@@ -44,7 +44,7 @@
 
   function finishLoadingState(){
     document.documentElement.classList.add('admin-ui-ready');
-    document.documentElement.classList.remove('admin-modules-loading');
+    document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
     const loading=document.getElementById('adminModuleLoading');
     if(loading){
       loading.classList.add('is-complete');
@@ -65,14 +65,11 @@
 
   function showBootstrapError(error){
     console.error('Admin modules failed to initialize:',error);
-    document.documentElement.classList.add('admin-ui-ready');
+    document.documentElement.classList.add('admin-ui-ready','admin-login-ready');
     document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
-    document.documentElement.classList.add('admin-login-ready');
-
     const existing=document.getElementById('adminBootstrapError');
     if(existing)existing.remove();
     ensureBootstrapErrorStyles();
-
     const panel=document.createElement('div');
     panel.id='adminBootstrapError';
     panel.setAttribute('role','alert');
@@ -92,7 +89,6 @@
     console.warn('Admin pre-auth bootstrap warning:',error);
     document.documentElement.classList.add('admin-ui-ready','admin-login-ready');
     document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');
-
     const login=document.getElementById('login');
     if(!login)return showBootstrapError(error);
     let warning=document.getElementById('adminBootstrapWarning');
@@ -109,7 +105,6 @@
     return new Promise((resolve,reject)=>{
       const existing=document.querySelector(`script[data-admin-module="${name}"]`);
       if(existing)return resolve();
-
       const s=document.createElement('script');
       let settled=false;
       const timer=setTimeout(()=>{
@@ -118,7 +113,6 @@
         s.remove();
         reject(new Error('Timed out while loading '+name));
       },15000);
-
       s.src='/admin/'+name+'?v='+encodeURIComponent(buildVersion);
       s.dataset.adminModule=name;
       s.onload=()=>{
@@ -163,46 +157,36 @@
     started=true;
     authenticated=false;
     setLoadingState('Loading Administration…');
-
     try{
       await loadScript('admin-login-ui.js');
       await loadScript('admin-utils.js');
       setLoadingState('Connecting to administration server…');
       await loadScript('admin-session.js');
-
       authenticated=window.initAdminSession?await window.initAdminSession():false;
       if(!authenticated){
         started=false;
         finishLoadingState();
         return false;
       }
-
       if(window.loadAdminBranding)await window.loadAdminBranding();
       setLoadingState('Initializing administration components…');
       await loadScript('admin-users.js');
       if(window.AdminRBAC)await window.AdminRBAC.init();
-
       const hasUser=await loadCurrentUserIntoRBAC();
       if(!hasUser){
         started=false;
         finishLoadingState();
         return false;
       }
-
       setLoadingState('Checking administrator permissions…');
       for(const name of modules.slice(2))await loadScript(name);
       await loadScript('admin-media-runtime-fix.js');
       await loadScript('admin-navigation.js');
       window.AdminNavigation?.applyVisibility?.();
-
       try{
         await loadScript('admin-access-requests.js');
         if(window.AdminAccessRequests)await window.AdminAccessRequests.init();
-      }catch(error){
-        console.warn(error.message);
-      }
-
-      // Admin PWA is initialized only after authentication and RBAC are ready.
+      }catch(error){console.warn(error.message)}
       await loadScript('admin-pwa.js');
       setLoadingState('Preparing your permitted sections…');
       if(hasPermission('site.view')&&window.loadSiteContent)await window.loadSiteContent();
