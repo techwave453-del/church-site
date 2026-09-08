@@ -5,7 +5,8 @@
   let installed=false;
   let initialized=false;
   const ADMIN_MANIFEST='/admin-pwa.webmanifest?v=admin-5';
-  const ADMIN_WORKER='/admin/admin-service-worker.js?v=admin-2';
+  // The Admin worker is served from the site root, then explicitly scoped to /admin/.
+  const ADMIN_WORKER='/admin-service-worker.js?v=admin-3';
 
   function isAdminStandalone(){
     return window.matchMedia?.('(display-mode: standalone)').matches ||
