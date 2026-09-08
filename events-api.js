@@ -1,5 +1,3 @@
-import { requireAdminPermission } from './admin-rbac.js';
-
 const EVENT_STATUSES = new Set(['draft', 'published', 'archived']);
 const ATTENDANCE_TYPES = new Set(['in_person', 'online', 'hybrid']);
 
@@ -12,8 +10,8 @@ function normalizeEvent(input = {}, existing = {}) {
   const startAt = input.start_at ?? existing.start_at;
   if (!title) throw new Error('Event title is required.');
   if (!startAt) throw new Error('Event start date and time are required.');
-  const status = EVENT_STATUSES.has(input.status ?? existing.status) ? (input.status ?? existing.status) : 'draft';
-  const attendanceType = ATTENDANCE_TYPES.has(input.attendance_type ?? existing.attendance_type) ? (input.attendance_type ?? existing.attendance_type) : 'in_person';
+  const rawStatus = input.status ?? existing.status ?? 'draft';
+  const rawAttendance = input.attendance_type ?? existing.attendance_type ?? 'in_person';
   return {
     slug: slugify(input.slug ?? existing.slug ?? title), title,
     category: String(input.category ?? existing.category ?? 'General').trim(),
@@ -25,21 +23,22 @@ function normalizeEvent(input = {}, existing = {}) {
     all_day: Boolean(input.all_day ?? existing.all_day ?? false),
     location: String(input.location ?? existing.location ?? '').trim(),
     address: String(input.address ?? existing.address ?? '').trim(),
-    attendance_type: attendanceType,
+    attendance_type: ATTENDANCE_TYPES.has(rawAttendance) ? rawAttendance : 'in_person',
     registration_url: String(input.registration_url ?? existing.registration_url ?? '').trim(),
     contact: String(input.contact ?? existing.contact ?? '').trim(),
     livestream_url: String(input.livestream_url ?? existing.livestream_url ?? '').trim(),
-    featured: Boolean(input.featured ?? existing.featured ?? false), status,
-    display_order: Number.isFinite(Number(input.display_order ?? existing.display_order)) ? Number(input.display_order ?? existing.display_order) : 0
+    featured: Boolean(input.featured ?? existing.featured ?? false),
+    status: EVENT_STATUSES.has(rawStatus) ? rawStatus : 'draft',
+    display_order: Number.isFinite(Number(input.display_order ?? existing.display_order ?? 0)) ? Number(input.display_order ?? existing.display_order ?? 0) : 0
   };
 }
 
-export function registerEventsRoutes(app, { db, supabase, auth }) {
-  const requireAdmin = requireAdminPermission(auth, 'content.manage');
+export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
+  const adminOnly = (req, res, next) => requireAdmin(req, res, next);
 
   app.get('/api/events', async (req, res) => {
     try {
-      const includeUnpublished = req.session?.adminUser && ['super_admin', 'admin'].includes(req.session.adminUser.role);
+      const includeUnpublished = Boolean(req.session?.adminUser);
       if (supabase) {
         let query = supabase.from('events').select('*').order('start_at', { ascending: true });
         if (!includeUnpublished) query = query.eq('status', 'published');
@@ -47,11 +46,9 @@ export function registerEventsRoutes(app, { db, supabase, auth }) {
         if (error) throw error;
         return res.json(data || []);
       }
-      const rows = includeUnpublished
-        ? db.prepare('select * from events order by start_at asc').all()
-        : db.prepare("select * from events where status='published' order by start_at asc").all();
+      const rows = includeUnpublished ? db.prepare('select * from events order by start_at asc').all() : db.prepare("select * from events where status='published' order by start_at asc").all();
       res.json(rows);
-    } catch (error) { res.status(500).json({ error: 'Unable to load events.' }); }
+    } catch (_) { res.status(500).json({ error: 'Unable to load events.' }); }
   });
 
   app.get('/api/events/:slug', async (req, res) => {
@@ -64,15 +61,13 @@ export function registerEventsRoutes(app, { db, supabase, auth }) {
         if (!data?.[0]) return res.status(404).json({ error: 'Event not found.' });
         return res.json(data[0]);
       }
-      const row = req.session?.adminUser
-        ? db.prepare('select * from events where slug=?').get(req.params.slug)
-        : db.prepare("select * from events where slug=? and status='published'").get(req.params.slug);
+      const row = req.session?.adminUser ? db.prepare('select * from events where slug=?').get(req.params.slug) : db.prepare("select * from events where slug=? and status='published'").get(req.params.slug);
       if (!row) return res.status(404).json({ error: 'Event not found.' });
       res.json(row);
-    } catch (error) { res.status(500).json({ error: 'Unable to load event.' }); }
+    } catch (_) { res.status(500).json({ error: 'Unable to load event.' }); }
   });
 
-  app.post('/api/admin/events', requireAdmin, async (req, res) => {
+  app.post('/api/admin/events', adminOnly, async (req, res) => {
     try {
       const event = normalizeEvent(req.body);
       if (supabase) {
@@ -85,14 +80,9 @@ export function registerEventsRoutes(app, { db, supabase, auth }) {
     } catch (error) { res.status(400).json({ error: error.message || 'Unable to create event.' }); }
   });
 
-  app.put('/api/admin/events/:id', requireAdmin, async (req, res) => {
+  app.put('/api/admin/events/:id', adminOnly, async (req, res) => {
     try {
-      let existing;
-      if (supabase) {
-        const found = await supabase.from('events').select('*').eq('id', req.params.id).single();
-        if (found.error) throw found.error;
-        existing = found.data;
-      } else existing = db.prepare('select * from events where id=?').get(req.params.id);
+      const existing = supabase ? (await supabase.from('events').select('*').eq('id', req.params.id).single()).data : db.prepare('select * from events where id=?').get(req.params.id);
       if (!existing) return res.status(404).json({ error: 'Event not found.' });
       const event = normalizeEvent(req.body, existing);
       if (supabase) {
@@ -106,7 +96,7 @@ export function registerEventsRoutes(app, { db, supabase, auth }) {
     } catch (error) { res.status(400).json({ error: error.message || 'Unable to update event.' }); }
   });
 
-  app.delete('/api/admin/events/:id', requireAdmin, async (req, res) => {
+  app.delete('/api/admin/events/:id', adminOnly, async (req, res) => {
     try {
       if (supabase) {
         const { error } = await supabase.from('events').delete().eq('id', req.params.id);
