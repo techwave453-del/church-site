@@ -11,11 +11,34 @@
   function setHeaderBranding(content,mediaItems){const name=document.querySelector('[data-admin-header-name]');const img=document.querySelector('[data-admin-header-logo]');if(name)name.textContent=firstValue(content,['churchName','church_name','siteName','site_name'])||'Kingdom Fellowship Christian Church';const mediaLogo=mediaItems.find(mediaIsLogo)||mediaItems.find(isImageMedia);const logoUrl=mediaLogo?.url||mediaLogo?.src||mediaLogo?.path||mediaLogo?.fileUrl||firstValue(content,['logoUrl','logo_url','logo','churchLogo','church_logo']);if(img&&logoUrl){img.onload=()=>img.classList.add('is-ready');img.onerror=()=>img.classList.remove('is-ready');img.src=String(logoUrl)}}
   window.loadAdminBranding=async function(){try{const [r,m]=await Promise.all([fetch('/api/site/content',{credentials:'same-origin',cache:'no-store'}).catch(()=>null),fetch('/api/media',{credentials:'same-origin',cache:'no-store'}).catch(()=>null)]);const content=r?.ok?await r.json().catch(()=>({})):{};const media=m?.ok?await m.json().catch(()=>[]):[];const mediaItems=Array.isArray(media)?media:(Array.isArray(media?.items)?media.items:Array.isArray(media?.media)?media.media:[]);setHeaderBranding(content,mediaItems);return content}catch(e){return {}}};
   loadAdminBranding();
+
+  async function updateApiStatus(){
+    const status=document.getElementById('apiStatus');
+    if(!status)return;
+    try{
+      const response=await fetch('/api/site/content',{credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json'}});
+      const ok=response.ok;
+      status.classList.toggle('ok',ok);
+      status.classList.toggle('bad',!ok);
+      status.setAttribute('aria-label',ok?'API status: OK':'API status: unavailable');
+      status.title=ok?'API status: OK':'API status: unavailable';
+      const text=status.querySelector('.admin-header__status-text');
+      if(text)text.textContent=ok?'API OK':'API Offline';
+    }catch(_){
+      status.classList.remove('ok');
+      status.classList.add('bad');
+      status.setAttribute('aria-label','API status: unavailable');
+      status.title='API status: unavailable';
+      const text=status.querySelector('.admin-header__status-text');
+      if(text)text.textContent='API Offline';
+    }
+  }
+  updateApiStatus();
+  setInterval(updateApiStatus,20000);
+
   window.setAdminAuthenticatedUI=function(authenticated){const b=document.getElementById('adminLogout');if(b)b.hidden=!authenticated;document.body.classList.toggle('admin-authenticated',!!authenticated);const duplicate=document.querySelector('.login-video-panel');if(duplicate)duplicate.remove()};
   function installPasswordToggles(){document.querySelectorAll('input[type="password"]').forEach(input=>{if(input.dataset.passwordToggleReady)return;input.dataset.passwordToggleReady='true';const wrap=document.createElement('div');wrap.className='admin-password-wrap';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);const b=document.createElement('button');b.type='button';b.className='admin-password-toggle';b.textContent='Show';b.onclick=()=>{const show=input.type==='password';input.type=show?'text':'password';b.textContent=show?'Hide':'Show'};wrap.appendChild(b)})}installPasswordToggles();new MutationObserver(installPasswordToggles).observe(document.body,{childList:true,subtree:true});
   const load=()=>{const s=document.createElement('script');s.src='/admin/admin-loader.js?v='+encodeURIComponent(window.__ADMIN_BUILD_VERSION);s.dataset.adminModule='admin-loader.js';s.onload=()=>window.loadAdminModules?.().catch(console.error);s.onerror=()=>{};document.head.appendChild(s)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
-  // Load the Admin-specific PWA module independently so the install control
-  // is available before the authenticated dashboard modules finish loading.
   const pwa=document.createElement('script');pwa.src='/admin/admin-pwa.js?v='+encodeURIComponent(window.__ADMIN_BUILD_VERSION);pwa.dataset.adminModule='admin-pwa.js';document.head.appendChild(pwa);
 })();
