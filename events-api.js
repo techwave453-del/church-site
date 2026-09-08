@@ -33,12 +33,45 @@ function normalizeEvent(input = {}, existing = {}) {
   };
 }
 
+function ensureSqliteEventsTable(db) {
+  if (!db) return;
+  db.exec(`CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'General',
+    short_description TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image TEXT NOT NULL DEFAULT '',
+    flyer_url TEXT NOT NULL DEFAULT '',
+    start_at TEXT NOT NULL,
+    end_at TEXT,
+    all_day INTEGER NOT NULL DEFAULT 0,
+    location TEXT NOT NULL DEFAULT '',
+    address TEXT NOT NULL DEFAULT '',
+    attendance_type TEXT NOT NULL DEFAULT 'in_person',
+    registration_url TEXT NOT NULL DEFAULT '',
+    contact TEXT NOT NULL DEFAULT '',
+    livestream_url TEXT NOT NULL DEFAULT '',
+    featured INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'draft',
+    display_order INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS events_status_start_idx ON events(status, start_at);
+  CREATE INDEX IF NOT EXISTS events_featured_idx ON events(featured);
+  CREATE INDEX IF NOT EXISTS events_category_idx ON events(category);`);
+}
+
 export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
+  ensureSqliteEventsTable(db);
   const adminOnly = (req, res, next) => requireAdmin(req, res, next);
+  const isAdminSession = req => Boolean(req.session?.user?.id || req.session?.adminUser?.id);
 
   app.get('/api/events', async (req, res) => {
     try {
-      const includeUnpublished = Boolean(req.session?.adminUser);
+      const includeUnpublished = isAdminSession(req);
       if (supabase) {
         let query = supabase.from('events').select('*').order('start_at', { ascending: true });
         if (!includeUnpublished) query = query.eq('status', 'published');
@@ -53,15 +86,16 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
 
   app.get('/api/events/:slug', async (req, res) => {
     try {
+      const includeUnpublished = isAdminSession(req);
       if (supabase) {
         let query = supabase.from('events').select('*').eq('slug', req.params.slug).limit(1);
-        if (!req.session?.adminUser) query = query.eq('status', 'published');
+        if (!includeUnpublished) query = query.eq('status', 'published');
         const { data, error } = await query;
         if (error) throw error;
         if (!data?.[0]) return res.status(404).json({ error: 'Event not found.' });
         return res.json(data[0]);
       }
-      const row = req.session?.adminUser ? db.prepare('select * from events where slug=?').get(req.params.slug) : db.prepare("select * from events where slug=? and status='published'").get(req.params.slug);
+      const row = includeUnpublished ? db.prepare('select * from events where slug=?').get(req.params.slug) : db.prepare("select * from events where slug=? and status='published'").get(req.params.slug);
       if (!row) return res.status(404).json({ error: 'Event not found.' });
       res.json(row);
     } catch (_) { res.status(500).json({ error: 'Unable to load event.' }); }
@@ -82,7 +116,12 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
 
   app.put('/api/admin/events/:id', adminOnly, async (req, res) => {
     try {
-      const existing = supabase ? (await supabase.from('events').select('*').eq('id', req.params.id).single()).data : db.prepare('select * from events where id=?').get(req.params.id);
+      let existing;
+      if (supabase) {
+        const result = await supabase.from('events').select('*').eq('id', req.params.id).maybeSingle();
+        if (result.error) throw result.error;
+        existing = result.data;
+      } else existing = db.prepare('select * from events where id=?').get(req.params.id);
       if (!existing) return res.status(404).json({ error: 'Event not found.' });
       const event = normalizeEvent(req.body, existing);
       if (supabase) {
