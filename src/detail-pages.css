@@ -11,3 +11,13 @@ body:has(.detailPage){overflow:auto;background:var(--site-surface,#fff)}
 @media(max-width:1050px){.detailSiteNav a{padding:0 7px;font-size:11px}.detailBrand{min-width:205px}.detailNavMenu{display:none}.detailMobileTrigger{display:grid}.detailSiteNav{display:none}}
 @media(max-width:800px){.detailPage main{width:min(100% - 24px,720px);padding-top:24px}.detailHeader{min-height:68px;padding:0 12px}.detailHeaderInner{min-height:68px;justify-content:space-between}.detailBrand{min-width:0}.detailBrandLogo{width:38px;height:38px}.detailBrand strong{font-size:13px}.detailBrand small{font-size:8px}.detailHero{padding:30px 4px 40px}.detailHero h1{font-size:clamp(40px,13vw,58px)}.visitWelcome{grid-template-columns:1fr;padding:23px;margin-bottom:38px;border-radius:20px}.visitWelcome>div:first-child{padding:3px}.visitWelcomeCard{padding:21px}.visitWelcomeActions a{flex:1;min-width:145px}.visitServiceGrid,.visitInfoGrid{grid-template-columns:1fr}.visitServiceImage{height:190px}.visitInfoGrid article{min-height:0}.detailCta{flex-direction:column;align-items:flex-start}.detailActions{justify-content:flex-start}.detailFooter{flex-direction:column}.serviceHero{min-height:420px;margin-bottom:30px;border-radius:20px}.serviceHeroContent{padding:34px 22px}.serviceHeroContent h1{font-size:clamp(36px,11vw,56px)}.detailGrid{grid-template-columns:1fr}.detailGrid article{min-height:0}}
 @media(prefers-reduced-motion:reduce){.serviceHeroSlide{transition:none;transform:none}.serviceHeroSlide.active{transform:none}}
+
+/* Full-bleed Media Hub — escape constrained main layout */
+.detailPage.is-media-hub main{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+.detailPage.is-media-hub .detailFooter{display:none}
+.detailPage.is-media-hub .mediaHub{min-height:100vh}
