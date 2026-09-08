@@ -1,7 +1,7 @@
 (() => {
   const groups = [
     { label: 'About', items: [{ label: 'About the Church', target: 'about' }, { label: 'Visit Us', target: 'visit' }] },
-    { label: 'Ministries', items: [{ label: 'All Ministries', href: '#detail/ministries' }, { label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
+    { label: 'Ministries', items: [{ label: 'All Ministries', href: '/ministries.html' }, { label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
     { label: 'Sermons', direct: true, href: '#detail/sermons' },
     { label: 'Events', items: [{ label: 'Church Events', target: 'events' }, { label: 'Visit Us', target: 'visit' }] },
     { label: 'Media', items: [{ label: 'Media & Church Resources', target: 'media' }] },
@@ -38,6 +38,8 @@
         scrollTo(item.href.slice('#detail/'.length));
       });
     } else if (item.href === '/terms.html') {
+      a.addEventListener('click', () => closeMenu?.());
+    } else if (item.href === '/ministries.html') {
       a.addEventListener('click', () => closeMenu?.());
     }
     return a;
