@@ -4,8 +4,8 @@
   let deferredPrompt=null;
   let installed=false;
   let initialized=false;
-  const ADMIN_MANIFEST='/admin-pwa.webmanifest?v=admin-4';
-  const ADMIN_WORKER='/admin-service-worker.js?v=admin-2';
+  const ADMIN_MANIFEST='/admin-pwa.webmanifest?v=admin-5';
+  const ADMIN_WORKER='/admin/admin-service-worker.js?v=admin-2';
 
   function isAdminStandalone(){
     return window.matchMedia?.('(display-mode: standalone)').matches ||
@@ -77,7 +77,7 @@
   async function registerAdminWorker(){
     if(!('serviceWorker' in navigator))return;
     try{
-      await navigator.serviceWorker.register(ADMIN_WORKER,{scope:'/'});
+      await navigator.serviceWorker.register(ADMIN_WORKER,{scope:'/admin/'});
     }catch(error){
       console.warn('Admin PWA service worker registration failed:',error);
     }
