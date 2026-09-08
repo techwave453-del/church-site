@@ -1,12 +1,12 @@
 (() => {
   const groups = [
-    { label: 'About', items: [{ label: 'About the Church', target: 'about' }, { label: 'Visit Us', target: 'visit' }] },
+    { label: 'About', items: [{ label: 'About the Church', href: '#detail/about' }, { label: 'Visit Us', href: '#detail/visit-us' }] },
     { label: 'Ministries', items: [{ label: 'All Ministries', href: '/ministries.html' }, { label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
     { label: 'Sermons', direct: true, href: '#detail/sermons' },
-    { label: 'Events', items: [{ label: 'Church Events', target: 'events' }, { label: 'Visit Us', target: 'visit' }] },
-    { label: 'Media', items: [{ label: 'Media & Church Resources', target: 'media' }] },
-    { label: 'Give', direct: true, target: 'give' },
-    { label: 'Contact', direct: true, target: 'contact' },
+    { label: 'Events', items: [{ label: 'Church Events', href: '#detail/upcoming-programs' }, { label: 'Visit Us', href: '#detail/visit-us' }] },
+    { label: 'Media', items: [{ label: 'Media & Church Resources', href: '#detail/media' }] },
+    { label: 'Give', direct: true, href: '#detail/give' },
+    { label: 'Contact', direct: true, href: '#detail/contact' },
     { label: 'More', items: [{ label: 'Terms & Conditions', href: '/terms.html' }] }
   ];
 
@@ -37,9 +37,7 @@
         closeMenu?.();
         scrollTo(item.href.slice('#detail/'.length));
       });
-    } else if (item.href === '/terms.html') {
-      a.addEventListener('click', () => closeMenu?.());
-    } else if (item.href === '/ministries.html') {
+    } else if (item.href === '/terms.html' || item.href === '/ministries.html') {
       a.addEventListener('click', () => closeMenu?.());
     }
     return a;
@@ -48,7 +46,7 @@
   const createWatchLive = (closeMenu) => {
     const a = document.createElement('a');
     a.className = 'site-watch-live';
-    a.href = '/live.html';
+    a.href = '/live_service.html';
     a.innerHTML = '<span aria-hidden="true">▶</span><b>WATCH LIVE</b>';
     if (closeMenu) a.addEventListener('click', closeMenu);
     return a;
