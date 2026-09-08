@@ -1,7 +1,7 @@
 (() => {
   const groups = [
     { label: 'About', items: [{ label: 'About the Church', target: 'about' }, { label: 'Visit Us', target: 'visit' }] },
-    { label: 'Ministries', items: [{ label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
+    { label: 'Ministries', items: [{ label: 'All Ministries', href: '#detail/ministries' }, { label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
     { label: 'Sermons', direct: true, href: '#detail/sermons' },
     { label: 'Events', items: [{ label: 'Church Events', target: 'events' }, { label: 'Visit Us', target: 'visit' }] },
     { label: 'Media', items: [{ label: 'Media & Church Resources', target: 'media' }] },
@@ -218,9 +218,6 @@
     }
   });
 
-  // React detail pages own their navigation. Do not observe the entire document or
-  // inject another detail header/drawer. A one-time initialization avoids the
-  // observer -> DOM mutation -> observer loop that could freeze the site.
   const initialize = () => {
     enhance();
     requestAnimationFrame(() => enhance());
