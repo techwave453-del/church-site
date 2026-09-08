@@ -1,3 +1,5 @@
+import { registerEventsRoutes } from './events-api.js';
+
 const SECTION_TYPES = new Set(['hero','text','image_text','gallery','cards','events','services','video','youtube','live','contact','cta','giving','custom']);
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -27,6 +29,7 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
   const useSupabase = Boolean(supabase);
   const permission = (name) => requirePermission ? requirePermission(name) : requireAdmin;
   const requirePublishIfNeeded = (req, res, next) => req.body?.status === 'published' ? permission('site.publish')(req, res, next) : next();
+  registerEventsRoutes(app, { db: sqlite, supabase, requireAdmin });
   async function listPages(includeUnpublished) {
     if (useSupabase) {
       let query = supabase.from('cms_pages').select('*,cms_sections(*)').order('updated_at', { ascending: false });
