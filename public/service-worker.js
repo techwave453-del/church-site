@@ -1,4 +1,5 @@
-const CACHE_NAME = 'kfcc-pwa-v2';
+const CACHE_NAME = 'kfcc-public-v3';
+const CACHE_PREFIX = 'kfcc-public-';
 const OFFLINE_URL = '/offline.html';
 const APP_SHELL = [
   '/',
@@ -20,7 +21,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+      Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -40,7 +45,11 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           return response;
         })
-        .catch(async () => (await caches.match(request)) || (await caches.match('/')) || (await caches.match(OFFLINE_URL)))
+        .catch(async () =>
+          (await caches.match(request)) ||
+          (await caches.match('/')) ||
+          (await caches.match(OFFLINE_URL))
+        )
     );
     return;
   }
