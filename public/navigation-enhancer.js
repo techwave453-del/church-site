@@ -1,5 +1,5 @@
 (() => {
-  const groups = [
+  const fallbackGroups = [
     { label: 'About', items: [{ label: 'About the Church', href: '#detail/about' }, { label: 'Visit Us', href: '#detail/visit-us' }] },
     { label: 'Ministries', items: [{ label: 'All Ministries', href: '/ministries.html' }, { label: 'Service Times', target: 'events' }, { label: 'Membership Classes', target: 'resources' }] },
     { label: 'Sermons', direct: true, href: '#detail/sermons' },
@@ -68,6 +68,6 @@
   function loadPublicPwaInstaller(){if(document.querySelector('script[data-public-pwa-installer]'))return;const script=document.createElement('script');script.src='/pwa-install.js?v=1';script.dataset.publicPwaInstaller='true';script.async=true;document.head.appendChild(script);}
   function enhance(){document.querySelectorAll('.navLinks:not([data-grouped-navigation="true"])').forEach(buildDesktop);buildMobile(document.querySelector('.drawer:not(.detail-mobile-drawer)'));hydrateTermsBrand();loadPublicPwaInstaller();}
   document.addEventListener('click',(event)=>{if(!event.target.closest('.site-nav-group'))document.querySelectorAll('.site-nav-group.open').forEach(group=>{group.classList.remove('open');group.querySelector('.site-nav-group-toggle')?.setAttribute('aria-expanded','false');});});
-  const initialize=()=>{enhance();requestAnimationFrame(()=>enhance());};
+  const initialize=async()=>{await loadNavigation();enhance();requestAnimationFrame(()=>enhance());};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});else initialize();
 })();
