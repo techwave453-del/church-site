@@ -3,15 +3,13 @@
   "name": "Kingdom Fellowship Christian Church Admin",
   "short_name": "KFCC Admin",
   "description": "Secure administration app for Kingdom Fellowship Christian Church.",
-  "start_url": "/admin.html?source=pwa",
-  "scope": "/",
+  "start_url": "/admin/?source=pwa",
+  "scope": "/admin/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "theme_color": "#17202b",
   "background_color": "#07111f",
-  "icons": [
-    {"src":"/admin-pwa-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
-  ],
+  "icons": [{"src":"/admin-pwa-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
   "prefer_related_applications": false
 }
