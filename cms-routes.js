@@ -24,6 +24,25 @@ function cleanNavigation(input = {}) {
   if (!label || !href || (!href.startsWith('/') && !href.startsWith('#') && !/^https?:\/\//i.test(href))) throw new Error('Navigation items need a label and a safe URL.');
   return { label, href, parent_id: input.parent_id ? Number(input.parent_id) : null, parent_index: Number.isInteger(input.parent_index) ? input.parent_index : null, position: Math.max(0, Number(input.position) || 0), is_visible: input.is_visible !== false };
 }
+function cleanMediaUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw || raw.length > 2000) throw new Error('A valid media URL is required.');
+  let url;
+  try { url = new URL(raw); } catch (_) { throw new Error('Enter a complete http:// or https:// media URL.'); }
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Only http:// and https:// media URLs are allowed.');
+  return url.href;
+}
+function inferMediaType(url, requestedType) {
+  const type = String(requestedType || '').toLowerCase();
+  if (['image','video','audio','document'].includes(type)) return type;
+  if (/(youtube\.com|youtu\.be)/i.test(url)) return 'video';
+  const path = (() => { try { return new URL(url).pathname.toLowerCase(); } catch (_) { return ''; } })();
+  if (/\.(jpe?g|png|gif|webp|avif)(?:$|\?)/i.test(path)) return 'image';
+  if (/\.(mp4|webm|mov|m4v|m3u8)(?:$|\?)/i.test(path)) return 'video';
+  if (/\.(mp3|m4a|wav|ogg|aac|flac)(?:$|\?)/i.test(path)) return 'audio';
+  if (/\.(pdf|docx?|pptx?)(?:$|\?)/i.test(path)) return 'document';
+  return 'video';
+}
 
 export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, requireSameOrigin, requirePermission }) {
   const useSupabase = Boolean(supabase);
@@ -90,4 +109,26 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
     }
     res.json(await listNavigation());
   } catch (error) { res.status(400).json({ error: error.message || 'Unable to save navigation.' }); } });
+
+  // Media Library: external URLs and YouTube links are stored as media_items without consuming storage.
+  app.post('/api/media/url', requireSameOrigin, requireAdmin, async (req, res) => {
+    try {
+      const url = cleanMediaUrl(req.body?.url);
+      const title = String(req.body?.title || '').trim().slice(0, 200);
+      const description = String(req.body?.description || '').trim().slice(0, 2000);
+      const category = String(req.body?.category || 'general').trim().slice(0, 100) || 'general';
+      const type = inferMediaType(url, req.body?.type);
+      if (!title) return res.status(400).json({ error: 'Media title is required.' });
+      if (useSupabase) {
+        const { data, error } = await supabase.from('media_items').insert({ title, type, category, description, url, storage_path: null }).select('id,title,type,category,description,url,created_at').single();
+        if (error) throw error;
+        return res.status(201).json({ ...data, source: /youtube\.com|youtu\.be/i.test(url) ? 'youtube' : 'external' });
+      }
+      const result = sqlite.prepare('INSERT INTO media_items (title,type,category,description,url,file_path) VALUES (?,?,?,?,?,NULL)').run(title, type, category, description, url);
+      return res.status(201).json({ id: result.lastInsertRowid, title, type, category, description, url, source: /youtube\.com|youtu\.be/i.test(url) ? 'youtube' : 'external' });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({ error: error.message || 'Unable to save media URL.' });
+    }
+  });
 }
