@@ -12,8 +12,6 @@
   window.loadAdminModules=async function(){if(started)return !!window.__adminAuthenticated;started=true;try{
     await loadScript('admin-loading.js');
     await loadScript('admin-session.js');
-    // On a normal navigation/reload there is no in-memory auth flag yet.
-    // Restore the existing server session before deciding to show login.
     if(!window.__adminExplicitLogin && window.restoreAdminSession){await window.restoreAdminSession()}
     await loadScript('admin-login-ui.js');
     await loadScript('admin-utils.js');
@@ -23,10 +21,10 @@
     window.adminLoadingScreen?.show('Initializing administration components…');if(window.loadAdminBranding)await window.loadAdminBranding();
     await loadScript('admin-users.js');if(window.AdminRBAC)await window.AdminRBAC.init();if(window.__adminUser&&window.AdminRBAC)window.AdminRBAC.getCurrentUser=()=>window.__adminUser;
     setLoadingState('Checking administrator permissions…');for(const name of modules.slice(2))await loadScript(name);
-    await loadScript('admin-media-runtime-fix.js');await loadScript('admin-navigation.js');window.AdminNavigation?.applyVisibility?.();
+    await loadScript('admin-media-runtime-fix.js');
+    await loadScript('admin-media-url.js');
+    await loadScript('admin-navigation.js');window.AdminNavigation?.applyVisibility?.();
     try{await loadScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init()}catch(error){console.warn(error.message)}
-    // PWA is already bootstrapped from admin-header.js so beforeinstallprompt
-    // cannot be lost while the authenticated modules load.
     await loadScript('admin-pwa.js');setLoadingState('Preparing sections…');
     if(hasPermission('site.view')&&window.loadSiteContent)await window.loadSiteContent();if(hasPermission('media.view')&&window.loadMedia)await window.loadMedia();if(hasPermission('comments.view')&&window.loadAdminComments)await window.loadAdminComments();window.AdminNavigation?.applyVisibility?.();setLoadingState('Almost ready…');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));finishLoadingState();return true;
   }catch(error){started=false;if(window.__adminAuthenticated)showBootstrapError(error);else showLoginBootstrapWarning(error);return false}}
