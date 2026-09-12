@@ -1,10 +1,10 @@
 (function(){
 'use strict';
 const VIEWS=[
- ['identity','Church & Homepage','site.view','site.edit'],['pages','Pages & Navigation','pages.view','pages.edit'],['about','About the Church','site.view','site.edit'],['services','Service Times','site.view','site.edit'],['links','Homepage Links','site.view','site.edit'],['classes','Membership Classes','site.view','site.edit'],['mediaSettings','Media, Hero & Audio','media.view','media.edit'],['live','Live Streaming','live.view','live.edit'],['theme','Website Theme','theme.view','theme.edit'],['media','Media Library','media.view','media.edit'],['comments','Live Comments','comments.view','comments.moderate'],['users','Users & Permissions','users.view','users.edit']
+ ['pages','Pages & Navigation','pages.view','pages.edit'],['about','About the Church','site.view','site.edit'],['services','Service Times','site.view','site.edit'],['links','Homepage Links','site.view','site.edit'],['classes','Membership Classes','site.view','site.edit'],['mediaSettings','Media, Hero & Audio','media.view','media.edit'],['live','Live Streaming','live.view','live.edit'],['theme','Website Theme','theme.view','theme.edit'],['media','Media Library','media.view','media.edit'],['comments','Live Comments','comments.view','comments.moderate'],['users','Users & Permissions','users.view','users.edit']
 ];
-const SITE_IDS=new Set(['identity','pages','about','services','links','classes','mediaSettings','live','theme']);
-const GROUPS=[{id:'content',label:'Website Content',items:['identity','pages','about','services','links','classes']},{id:'media',label:'Media',items:['mediaSettings','media']},{id:'live',label:'Live',items:['live','comments']},{id:'appearance',label:'Appearance',items:['theme']},{id:'admin',label:'Administration',items:['users']}];
+const SITE_IDS=new Set(['pages','about','services','links','classes','mediaSettings','live','theme']);
+const GROUPS=[{id:'content',label:'Website Content',items:['pages','about','services','links','classes']},{id:'media',label:'Media',items:['mediaSettings','media']},{id:'live',label:'Live',items:['live','comments']},{id:'appearance',label:'Appearance',items:['theme']},{id:'admin',label:'Administration',items:['users']}];
 function permission(p){const u=window.AdminRBAC?.getCurrentUser?.();if(u?.role==='super_admin')return true;return window.AdminRBAC?.hasPermission?.(p)??false;}
 function hide(el,yes){if(!el)return;el.classList.toggle('admin-view-hidden',!!yes);el.classList.toggle('hidden',!!yes);}
 function loadStyles(){if(document.getElementById('admin-section-navigation-style'))return;const s=document.createElement('style');s.id='admin-section-navigation-style';s.textContent=`
