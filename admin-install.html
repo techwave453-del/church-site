@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17202b">
+<link rel="manifest" href="/admin-pwa.webmanifest">
+<link rel="icon" href="/admin-pwa-icon.svg" type="image/svg+xml">
+<title>KFCC Admin App</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#18202a;background:#f5f7f9}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;box-sizing:border-box}.card{width:min(460px,100%);background:#fff;border:1px solid #e1e6eb;border-radius:22px;padding:28px;box-shadow:0 15px 50px #00000014;text-align:center}.icon{width:96px;height:96px;margin:0 auto 18px;border-radius:22px;display:block}h1{margin:0 0 8px;font-size:25px}p{color:#66717d;line-height:1.55;margin:0 0 22px}button,a{display:inline-flex;justify-content:center;align-items:center;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}button{background:#0b6bcb;color:#fff}.secondary{margin-top:10px;background:#e9edf1;color:#18202a}.status{margin-top:16px;font-size:13px;color:#66717d}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main class="card">
+<img class="icon" src="/admin-pwa-icon.svg" alt="">
+<h1>Kingdom Fellowship Christian Church Admin</h1>
+<p id="message">Preparing the Admin App installation…</p>
+<button id="install" class="hidden" type="button">Install Admin App</button>
+<a id="open" class="secondary" href="/admin.html">Open Admin Panel</a>
+<div id="status" class="status"></div>
+</main>
+<script src="/admin-pwa-install-page.js" defer></script>
+</body>
+</html>

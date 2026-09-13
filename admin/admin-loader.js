@@ -1,0 +1,31 @@
+(function(){
+  if(!document.getElementById('adminAppCriticalStyle')){const critical=document.createElement('style');critical.id='adminAppCriticalStyle';critical.textContent='html:not(.admin-ui-ready) #adminHeader,html:not(.admin-ui-ready) #app{visibility:hidden!important}html.admin-login-skeleton #login{visibility:hidden!important;opacity:0!important}html.admin-login-skeleton #adminLoginSkeleton{display:grid!important;position:fixed;inset:0;z-index:99998;min-height:100dvh;background:linear-gradient(145deg,#07111f,#0b1d33)}html.admin-login-ready #login{visibility:visible!important;opacity:1!important}';(document.head||document.documentElement).appendChild(critical)}
+  document.documentElement.classList.remove('admin-ui-ready','admin-login-ready');document.documentElement.classList.add('admin-login-skeleton');
+  const modules=['admin-utils.js','admin-session.js','admin-theme.js','admin-media.js','admin-comments.js','admin-site-content.js','admin-services.js','admin-homepage-links.js','admin-classes.js','admin-gallery.js','admin-live.js','admin-bridge.js','admin-cms.js'];
+  let started=false;const buildVersion=window.__ADMIN_BUILD_VERSION||Date.now().toString();
+  function setLoadingState(message){document.documentElement.classList.add('admin-modules-loading');if(!window.__adminExplicitLogin)return;if(window.adminLoadingScreen?.visible)window.adminLoadingScreen.setMessage(message||'Loading admin panel…');window.setAdminLoadingState?.(message)}
+  function finishLoadingState(){document.documentElement.classList.add('admin-ui-ready');document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');window.adminLoadingScreen?.hide()}
+  function showBootstrapError(error){console.error('Admin modules failed to initialize:',error);document.documentElement.classList.add('admin-ui-ready');document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');window.adminLoadingScreen?.showError('A required administrator component did not initialize correctly.',()=>location.reload())}
+  function showLoginBootstrapWarning(error){console.warn('Admin pre-auth bootstrap warning:',error);document.documentElement.classList.add('admin-ui-ready','admin-login-ready');document.documentElement.classList.remove('admin-modules-loading','admin-login-skeleton');window.adminLoadingScreen?.hide()}
+  function loadScript(name){return new Promise((resolve,reject)=>{const existing=document.querySelector(`script[data-admin-module="${name}"]`);if(existing)return resolve();const s=document.createElement('script');let settled=false;const timer=setTimeout(()=>{if(settled)return;settled=true;s.remove();reject(new Error('Timed out while loading '+name))},15000);s.src='/admin/'+name+'?v='+encodeURIComponent(buildVersion);s.dataset.adminModule=name;s.onload=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve()};s.onerror=()=>{if(settled)return;settled=true;clearTimeout(timer);reject(new Error('Failed to load '+name))};document.head.appendChild(s)})}
+  function hasPermission(permission){const user=window.__adminUser||window.AdminRBAC?.getCurrentUser?.();return user?.role==='super_admin'||(Array.isArray(user?.permissions)&&user.permissions.includes(permission))||window.AdminRBAC?.hasPermission?.(permission)===true}
+  window.loadAdminModules=async function(){if(started)return !!window.__adminAuthenticated;started=true;try{
+    await loadScript('admin-loading.js');
+    await loadScript('admin-session.js');
+    if(!window.__adminExplicitLogin && window.restoreAdminSession){await window.restoreAdminSession()}
+    await loadScript('admin-login-ui.js');
+    await loadScript('admin-utils.js');
+    if(!window.__adminExplicitLogin){started=false;finishLoadingState();return false}
+    setLoadingState('Loading your administration workspace…');
+    if(!window.__adminAuthenticated){started=false;finishLoadingState();return false}
+    window.adminLoadingScreen?.show('Initializing administration components…');if(window.loadAdminBranding)await window.loadAdminBranding();
+    await loadScript('admin-users.js');if(window.AdminRBAC)await window.AdminRBAC.init();if(window.__adminUser&&window.AdminRBAC)window.AdminRBAC.getCurrentUser=()=>window.__adminUser;
+    setLoadingState('Checking administrator permissions…');for(const name of modules.slice(2))await loadScript(name);
+    await loadScript('admin-media-runtime-fix.js');
+    await loadScript('admin-media-url.js');
+    await loadScript('admin-navigation.js');window.AdminNavigation?.applyVisibility?.();
+    try{await loadScript('admin-access-requests.js');if(window.AdminAccessRequests)await window.AdminAccessRequests.init()}catch(error){console.warn(error.message)}
+    await loadScript('admin-pwa.js');setLoadingState('Preparing sections…');
+    if(hasPermission('site.view')&&window.loadSiteContent)await window.loadSiteContent();if(hasPermission('media.view')&&window.loadMedia)await window.loadMedia();if(hasPermission('comments.view')&&window.loadAdminComments)await window.loadAdminComments();window.AdminNavigation?.applyVisibility?.();setLoadingState('Almost ready…');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));finishLoadingState();return true;
+  }catch(error){started=false;if(window.__adminAuthenticated)showBootstrapError(error);else showLoginBootstrapWarning(error);return false}}
+})();

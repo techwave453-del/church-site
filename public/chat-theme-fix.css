@@ -1,0 +1,23 @@
+/* Keep the floating homepage chat launcher distinct from the standalone Live page chat container. */
+.page .chat {
+  background: var(--accent-2) !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 15px 40px var(--accent-shadow) !important;
+}
+
+.page .chat svg {
+  color: #fff !important;
+  stroke: currentColor !important;
+}
+
+:root[data-site-theme="dark"] .page .chat {
+  background: var(--accent-2) !important;
+  color: #fff !important;
+  box-shadow: 0 15px 40px var(--accent-shadow) !important;
+}
+
+:root[data-site-theme="light"] .page .chat {
+  background: var(--accent-2) !important;
+  color: #fff !important;
+}

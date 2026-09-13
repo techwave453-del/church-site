@@ -1,0 +1,173 @@
+/* Public navigation layout: desktop gets a taller church-identity row and a compact full-width menu row. */
+.page.entered > header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 120 !important;
+}
+
+@media (min-width: 701px) {
+  header {
+    height: 184px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 126px 58px !important;
+    align-items: center !important;
+    justify-items: center !important;
+    padding: 0 !important;
+  }
+
+  header .brand {
+    grid-row: 1;
+    justify-self: center;
+    align-self: center;
+    min-height: 104px;
+    gap: 16px !important;
+  }
+
+  header .brandLogo {
+    width: 88px !important;
+    height: 88px !important;
+    max-width: 88px !important;
+    max-height: 88px !important;
+    object-fit: contain !important;
+    flex: 0 0 88px !important;
+  }
+
+  header .brand b {
+    font-size: 18px !important;
+    letter-spacing: .14em !important;
+  }
+
+  header .brand small {
+    margin-top: 6px !important;
+    font-size: 10px !important;
+    letter-spacing: .34em !important;
+  }
+
+  header .navLinks {
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: clamp(8px, 1.2vw, 20px) !important;
+    padding: 0 24px !important;
+    align-self: stretch;
+  }
+
+  header .mobile-menu-trigger {
+    display: none !important;
+  }
+
+  header > div:last-child {
+    position: absolute !important;
+    right: max(18px, calc((100vw - 1500px) / 2)) !important;
+    bottom: 8px !important;
+    z-index: 30;
+  }
+
+  .site-nav-group:last-child .site-nav-submenu {
+    left: auto;
+    right: 0;
+  }
+
+  .site-nav-group-toggle,
+  .navLinks > a {
+    white-space: nowrap;
+  }
+
+  .site-nav-group-toggle {
+    font-size: clamp(12px, 1vw, 17px) !important;
+    font-weight: 800 !important;
+  }
+
+  /* Keep the hero content clear of the two-row header while preserving its background. */
+  .hero {
+    padding-top: 214px !important;
+    padding-bottom: 30px !important;
+  }
+}
+
+/* Mobile: compact header plus a floating, translucent left drawer. */
+@media (max-width: 700px) {
+  header {
+    height: 70px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 9px !important;
+  }
+
+  header .brand {
+    grid-row: auto;
+    width: auto;
+    max-width: calc(100% - 58px);
+    height: 70px;
+    min-height: 0;
+    padding: 10px 8px;
+    justify-content: flex-start;
+    gap: 8px !important;
+  }
+
+  header .brand b {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  header .brandLogo {
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    flex: 0 0 44px !important;
+  }
+
+  .mobile-menu-trigger {
+    display: grid !important;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    color: #111;
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(17,17,17,.14);
+  }
+
+  header .navLinks {
+    display: none !important;
+  }
+
+  .drawer {
+    top: 70px !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 16px !important;
+    width: min(82vw, 360px) !important;
+    max-width: 360px !important;
+    max-height: calc(100svh - 86px) !important;
+    padding: 18px 20px !important;
+    background: rgba(5, 20, 40, 0.72) !important;
+    backdrop-filter: blur(18px) saturate(125%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-left: 0 !important;
+    border-radius: 0 18px 18px 0 !important;
+    box-shadow: 12px 12px 40px rgba(0, 0, 0, 0.32) !important;
+    overflow: hidden !important;
+  }
+
+  .drawer nav {
+    height: calc(100% - 66px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 8px 4px 24px 8px !important;
+  }
+}
