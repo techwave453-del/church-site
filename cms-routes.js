@@ -117,14 +117,15 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
       const title = String(req.body?.title || '').trim().slice(0, 200);
       const description = String(req.body?.description || '').trim().slice(0, 2000);
       const category = String(req.body?.category || 'general').trim().slice(0, 100) || 'general';
-      const type = inferMediaType(url, req.body?.type);
+      const isYoutube = /(^|\.)youtu\.be$|(^|\.)youtube\.com$/i.test(new URL(url).hostname) || /youtube\.com|youtu\.be/i.test(url);
+      const type = isYoutube ? 'video' : inferMediaType(url, req.body?.type);
       if (!title) return res.status(400).json({ error: 'Media title is required.' });
       if (useSupabase) {
-        const { data, error } = await supabase.from('media_items').insert({ title, type, category, description, url, storage_path: null }).select('id,title,type,category,description,url,created_at').single();
+        const { data, error } = await supabase.from('media_items').insert({ title, type, category, description, url, storage_path: null, published: true }).select('id,title,type,category,description,url,published,created_at').single();
         if (error) throw error;
         return res.status(201).json({ ...data, source: /youtube\.com|youtu\.be/i.test(url) ? 'youtube' : 'external' });
       }
-      const result = sqlite.prepare('INSERT INTO media_items (title,type,category,description,url,file_path) VALUES (?,?,?,?,?,NULL)').run(title, type, category, description, url);
+      const result = sqlite.prepare('INSERT INTO media_items (title,type,category,description,url,file_path,published) VALUES (?,?,?,?,?,NULL,1)').run(title, type, category, description, url);
       return res.status(201).json({ id: result.lastInsertRowid, title, type, category, description, url, source: /youtube\.com|youtu\.be/i.test(url) ? 'youtube' : 'external' });
     } catch (error) {
       console.error(error);
