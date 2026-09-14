@@ -45,7 +45,7 @@ html.admin-login-skeleton #adminLoginSkeleton{
 <section id="login" class="card login"><h1>Admin Dashboard</h1><p class="muted">Manage the church website, media and live stream.</p><form onsubmit="login(event)"><label>Username</label><input id="username" autocomplete="username" required><label>Password</label><input id="password" type="password" autocomplete="current-password" required><div class="toolbar" style="margin-top:14px"><button class="primary">Sign in</button></div></form><p id="loginMsg"></p></section>
 <section id="app" class="hidden"><div id="notice" class="notice"></div>
 <div id="identityWorkspace" class="hidden"><section class="card section"><div class="head"><div><h2>🔒 Church Identity</h2><p class="muted">Highly protected official identity. Only authorized administrators can change these settings.</p></div></div><div class="grid"><div><label>Official church name</label><input id="identityChurchName"></div><div><label>Official name</label><input id="identityOfficialName"></div><div><label>Official logo URL</label><input id="identityLogoUrl" type="url"></div><div><label>Official logo</label><input id="identityLogo" type="url"></div><div><label>Registration / organization details</label><textarea id="identityRegistrationDetails"></textarea></div></div><div class="toolbar" style="margin-top:16px"><button id="saveIdentityButton" class="primary" type="button">Save Church Identity</button></div></section></div>
-<div class="tabs"><button id="identityTab" type="button" data-tab="identity">🔒 Church Identity</button><button class="active" type="button" data-tab="site">Website Content</button><button type="button" data-tab="media">Media Library</button><button type="button" data-tab="comments">Live Comments</button></div>
+<div class="tabs"><button id="identityTab" type="button" data-tab="identity">🔒 Church Identity</button><button class="active" type="button" data-tab="site">Website Content</button><button type="button" data-tab="media">Media Center</button><button type="button" data-tab="comments">Live Comments</button></div>
 <div id="site">
 <div class="jump"><a href="#identity">Homepage</a><a href="#theme">🎨 Theme</a><a href="#about">About</a><a href="#services">Services</a><a href="#links">Links</a><a href="#classes">Classes</a><a href="#mediaSettings">Media</a><a href="#live">Live</a></div>
 <section id="identity" class="card section"><div class="head"><div><h2>Homepage</h2><p class="muted">Text shown to visitors on the homepage and footer.</p></div></div><div class="grid"><div><label>Tagline</label><input id="tagline"></div><div><label>Homepage title</label><input id="title"></div><div><label>Homepage subtitle</label><input id="subtitle"></div><div><label>Enter Site button text</label><input id="cta"></div><div><label>Phone</label><input id="phone"></div><div><label>Email</label><input id="email" type="email"></div><div><label>Footer tagline</label><input id="footerTagline"></div></div></section>
@@ -69,5 +69,21 @@ html.admin-login-skeleton #adminLoginSkeleton{
 <script src="/admin/admin-media.js?v=media-center-1"></script>
 <script src="/admin/admin-media-url.js?v=media-center-1"></script>
 <script src="/admin/admin-media-runtime-fix.js?v=media-center-1"></script>
+<script>
+(function(){
+  function initializeMediaCenter(){
+    const media=document.getElementById('media');
+    if(!media)return;
+    if(typeof window.loadMedia==='function') window.loadMedia();
+  }
+  document.addEventListener('click',function(event){
+    const tab=event.target.closest('[data-tab="media"]');
+    if(tab)setTimeout(initializeMediaCenter,0);
+  });
+  window.addEventListener('load',function(){
+    if(document.getElementById('media')&&!document.getElementById('media').classList.contains('hidden')) initializeMediaCenter();
+  });
+})();
+</script>
 
 </body></html>
