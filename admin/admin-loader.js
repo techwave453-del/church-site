@@ -20,6 +20,9 @@
     if(!window.__adminAuthenticated){started=false;finishLoadingState();return false}
     window.adminLoadingScreen?.show('Initializing administration components…');if(window.loadAdminBranding)await window.loadAdminBranding();
     await loadScript('admin-users.js');if(window.AdminRBAC)await window.AdminRBAC.init();if(window.__adminUser&&window.AdminRBAC)window.AdminRBAC.getCurrentUser=()=>window.__adminUser;
+    // Remove the legacy inline Media Library before the modular Media Center loads.
+    // This prevents the old Upload Media/Loading... interface from remaining visible.
+    await loadScript('admin-legacy-cleanup.js');
     setLoadingState('Checking administrator permissions…');for(const name of modules.slice(2))await loadScript(name);
     await loadScript('admin-media-runtime-fix.js');
     await loadScript('admin-media-url.js');
