@@ -1,16 +1,17 @@
-const CACHE_NAME='kfcc-admin-v3';
+const CACHE_NAME='kfcc-admin-v4';
 const CACHE_PREFIX='kfcc-admin-';
+const VERSION_URL='/build-version.json';
 const ADMIN_SHELL=['/admin/','/admin.html','/admin-pwa.webmanifest','/admin-pwa-icon.svg'];
 const isAdminAsset=url=>url.pathname.startsWith('/admin/')&&/\.(?:js|css)$/.test(url.pathname);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ADMIN_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',event=>{const request=event.request;if(request.method!=='GET')return;const url=new URL(request.url);if(url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
+self.addEventListener('fetch',event=>{const request=event.request;if(request.method!=='GET')return;const url=new URL(request.url);if(url.origin!==self.location.origin||url.pathname.startsWith('/api/')||url.pathname===VERSION_URL)return;
   if(isAdminAsset(url)){
-    event.respondWith(fetch(request).then(response=>{if(response.ok&&response.type==='basic')caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response;}).catch(()=>caches.match(request)));
+    event.respondWith(fetch(request,{cache:'no-store'}).then(response=>{if(response.ok&&response.type==='basic')caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response;}).catch(()=>caches.match(request)));
     return;
   }
   if(request.mode==='navigate'){
-    event.respondWith(fetch(request).then(response=>{if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response;}).catch(async()=>await caches.match(request)||await caches.match('/admin/')||await caches.match('/admin.html')));
+    event.respondWith(fetch(request,{cache:'no-store'}).then(response=>{if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response;}).catch(async()=>await caches.match(request)||await caches.match('/admin/')||await caches.match('/admin.html')));
     return;
   }
   event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{if(response.ok&&response.type==='basic')caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));return response;}).catch(()=>cached)));
