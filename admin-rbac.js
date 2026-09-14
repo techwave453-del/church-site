@@ -24,7 +24,7 @@ const ALL_CONTENT_EDIT_PERMISSIONS = [
 
 export const ROLE_PERMISSIONS = Object.freeze({
   [ADMIN_ROLES.SUPER_ADMIN]: [...ADMIN_PERMISSIONS],
-  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', 'site.edit', ...ALL_CONTENT_EDIT_PERMISSIONS, 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
+  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', ...ALL_CONTENT_EDIT_PERMISSIONS, 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
   [ADMIN_ROLES.MEDIA_MANAGER]: ['media.view', 'media.upload', 'media.edit', 'media.delete'],
   [ADMIN_ROLES.LIVE_MANAGER]: ['comments.view', 'comments.moderate', 'live.view', 'live.edit'],
   [ADMIN_ROLES.CUSTOM]: []
