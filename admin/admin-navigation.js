@@ -1,11 +1,11 @@
 (function(){
 'use strict';
 const VIEWS=[
- ['identity','Church & Homepage','site.view','site.edit'],['pages','Pages & Navigation','pages.view','pages.edit'],['about','About the Church','site.view','site.edit'],['services','Service Times','site.view','site.edit'],['links','Homepage Links','site.view','site.edit'],['classes','Membership Classes','site.view','site.edit'],['mediaSettings','Media, Hero & Audio','media.view','media.edit'],['live','Live Streaming','live.view','live.edit'],['theme','Website Theme','theme.view','theme.edit'],['media','Media Library','media.view','media.edit'],['comments','Live Comments','comments.view','comments.moderate'],['users','Users & Permissions','users.view','users.edit']
+ ['identity','Church & Homepage','site.view','site.edit'],['pages','Pages & Navigation','pages.view','pages.edit'],['about','About the Church','site.view','site.edit'],['services','Service Times','site.view','site.edit'],['links','Homepage Links','site.view','site.edit'],['classes','Membership Classes','site.view','site.edit'],['mediaSettings','Media, Hero & Audio','media.view','media.edit'],['live','Live Streaming','live.view','live.edit'],['theme','Website Theme','theme.view','theme.edit'],['media','Media Center','media.view','media.edit'],['comments','Live Comments','comments.view','comments.moderate'],['users','Users & Permissions','users.view','users.edit']
 ];
 const SITE_IDS=new Set(['identity','pages','about','services','links','classes','mediaSettings','live','theme']);
 const GROUPS=[{id:'content',label:'Website Content',items:['identity','pages','about','services','links','classes']},{id:'media',label:'Media',items:['mediaSettings','media']},{id:'live',label:'Live',items:['live','comments']},{id:'appearance',label:'Appearance',items:['theme']},{id:'admin',label:'Administration',items:['users']}];
-function permission(p){const u=window.AdminRBAC?.getCurrentUser?.();if(u?.role==='super_admin')return true;return window.AdminRBAC?.hasPermission?.(p)??false;}
+function permission(p){const u=window.AdminRBAC?.getCurrentUser?.();if(u?.role==='super_admin')return true;return window.AdminRBAC?.hasPermission?.(p)===true;}
 function hide(el,yes){if(!el)return;el.classList.toggle('admin-view-hidden',!!yes);el.classList.toggle('hidden',!!yes);}
 function loadStyles(){if(document.getElementById('admin-section-navigation-style'))return;const s=document.createElement('style');s.id='admin-section-navigation-style';s.textContent=`
 .admin-view-hidden{display:none!important}
@@ -101,5 +101,6 @@ function applyPermissions(){
 function showView(id){const item=getView(id);if(!item||!permission(item[2]))return;const target=getTarget(id);if(!target)return;hide(document.getElementById('adminNoPermissions'),true);const nav=document.querySelector('.admin-navigation');hide(nav,false);nav?.querySelectorAll('.admin-menu-item').forEach(b=>b.classList.toggle('selected',b.dataset.view===id));const group=GROUPS.find(g=>g.items.includes(id));nav?.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m.dataset.group===group?.id));const site=document.getElementById('site');hide(site,!SITE_IDS.has(id));VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));hide(document.getElementById('media'),id!=='media');hide(document.getElementById('comments'),id!=='comments');hide(document.getElementById('adminRbac'),id!=='users');if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();window.scrollTo(0,0);}
 function init(){loadStyles();setHeaderHeight();buildNavigation();requestAnimationFrame(setHeaderHeight);window.addEventListener('resize',setHeaderHeight);}
 window.AdminNavigation={showView,applyVisibility:applyPermissions,updateOffsets:setHeaderHeight};
+window.addEventListener('admin:rbac-ready',()=>requestAnimationFrame(applyPermissions));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
