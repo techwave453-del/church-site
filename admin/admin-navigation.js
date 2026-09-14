@@ -87,6 +87,32 @@ function buildNavigation(){
  old.replaceWith(nav);
  document.addEventListener('click',event=>{if(!nav.contains(event.target)){closeMenus();nav.classList.remove('mobile-menu-open');toggle.setAttribute('aria-expanded','false');}});
 }
+function prepareMediaCenter(){
+ const root=document.getElementById('media');
+ if(!root)return null;
+ // Never leave the legacy inline Media Library visible while the modular
+ // Media Center is being initialized.
+ if(!root.querySelector('.am-shell')){
+   root.innerHTML='<div class="card" data-media-center-bootstrap><div class="head"><div><h2>Media Center</h2><p class="muted">Loading the Media Center…</p></div></div></div>';
+ }
+ return root;
+}
+async function openMediaCenter(){
+ const root=prepareMediaCenter();
+ if(!root)return;
+ for(let attempt=0;attempt<4;attempt++){
+   if(typeof window.loadMedia!=='function'){
+     await new Promise(resolve=>setTimeout(resolve,100));
+     continue;
+   }
+   try{await window.loadMedia();}catch(error){console.warn('Media Center initialization attempt failed:',error);}
+   if(root.querySelector('.am-shell'))return;
+   await new Promise(resolve=>setTimeout(resolve,150));
+ }
+ if(!root.querySelector('.am-shell')){
+   root.innerHTML='<div class="card"><div class="head"><div><h2>Media Center</h2><p class="muted">The Media Center could not be initialized. Please refresh the admin panel.</p></div></div></div>';
+ }
+}
 function applyPermissions(){
  const nav=document.querySelector('.admin-navigation');if(!nav)return;
  GROUPS.forEach(group=>{const wrapper=nav.querySelector(`[data-group="${group.id}"]`);if(!wrapper)return;let visible=0;group.items.forEach(id=>{const item=wrapper.querySelector(`[data-view="${id}"]`);const allowed=canView(id);hide(item,!allowed);if(allowed)visible++;});hide(wrapper,visible===0);});
@@ -98,7 +124,7 @@ function applyPermissions(){
  hide(state,true);
  const current=document.querySelector('.admin-menu-item.selected')?.dataset.view;if(!current||!canView(current))showView(first);
 }
-function showView(id){const item=getView(id);if(!item||!permission(item[2]))return;const target=getTarget(id);if(!target)return;hide(document.getElementById('adminNoPermissions'),true);const nav=document.querySelector('.admin-navigation');hide(nav,false);nav?.querySelectorAll('.admin-menu-item').forEach(b=>b.classList.toggle('selected',b.dataset.view===id));const group=GROUPS.find(g=>g.items.includes(id));nav?.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m.dataset.group===group?.id));const site=document.getElementById('site');hide(site,!SITE_IDS.has(id));VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));hide(document.getElementById('media'),id!=='media');hide(document.getElementById('comments'),id!=='comments');hide(document.getElementById('adminRbac'),id!=='users');if(id==='media'&&typeof window.loadMedia==='function')window.loadMedia();if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();window.scrollTo(0,0);}
+function showView(id){const item=getView(id);if(!item||!permission(item[2]))return;const target=getTarget(id);if(!target)return;hide(document.getElementById('adminNoPermissions'),true);const nav=document.querySelector('.admin-navigation');hide(nav,false);nav?.querySelectorAll('.admin-menu-item').forEach(b=>b.classList.toggle('selected',b.dataset.view===id));const group=GROUPS.find(g=>g.items.includes(id));nav?.querySelectorAll('.admin-menu').forEach(m=>m.classList.toggle('active-menu',m.dataset.group===group?.id));const site=document.getElementById('site');hide(site,!SITE_IDS.has(id));VIEWS.filter(([viewId])=>SITE_IDS.has(viewId)).forEach(([viewId])=>hide(getTarget(viewId),viewId!==id));hide(document.getElementById('media'),id!=='media');hide(document.getElementById('comments'),id!=='comments');hide(document.getElementById('adminRbac'),id!=='users');if(id==='media')openMediaCenter();if(id==='comments'&&typeof window.loadComments==='function')window.loadComments();if(id==='users'&&window.AdminRBAC?.loadUsers)window.AdminRBAC.loadUsers();window.scrollTo(0,0);}
 function init(){loadStyles();setHeaderHeight();buildNavigation();requestAnimationFrame(setHeaderHeight);window.addEventListener('resize',setHeaderHeight);}
 window.AdminNavigation={showView,applyVisibility:applyPermissions,updateOffsets:setHeaderHeight};
 window.addEventListener('admin:rbac-ready',()=>requestAnimationFrame(applyPermissions));
