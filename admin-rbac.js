@@ -9,7 +9,7 @@ export const ADMIN_ROLES = Object.freeze({
 });
 
 export const ADMIN_PERMISSIONS = Object.freeze([
-  'site.view','site.edit','media.view','media.upload','media.edit','media.delete',
+  'identity.view','identity.edit','site.view','site.edit','media.view','media.upload','media.edit','media.delete',
   'comments.view','comments.moderate','live.view','live.edit','theme.view','theme.edit',
   'pages.view','pages.create','pages.edit','pages.delete','navigation.edit','site.publish',
   'users.view','users.create','users.edit','users.disable','users.delete','users.permissions','audit.view'
