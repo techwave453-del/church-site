@@ -1,6 +1,7 @@
-const CACHE_NAME = 'kfcc-public-v3';
+const CACHE_NAME = 'kfcc-public-v4';
 const CACHE_PREFIX = 'kfcc-public-';
 const OFFLINE_URL = '/offline.html';
+const VERSION_URL = '/build-version.json';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -36,13 +37,17 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === VERSION_URL) return;
+  if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
         .catch(async () =>
@@ -65,7 +70,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => cached);
-
       return cached || network;
     })
   );
