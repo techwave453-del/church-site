@@ -9,15 +9,22 @@ export const ADMIN_ROLES = Object.freeze({
 });
 
 export const ADMIN_PERMISSIONS = Object.freeze([
-  'identity.view','identity.edit','site.view','site.edit','media.view','media.upload','media.edit','media.delete',
+  'identity.view','identity.edit',
+  'site.view','site.edit',
+  'content.homepage.edit','content.about.edit','content.services.edit','content.links.edit','content.classes.edit','content.gallery.edit',
+  'media.view','media.upload','media.edit','media.delete',
   'comments.view','comments.moderate','live.view','live.edit','theme.view','theme.edit',
   'pages.view','pages.create','pages.edit','pages.delete','navigation.edit','site.publish',
   'users.view','users.create','users.edit','users.disable','users.delete','users.permissions','audit.view'
 ]);
 
+const ALL_CONTENT_EDIT_PERMISSIONS = [
+  'content.homepage.edit','content.about.edit','content.services.edit','content.links.edit','content.classes.edit','content.gallery.edit'
+];
+
 export const ROLE_PERMISSIONS = Object.freeze({
   [ADMIN_ROLES.SUPER_ADMIN]: [...ADMIN_PERMISSIONS],
-  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', 'site.edit', 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
+  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', 'site.edit', ...ALL_CONTENT_EDIT_PERMISSIONS, 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
   [ADMIN_ROLES.MEDIA_MANAGER]: ['media.view', 'media.upload', 'media.edit', 'media.delete'],
   [ADMIN_ROLES.LIVE_MANAGER]: ['comments.view', 'comments.moderate', 'live.view', 'live.edit'],
   [ADMIN_ROLES.CUSTOM]: []
