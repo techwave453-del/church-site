@@ -8,7 +8,23 @@ function showSetup(username=''){const value=String(username||'').trim();window.l
 function showApp(){document.getElementById('login')?.classList.add('hidden');document.getElementById('app')?.classList.remove('hidden');setAuthenticatedUI(true)}
 function showLogin(){document.getElementById('app')?.classList.add('hidden');document.getElementById('login')?.classList.remove('hidden');setAuthenticatedUI(false);installLoginDesign();loadLoginBranding()}
 function showLogoutAnimation(){if(document.getElementById('adminLogoutScreen'))return Promise.resolve();const overlay=document.createElement('div');overlay.id='adminLogoutScreen';overlay.setAttribute('aria-live','polite');overlay.innerHTML='<div class="admin-logout-orb" aria-hidden="true"></div><div class="admin-logout-card"><div class="admin-logout-icon" aria-hidden="true"><span></span></div><p class="admin-logout-kicker">Administrator portal</p><h2>Signing you out</h2><p>Your administrator session is being securely closed…</p><div class="admin-logout-track"><span></span></div></div>';document.body.appendChild(overlay);document.body.classList.add('admin-logging-out');return new Promise(resolve=>setTimeout(resolve,760))}
-async function restoreSession(){try{const r=await api()('/api/admin/session',{method:'GET',cache:'no-store'});if(!r.ok)return false;const data=await r.json().catch(()=>({}));if(data.loggedIn!==true||!data.user)return false;window.__adminExplicitLogin=true;window.__adminAuthenticated=true;window.__adminUser=data.user;return true}catch(_){return false}}
+async function restoreSession(){
+  const attempts=3;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    try{
+      const r=await api()('/api/admin/session',{method:'GET',cache:'no-store'});
+      if(r.ok){
+        const data=await r.json().catch(()=>({}));
+        if(data.loggedIn===true&&data.user){window.__adminExplicitLogin=true;window.__adminAuthenticated=true;window.__adminUser=data.user;return true;}
+      }
+      if(r.status===401)return false;
+    }catch(error){
+      if(attempt===attempts)console.warn('Unable to restore administrator session:',error.message);
+    }
+    if(attempt<attempts)await new Promise(resolve=>setTimeout(resolve,250*attempt));
+  }
+  return false;
+}
 window.adminSession={
 login:async function(event){event?.preventDefault();if(window.__adminLoggingIn)return false;window.__adminLoggingIn=true;const username=document.getElementById('username')?.value.trim()||'';const password=document.getElementById('password')?.value||'';const msg=document.getElementById('loginMsg');if(!username||!password){if(msg)msg.textContent='Enter your username and password.';window.__adminLoggingIn=false;return false}if(msg)msg.textContent='Signing in…';try{const r=await api()('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const data=await r.json().catch(()=>({}));if(!r.ok){if(data.requiresPasswordSetup){showSetup(username);return false}throw new Error(data.error||'Login failed.')}window.__adminExplicitLogin=true;window.__adminAuthenticated=true;window.__adminUser=data.user||data.admin||null;if(msg)msg.textContent='Loading administration…';if(typeof window.loadAdminModules!=='function')throw new Error('Administrator components are unavailable.');const ready=await window.loadAdminModules(true);if(!ready)throw new Error('The administration panel could not finish loading.');showApp();return true}catch(error){window.__adminAuthenticated=false;window.__adminExplicitLogin=false;setAuthenticatedUI(false);showLogin();if(msg)msg.textContent=error.message||'Login failed.';return false}finally{window.__adminLoggingIn=false}},
 logout:async function(){if(window.__adminLoggingOut)return;window.__adminLoggingOut=true;setAuthenticatedUI(false);const animation=showLogoutAnimation();try{await api()('/api/admin/logout',{method:'POST'})}finally{await animation;window.__adminAuthenticated=false;window.__adminExplicitLogin=false;location.reload()}},
