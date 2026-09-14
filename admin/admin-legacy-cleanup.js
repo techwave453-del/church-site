@@ -7,10 +7,21 @@
   function cleanup(){
     const root=document.getElementById('media');
     if(!root)return;
-    if(root.dataset.mediaCenterReady==='1')return;
-    root.innerHTML='';
-    root.dataset.mediaLegacyRemoved='1';
+    if(root.dataset.mediaCenterReady!=='1'){
+      root.innerHTML='';
+      root.dataset.mediaLegacyRemoved='1';
+    }
+    normalizeMediaNavigation();
+  }
+  function normalizeMediaNavigation(){
+    document.querySelectorAll('.admin-navigation [data-view="media"], .admin-navigation [data-tab="media"]').forEach(item=>{
+      if(item.textContent.trim()==='Media Library')item.textContent='Media Center';
+      item.setAttribute('aria-label','Media Center');
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanup,{once:true});
   else cleanup();
+  const observer=new MutationObserver(()=>normalizeMediaNavigation());
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(()=>observer.disconnect(),15000);
 })();
