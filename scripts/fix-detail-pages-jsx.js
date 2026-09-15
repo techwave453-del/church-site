@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const path = 'src/DetailPages.jsx';
-const source = fs.readFileSync(path, 'utf8');
+let source = fs.readFileSync(path, 'utf8');
 const start = source.indexOf('function DetailPage(');
 const end = source.indexOf('export function DetailRouter', start);
 
@@ -116,5 +116,22 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
 
 `;
 
-fs.writeFileSync(path, source.slice(0, start) + replacement + source.slice(end));
-console.log('Normalized DetailPages.jsx header markup.');
+source = source.slice(0, start) + replacement + source.slice(end);
+
+// The public Media page receives two asynchronous sources: the site-content
+// catalog and /api/media. Keep an explicitly selected Featured Video latched
+// once discovered so a later site-content refresh cannot briefly replace it
+// with the first video (which may be the live-service video).
+if (!source.includes('featuredMediaOverride')) {
+  source = source.replace(
+    "const[items,setItems]=useState([]),[selected,setSelected]=useState(null),[filter,setFilter]=useState('All'),[query,setQuery]=useState('');",
+    "const[items,setItems]=useState([]),[selected,setSelected]=useState(null),[filter,setFilter]=useState('All'),[query,setQuery]=useState(''),[featuredMediaOverride,setFeaturedMediaOverride]=useState(null);"
+  );
+  source = source.replace(
+    "const legacy=items.map(x=>({id:`legacy-${x.id}`,title:x.title,type:x.type,category:x.category,description:x.description,url:x.url,imageUrl:x.type==='image'?x.url:'',videoUrl:x.type==='video'?x.url:'',audioUrl:x.type==='audio'?x.url:'',documentUrl:(x.type==='pdf'||x.type==='document')?x.url:'',featured:x.type==='video'&&x.featured===true}));\nconst all=[...catalog,...legacy.filter(x=>!catalog.some(c=>c.videoUrl===x.videoUrl&&x.videoUrl))];\nconst featured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||all.find(x=>x.videoUrl)||all[0];",
+    "const legacy=items.map(x=>({id:`legacy-${x.id}`,title:x.title,type:x.type,category:x.category,description:x.description,url:x.url,imageUrl:x.type==='image'?x.url:'',videoUrl:x.type==='video'?x.url:'',audioUrl:x.type==='audio'?x.url:'',documentUrl:(x.type==='pdf'||x.type==='document')?x.url:'',featured:x.type==='video'&&(x.featured===true||x.featured===1||x.featured==='1'||String(x.featured).toLowerCase()==='true')}));\nconst all=[...catalog,...legacy.filter(x=>!catalog.some(c=>c.videoUrl===x.videoUrl&&x.videoUrl))];\nconst explicitFeatured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||null;\nuseEffect(()=>{if(explicitFeatured)setFeaturedMediaOverride(explicitFeatured)},[explicitFeatured?.id,explicitFeatured?.videoUrl]);\nconst featured=featuredMediaOverride||explicitFeatured||all.find(x=>x.videoUrl)||all[0];"
+  );
+}
+
+fs.writeFileSync(path, source);
+console.log('Normalized DetailPages.jsx header markup and stabilized Featured Video selection.');
