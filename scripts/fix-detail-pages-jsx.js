@@ -89,7 +89,7 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
   return (
     <div className={'detailPage detailPage-'+key+(key==='media'?' is-media-hub':'')}>
       <header>
-        <button className="brand" type="button" onClick={()=>{window.location.hash='home'}} aria-label={`${church?.name||church?.churchName||'Church'} home`}>
+        <button className="brand" type="button" onClick={()=>{window.location.hash='home'}} aria-label={`\${church?.name||church?.churchName||'Church'} home`}>
           {logo?<img className="brandLogo" src={logo} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>:<span className="mark">✧</span>}
           <span><b>{church?.name||church?.churchName||'Church'}</b><small>{church?.tagline||''}</small></span>
         </button>
