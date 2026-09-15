@@ -8,11 +8,11 @@ function cleanNavigation(input = {}) { const label = String(input.label || '').t
 function cleanMediaUrl(value) { const raw = String(value || '').trim(); if (!raw || raw.length > 2000) throw new Error('A valid media URL is required.'); let url; try { url = new URL(raw); } catch (_) { throw new Error('Enter a complete http:// or https:// media URL.'); } if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Only http:// and https:// media URLs are allowed.'); return url.href; }
 function inferMediaType(url, requestedType) { const type = String(requestedType || '').toLowerCase(); if (['image','video','audio','document'].includes(type)) return type; if (/(youtube\.com|youtu\.be)/i.test(url)) return 'video'; const path = (() => { try { return new URL(url).pathname.toLowerCase(); } catch (_) { return ''; } })(); if (/\.(jpe?g|png|gif|webp|avif)(?:$|\?)/i.test(path)) return 'image'; if (/\.(mp4|webm|mov|m4v|m3u8)(?:$|\?)/i.test(path)) return 'video'; if (/\.(mp3|m4a|wav|ogg|aac|flac)(?:$|\?)/i.test(path)) return 'audio'; if (/\.(pdf|docx?|pptx?)(?:$|\?)/i.test(path)) return 'document'; return 'video'; }
 
-export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, requireSameOrigin, requirePermission }) {
+export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, requireSameOrigin, requirePermission, rbac }) {
   const useSupabase = Boolean(supabase);
   const permission = (name) => requirePermission ? requirePermission(name) : requireAdmin;
   const requirePublishIfNeeded = (req, res, next) => req.body?.status === 'published' ? permission('site.publish')(req, res, next) : next();
-  registerEventsRoutes(app, { db: sqlite, supabase, requireAdmin, requireSameOrigin, rbac: requirePermission?.rbac });
+  registerEventsRoutes(app, { db: sqlite, supabase, requireAdmin, requireSameOrigin, rbac });
   async function listPages(includeUnpublished) {
     if (useSupabase) { let query = supabase.from('cms_pages').select('*,cms_sections(*)').order('updated_at', { ascending: false }); if (!includeUnpublished) query = query.eq('status', 'published'); const { data, error } = await query; if (error) throw error; return (data || []).map(page => ({ ...page, sections: (page.cms_sections || []).sort((a, b) => a.position - b.position) })); }
     const pages = sqlite.prepare(`SELECT * FROM cms_pages ${includeUnpublished ? '' : "WHERE status='published'"} ORDER BY updated_at DESC`).all(); const sections = sqlite.prepare('SELECT * FROM cms_sections ORDER BY position').all(); return pages.map(page => ({ ...page, show_in_navigation: Boolean(page.show_in_navigation), sections: sections.filter(section => section.page_id === page.id).map(section => ({ ...section, content: JSON.parse(section.content || '{}') })) }));
