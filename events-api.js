@@ -1,3 +1,5 @@
+import { createAdminRbacService } from './admin-rbac-service.js';
+
 const EVENT_STATUSES = new Set(['draft', 'published', 'archived']);
 const ATTENDANCE_TYPES = new Set(['in_person', 'online', 'hybrid']);
 
@@ -66,21 +68,22 @@ function ensureSqliteEventsTable(db) {
 
 export function registerEventsRoutes(app, { db, supabase, requireSameOrigin, rbac }) {
   ensureSqliteEventsTable(db);
+  const authorization = rbac || (supabase ? createAdminRbacService({ supabase }) : null);
 
   async function currentAdmin(req) {
     const id = req.session?.user?.id;
-    if (!id || !rbac) return null;
-    return rbac.getUserWithPermissions(id);
+    if (!id || !authorization) return null;
+    return authorization.getUserWithPermissions(id);
   }
 
   function requireEventPermission(permission) {
     return async (req, res, next) => {
       try {
-        if (!rbac) return res.status(500).json({ error: 'Events authorization is not configured.' });
+        if (!authorization) return res.status(500).json({ error: 'Events authorization is not configured.' });
         if (req.session?.user?.password_setup_only) return res.status(403).json({ error: 'Password setup is required before accessing the administrator panel.', requiresPasswordSetup: true });
         const user = await currentAdmin(req);
         if (!user || !user.is_active) return res.status(401).json({ error: 'Unauthorized.' });
-        if (!rbac.hasPermission(user, permission, user.permissions)) return res.status(403).json({ error: 'You do not have permission for this action.' });
+        if (!authorization.hasPermission(user, permission, user.permissions)) return res.status(403).json({ error: 'You do not have permission for this action.' });
         req.adminUser = user;
         next();
       } catch (error) {
@@ -93,7 +96,7 @@ export function registerEventsRoutes(app, { db, supabase, requireSameOrigin, rba
   async function canViewUnpublished(req) {
     try {
       const user = await currentAdmin(req);
-      return Boolean(user?.is_active && rbac?.hasPermission(user, 'events.view', user.permissions));
+      return Boolean(user?.is_active && authorization?.hasPermission(user, 'events.view', user.permissions));
     } catch (_) {
       return false;
     }
