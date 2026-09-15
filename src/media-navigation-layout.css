@@ -1,5 +1,23 @@
-.detailHeader{padding:0!important}.detailHeaderInner{width:min(1240px,calc(100% - 36px));min-height:82px;margin:auto;display:flex;align-items:center;justify-content:center;gap:0}.detailHeader .detailBrand{min-width:0}.detailHeader .detailSiteNav{width:100%;min-height:54px;display:flex;align-items:center;justify-content:center;gap:4px;flex:1}.detailHeader .detailSiteNav a{padding:0 12px}.detailHeader .detailNavMenu{display:none}.detailHeader .detailMobileTrigger{display:none}.detailHeader{display:flex;flex-direction:column}.detailHeaderInner{width:100%}.detailHeaderInner>.detailBrand{width:auto}.detailHeaderInner>.detailSiteNav{display:none}.detailHeader:after{content:none}.detailHeader .detailSiteNav{display:none}.detailHeaderInner{position:relative}.detailHeaderInner:after{content:none}
-/* Desktop: branding row followed by full navigation row. */
-@media(min-width:1051px){.detailHeaderInner{min-height:82px}.detailHeaderNavRow{display:block;width:100%;border-top:1px solid var(--site-border,rgba(17,24,32,.08))}.detailHeaderNavRow .detailSiteNav{width:min(1240px,calc(100% - 36px));margin:auto;min-height:54px;display:flex;align-items:center;justify-content:center;gap:4px}.detailHeaderBrandRow{width:100%}.detailHeaderBrandRow .detailHeaderInner{display:flex}.detailHeaderBrandRow .detailHeaderInner>.detailBrand{display:flex}.detailHeaderBrandRow .detailMobileTrigger{display:none}}
-@media(max-width:1050px){.detailHeader{display:block}.detailHeaderBrandRow{border-bottom:0}.detailHeaderNavRow{display:none}.detailHeaderInner{width:calc(100% - 24px);min-height:68px;justify-content:space-between}.detailHeaderInner>.detailSiteNav{display:none}.detailMobileTrigger{display:grid!important}.detailBrand{min-width:0!important}}
-@media(min-width:1051px){.detailHeaderBrandRow{border-bottom:0}.detailHeaderBrandRow .detailHeaderInner{min-height:82px}.detailHeaderBrandRow .detailBrand{margin:auto}}
+/* Two-row detail-page navigation: church identity above the desktop menu. */
+.detailHeader{display:flex;flex-direction:column;padding:0!important}
+.detailHeaderBrandRow{width:100%}
+.detailHeaderBrandRow .detailHeaderInner{width:min(1240px,calc(100% - 36px));min-height:82px;margin:auto;display:flex;align-items:center;justify-content:flex-start;gap:0}
+.detailHeaderBrandRow .detailBrand{min-width:0;margin:0}
+.detailHeaderBrandRow .detailMobileTrigger{display:none}
+.detailHeaderNavRow{width:100%;border-top:1px solid var(--site-border,rgba(17,24,32,.08));background:var(--site-surface,#fff)}
+.detailHeaderNavRow .detailSiteNav{width:min(1240px,calc(100% - 36px));min-height:54px;margin:auto;display:flex;align-items:center;justify-content:center;gap:4px;flex:0 0 auto}
+.detailHeaderNavRow .detailSiteNav a{padding:0 12px}
+.detailHeaderNavRow .detailNavMenu{display:none}
+
+@media(max-width:1050px){
+  .detailHeader{display:block}
+  .detailHeaderBrandRow{width:100%}
+  .detailHeaderBrandRow .detailHeaderInner{width:calc(100% - 24px);min-height:68px;justify-content:space-between}
+  .detailHeaderBrandRow .detailBrand{min-width:0}
+  .detailHeaderBrandRow .detailMobileTrigger{display:grid}
+  .detailHeaderNavRow{display:none}
+}
+
+@media(max-width:800px){
+  .detailHeaderBrandRow .detailHeaderInner{min-height:68px}
+}
