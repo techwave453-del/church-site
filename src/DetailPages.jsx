@@ -19,9 +19,9 @@ function MediaLibrary({church}){
 const[items,setItems]=useState([]),[selected,setSelected]=useState(null),[filter,setFilter]=useState('All'),[query,setQuery]=useState('');
 useEffect(()=>{fetch('/api/media',{cache:'no-store'}).then(r=>r.ok?r.json():[]).then(d=>setItems(Array.isArray(d)?d:[])).catch(()=>{})},[]);
 const catalog=(Array.isArray(church?.mediaCatalog)?church.mediaCatalog:[]).filter(x=>x&&x.published!==false);
-const legacy=items.map(x=>({id:`legacy-${x.id}`,title:x.title,type:x.type,category:x.category,description:x.description,url:x.url,imageUrl:x.type==='image'?x.url:'',videoUrl:x.type==='video'?x.url:'',audioUrl:x.type==='audio'?x.url:'',documentUrl:(x.type==='pdf'||x.type==='document')?x.url:''}));
+const legacy=items.map(x=>({id:`legacy-${x.id}`,title:x.title,type:x.type,category:x.category,description:x.description,url:x.url,imageUrl:x.type==='image'?x.url:'',videoUrl:x.type==='video'?x.url:'',audioUrl:x.type==='audio'?x.url:'',documentUrl:(x.type==='pdf'||x.type==='document')?x.url:'',featured:x.type==='video'&&x.featured===true}));
 const all=[...catalog,...legacy.filter(x=>!catalog.some(c=>c.videoUrl===x.videoUrl&&x.videoUrl))];
-const featured=all.find(x=>x.featured&&x.videoUrl)||all.find(x=>x.videoUrl)||all[0];
+const featured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||all.find(x=>x.videoUrl)||all[0];
 const heroImage=featured?.imageUrl||ytThumb(featured?.videoUrl)||all.find(x=>x.imageUrl)?.imageUrl||church?.fallbackImage||'';
 const normalize=x=>String(x.category||x.type||'Media').toLowerCase();
 const mediaItems=all.filter(x=>x.videoUrl||x.audioUrl||x.documentUrl||x.type==='video'||x.type==='audio');
