@@ -89,7 +89,7 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
   return (
     <div className={'detailPage detailPage-'+key+(key==='media'?' is-media-hub':'')}>
       <header>
-        <button className="brand" type="button" onClick={()=>{window.location.hash='home'}} aria-label={`\${church?.name||church?.churchName||'Church'} home`}>
+        <button className="brand" type="button" onClick={()=>{window.location.hash='home'}} aria-label={(church?.name||church?.churchName||'Church')+' home'}>
           {logo?<img className="brandLogo" src={logo} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>:<span className="mark">✧</span>}
           <span><b>{church?.name||church?.churchName||'Church'}</b><small>{church?.tagline||''}</small></span>
         </button>
@@ -106,12 +106,15 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
         {bodyContent}
         {ctaContent}
       </main>
-      {key!=='media'&&<footer className="detailFooter"><strong>{church?.name||church?.churchName||'Church'}</strong><span>{church?.footerTagline||church?.tagline||''}</span></footer>}
-      {mobileMenu&&<div className="drawer"><div className="drawerTop"><b>Menu</b><button className="close" type="button" onClick={()=>setMobileMenu(false)} aria-label="Close menu">×</button></div><nav aria-label="Mobile navigation"></nav></div>}
+      {mobileMenu&&<div className="drawer" onClick={()=>setMobileMenu(false)}>
+        <div className="drawerTop" onClick={e=>e.stopPropagation()}><b>Menu</b><button className="close" type="button" onClick={()=>setMobileMenu(false)} aria-label="Close menu">×</button></div>
+        <nav aria-label="Mobile navigation" onClick={e=>e.stopPropagation()}></nav>
+      </div>}
     </div>
   );
 }
+
 `;
 
-fs.writeFileSync(path, source.slice(0, start) + replacement + source.slice(end), 'utf8');
-console.log('Normalized DetailPages.jsx to use the canonical homepage header.');
+fs.writeFileSync(path, source.slice(0, start) + replacement + source.slice(end));
+console.log('Normalized DetailPages.jsx header markup.');
