@@ -3,10 +3,11 @@
 .detailHeaderBrandRow{width:100%}
 .detailHeaderBrandRow .detailHeaderInner{width:min(1240px,calc(100% - 36px));min-height:82px;margin:auto;display:flex;align-items:center;justify-content:flex-start;gap:0}
 .detailHeaderBrandRow .detailBrand{min-width:0;margin:0}
+.detailHeaderBrandRow .detailBrandLogo{display:block;width:54px;height:54px;max-width:54px;flex:0 0 54px;object-fit:contain;object-position:center;margin-right:14px}
 .detailHeaderBrandRow .detailMobileTrigger{display:none}
 .detailHeaderNavRow{width:100%;border-top:1px solid var(--site-border,rgba(17,24,32,.08));background:var(--site-surface,#fff)}
-.detailHeaderNavRow .detailSiteNav{width:min(1240px,calc(100% - 36px));min-height:54px;margin:auto;display:flex;align-items:center;justify-content:center;gap:4px;flex:0 0 auto}
-.detailHeaderNavRow .detailSiteNav a{padding:0 12px}
+.detailHeaderNavRow .detailSiteNav{width:min(1240px,calc(100% - 36px));min-height:54px;margin:auto;display:flex;align-items:stretch;justify-content:stretch;gap:0;flex:1 1 auto}
+.detailHeaderNavRow .detailSiteNav a{padding:0 12px;display:flex;align-items:center;justify-content:center;flex:1 1 0;min-width:0;text-align:center;white-space:nowrap}
 .detailHeaderNavRow .detailNavMenu{display:none}
 
 @media(max-width:1050px){
@@ -14,10 +15,12 @@
   .detailHeaderBrandRow{width:100%}
   .detailHeaderBrandRow .detailHeaderInner{width:calc(100% - 24px);min-height:68px;justify-content:space-between}
   .detailHeaderBrandRow .detailBrand{min-width:0}
+  .detailHeaderBrandRow .detailBrandLogo{width:46px;height:46px;max-width:46px;flex-basis:46px;margin-right:12px}
   .detailHeaderBrandRow .detailMobileTrigger{display:grid}
   .detailHeaderNavRow{display:none}
 }
 
 @media(max-width:800px){
   .detailHeaderBrandRow .detailHeaderInner{min-height:68px}
+  .detailHeaderBrandRow .detailBrandLogo{width:42px;height:42px;max-width:42px;flex-basis:42px}
 }
