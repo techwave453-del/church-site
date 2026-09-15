@@ -64,14 +64,44 @@ function ensureSqliteEventsTable(db) {
   CREATE INDEX IF NOT EXISTS events_category_idx ON events(category);`);
 }
 
-export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
+export function registerEventsRoutes(app, { db, supabase, requireAdmin, rbac }) {
   ensureSqliteEventsTable(db);
   const adminOnly = (req, res, next) => requireAdmin(req, res, next);
-  const isAdminSession = req => Boolean(req.session?.user?.id || req.session?.adminUser?.id);
+
+  async function currentAdmin(req) {
+    const id = req.session?.user?.id;
+    if (!id || !rbac) return null;
+    return rbac.getUserWithPermissions(id);
+  }
+
+  function requireEventPermission(permission) {
+    return async (req, res, next) => {
+      try {
+        if (!rbac) return res.status(500).json({ error: 'Events authorization is not configured.' });
+        const user = await currentAdmin(req);
+        if (!user || !user.is_active) return res.status(401).json({ error: 'Unauthorized.' });
+        if (!rbac.hasPermission(user, permission, user.permissions)) return res.status(403).json({ error: 'You do not have permission for this action.' });
+        req.adminUser = user;
+        next();
+      } catch (error) {
+        console.error('Event permission check failed:', error);
+        res.status(500).json({ error: 'Unable to verify event administration permissions.' });
+      }
+    };
+  }
+
+  async function canViewUnpublished(req) {
+    try {
+      const user = await currentAdmin(req);
+      return Boolean(user?.is_active && rbac?.hasPermission(user, 'events.view', user.permissions));
+    } catch (_) {
+      return false;
+    }
+  }
 
   app.get('/api/events', async (req, res) => {
     try {
-      const includeUnpublished = isAdminSession(req);
+      const includeUnpublished = await canViewUnpublished(req);
       if (supabase) {
         let query = supabase.from('events').select('*').order('start_at', { ascending: true });
         if (!includeUnpublished) query = query.eq('status', 'published');
@@ -86,7 +116,7 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
 
   app.get('/api/events/:slug', async (req, res) => {
     try {
-      const includeUnpublished = isAdminSession(req);
+      const includeUnpublished = await canViewUnpublished(req);
       if (supabase) {
         let query = supabase.from('events').select('*').eq('slug', req.params.slug).limit(1);
         if (!includeUnpublished) query = query.eq('status', 'published');
@@ -101,7 +131,7 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
     } catch (_) { res.status(500).json({ error: 'Unable to load event.' }); }
   });
 
-  app.post('/api/admin/events', adminOnly, async (req, res) => {
+  app.post('/api/admin/events', requireSameOrigin, requireEventPermission('events.create'), async (req, res) => {
     try {
       const event = normalizeEvent(req.body);
       if (supabase) {
@@ -114,7 +144,7 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
     } catch (error) { res.status(400).json({ error: error.message || 'Unable to create event.' }); }
   });
 
-  app.put('/api/admin/events/:id', adminOnly, async (req, res) => {
+  app.put('/api/admin/events/:id', requireSameOrigin, requireEventPermission('events.edit'), async (req, res) => {
     try {
       let existing;
       if (supabase) {
@@ -135,7 +165,7 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin }) {
     } catch (error) { res.status(400).json({ error: error.message || 'Unable to update event.' }); }
   });
 
-  app.delete('/api/admin/events/:id', adminOnly, async (req, res) => {
+  app.delete('/api/admin/events/:id', requireSameOrigin, requireEventPermission('events.delete'), async (req, res) => {
     try {
       if (supabase) {
         const { error } = await supabase.from('events').delete().eq('id', req.params.id);
