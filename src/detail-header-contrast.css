@@ -1,7 +1,8 @@
 /* Detail-page navigation correction. DetailPages.jsx owns the navigation. */
 header.detailHeader{position:sticky!important;top:0!important;z-index:50!important;width:auto!important;max-width:none!important;min-height:82px!important;height:auto!important;margin:0!important;padding:0 max(18px,calc((100vw - 1240px)/2))!important;box-sizing:border-box!important}
-/* Media has a full-bleed hero immediately below the two-row header. Keep the header in normal flow so it can never cover the hero. */
-.detailPage-media header.detailHeader{position:relative!important;top:auto!important}
+/* Media keeps the header sticky; the hero is in normal flow directly beneath it. */
+.detailPage-media header.detailHeader{position:sticky!important;top:0!important;z-index:50!important}
+.detailPage-media main{position:relative!important;z-index:1!important}
 header.detailHeader .detailHeaderInner{position:relative!important;min-height:82px!important;height:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:20px!important;width:100%!important;box-sizing:border-box!important}
 header.detailHeader>.detailBrand{position:static!important;transform:none!important;width:auto!important;max-width:none!important;height:auto!important;padding:0!important;margin:0!important;min-width:245px!important;flex:0 1 245px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;text-align:left!important;visibility:visible!important;opacity:1!important}
 header.detailHeader .detailBrandLogo{width:42px!important;height:42px!important;max-width:42px!important;margin:0!important;object-fit:cover!important}
