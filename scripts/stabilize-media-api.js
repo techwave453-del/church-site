@@ -16,14 +16,18 @@ const oldSqliteList = "sqlite.prepare('SELECT id,title,type,category,description
 const newSqliteList = "sqlite.prepare('SELECT id,title,type,category,description,url,0 AS featured,published,created_at FROM media_items ORDER BY created_at DESC').all()";
 if (source.includes(oldSqliteList)) source = source.replace(oldSqliteList, newSqliteList);
 
-// Preserve featured when an admin creates/updates media through the API.
+// Preserve featured when an admin creates media through the API.
 source = source.replace(
   "const{title,description,category,type}=req.body||{}",
   "const{title,description,category,type,featured}=req.body||{}"
 );
+source = source.replace(
+  "addMedia({title:cleanTitle,description:cleanDescription,category:cleanCategory,type:mediaType,url,storage_path:storagePath,published:true})",
+  "addMedia({title:cleanTitle,description:cleanDescription,category:cleanCategory,type:mediaType,url,storage_path:storagePath,published:true,featured:Boolean(featured)})"
+);
 
 const oldAdd = "supabase.from('media_items').insert(item).select('id,title,type,category,description,url,published,created_at').single()";
-const newAdd = "supabase.from('media_items').insert({...item,featured:Boolean(featured)}).select('id,title,type,category,description,url,featured,published,created_at').single()";
+const newAdd = "supabase.from('media_items').insert(item).select('id,title,type,category,description,url,featured,published,created_at').single()";
 if (source.includes(oldAdd)) source = source.replace(oldAdd, newAdd);
 
 // updateMedia previously discarded featured from PATCH requests. Add it only
