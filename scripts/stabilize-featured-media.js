@@ -5,31 +5,29 @@ let source = fs.readFileSync(path, 'utf8');
 
 // Normalize the API featured flag so boolean, numeric and string values all work.
 source = source.replace(
-  "featured:x.type==='video'&&x.featured===true",
+  /featured:x\.type==='video'&&x\.featured===true/,
   "featured:x.type==='video'&&(x.featured===true||x.featured===1||x.featured==='1'||String(x.featured).toLowerCase()==='true')"
 );
 
-// The Featured Message must come only from the media record explicitly marked
-// featured in /api/media. Never fall back to mediaCatalog or the first video,
-// because those sources can contain the Live Service video.
-const selectors = [
-  "const featured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||all.find(x=>x.videoUrl)||all[0];",
-  "const featured=legacy.find(x=>x.featured&&x.videoUrl)||null;",
-  "const explicitFeatured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||null;\\nconst featured=explicitFeatured;",
-  "const explicitFeatured=legacy.find(x=>x.featured&&x.videoUrl)||catalog.find(x=>x.featured&&x.videoUrl)||null;\nconst featured=explicitFeatured;"
-];
-
-for (const selector of selectors) {
-  if (source.includes(selector)) {
-    source = source.replace(selector, "const featured=legacy.find(x=>x.featured&&x.videoUrl)||null;");
-    break;
-  }
+// The public Featured Message must use only an explicitly featured video from
+// /api/media. Never fall back to the media catalog, the first video, or the
+// first media item, because those sources may contain the Live Service stream.
+const featuredPattern = /const featured\s*=\s*[^;]+;/;
+if (featuredPattern.test(source)) {
+  source = source.replace(
+    featuredPattern,
+    "const featured=legacy.find(x=>x.featured&&x.videoUrl)||null;"
+  );
 }
 
-// Guard against the exact failure that previously reached Vite: a literal
-// backslash-n inserted into JavaScript source.
+// Also remove an older two-line selector if a previous build-script revision
+// left it behind.
 source = source.replace(
-  "const explicitFeatured=legacy.find(x=>x.featured&&x.videoUrl)||null;\\nconst featured=explicitFeatured;",
+  /const explicitFeatured\s*=\s*[^;]+;\\nconst featured\s*=\s*explicitFeatured;/,
+  "const featured=legacy.find(x=>x.featured&&x.videoUrl)||null;"
+);
+source = source.replace(
+  /const explicitFeatured\s*=\s*[^;]+;\nconst featured\s*=\s*explicitFeatured;/,
   "const featured=legacy.find(x=>x.featured&&x.videoUrl)||null;"
 );
 
