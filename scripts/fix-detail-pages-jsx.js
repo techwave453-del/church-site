@@ -79,15 +79,15 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
         <p>Our church team will be happy to help.</p>
       </div>
       <div className="detailActions">
-        <a href={\`tel:\${church?.phone||''}\`}><Phone size={17}/> Call</a>
-        <a href={\`mailto:\${church?.email||''}\`}><Mail size={17}/> Email</a>
+        <a href={'tel:'+(church?.phone||'')}><Phone size={17}/> Call</a>
+        <a href={'mailto:'+(church?.email||'')}><Mail size={17}/> Email</a>
         <button onClick={onBack}><ArrowLeft size={17}/> Return to site</button>
       </div>
     </section>
   ) : null;
 
   return (
-    <div className={\`detailPage detailPage-\${key}\${key==='media'?' is-media-hub':''}\`}>
+    <div className={'detailPage detailPage-'+key+(key==='media'?' is-media-hub':'')}>
       <header className="detailHeader">
         <div className="detailHeaderBrandRow">
           <div className="detailHeaderInner">
@@ -99,7 +99,7 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
           </div>
         </div>
         <div className="detailHeaderNavRow">
-          <SiteNav church={church} onMenu={menuHandler} activePath={\`detail/\${key}\`}/>
+          <SiteNav church={church} onMenu={menuHandler} activePath={'detail/'+key}/>
         </div>
       </header>
       <main>
