@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:server": "node scripts/start-server.js",
     "dev:all": "concurrently \"node scripts/start-server.js\" \"npm run dev\"",
-    "build": "node scripts/fix-vite-regex.js && node scripts/inject-live-stream.js && node scripts/write-build-version.js && vite build",
+    "build": "node scripts/fix-vite-regex.js && node scripts/fix-detail-pages-jsx.js && node scripts/inject-live-stream.js && node scripts/write-build-version.js && vite build",
     "start": "node scripts/start-server.js",
     "preview": "vite preview",
     "test": "node --test"
