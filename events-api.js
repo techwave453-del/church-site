@@ -64,9 +64,8 @@ function ensureSqliteEventsTable(db) {
   CREATE INDEX IF NOT EXISTS events_category_idx ON events(category);`);
 }
 
-export function registerEventsRoutes(app, { db, supabase, requireAdmin, rbac }) {
+export function registerEventsRoutes(app, { db, supabase, requireSameOrigin, rbac }) {
   ensureSqliteEventsTable(db);
-  const adminOnly = (req, res, next) => requireAdmin(req, res, next);
 
   async function currentAdmin(req) {
     const id = req.session?.user?.id;
@@ -78,6 +77,7 @@ export function registerEventsRoutes(app, { db, supabase, requireAdmin, rbac }) 
     return async (req, res, next) => {
       try {
         if (!rbac) return res.status(500).json({ error: 'Events authorization is not configured.' });
+        if (req.session?.user?.password_setup_only) return res.status(403).json({ error: 'Password setup is required before accessing the administrator panel.', requiresPasswordSetup: true });
         const user = await currentAdmin(req);
         if (!user || !user.is_active) return res.status(401).json({ error: 'Unauthorized.' });
         if (!rbac.hasPermission(user, permission, user.permissions)) return res.status(403).json({ error: 'You do not have permission for this action.' });
