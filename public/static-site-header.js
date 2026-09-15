@@ -5,7 +5,8 @@
     const oldHeader = document.querySelector('body > header, body > .page > header');
     if (!oldHeader) return;
 
-    document.body.classList.add('page', 'entered', 'unified-static-page');
+    const pageRoot = oldHeader.closest('.page');
+    (pageRoot || document.body).classList.add('page', 'entered', 'unified-static-page');
     document.querySelectorAll('.menu-bar, .site-menu, #siteMenu').forEach((node) => node.remove());
 
     const header = document.createElement('header');
