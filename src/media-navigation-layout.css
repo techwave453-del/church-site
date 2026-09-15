@@ -10,6 +10,11 @@
 .detailHeaderNavRow .detailSiteNav a{padding:0 12px;display:flex;align-items:center;justify-content:center;flex:1 1 0;min-width:0;text-align:center;white-space:nowrap}
 .detailHeaderNavRow .detailNavMenu{display:none}
 
+/* The Media hub is full-bleed. Its hero must start after the sticky two-row header, never underneath it. */
+.detailPage.is-media-hub main{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;position:relative!important;z-index:1!important}
+.detailPage.is-media-hub .mediaHub{position:relative;z-index:1}
+.detailPage.is-media-hub .mediaHubHero{position:relative;z-index:1;scroll-margin-top:0}
+
 @media(max-width:1050px){
   .detailHeader{display:block}
   .detailHeaderBrandRow{width:100%}
@@ -23,4 +28,5 @@
 @media(max-width:800px){
   .detailHeaderBrandRow .detailHeaderInner{min-height:68px}
   .detailHeaderBrandRow .detailBrandLogo{width:42px;height:42px;max-width:42px;flex-basis:42px}
+  .detailPage.is-media-hub .mediaHubHero{min-height:300px}
 }
