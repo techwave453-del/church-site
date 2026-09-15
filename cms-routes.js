@@ -12,7 +12,7 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
   const useSupabase = Boolean(supabase);
   const permission = (name) => requirePermission ? requirePermission(name) : requireAdmin;
   const requirePublishIfNeeded = (req, res, next) => req.body?.status === 'published' ? permission('site.publish')(req, res, next) : next();
-  registerEventsRoutes(app, { db: sqlite, supabase, requireAdmin });
+  registerEventsRoutes(app, { db: sqlite, supabase, requireAdmin, requireSameOrigin, rbac: requirePermission?.rbac });
   async function listPages(includeUnpublished) {
     if (useSupabase) { let query = supabase.from('cms_pages').select('*,cms_sections(*)').order('updated_at', { ascending: false }); if (!includeUnpublished) query = query.eq('status', 'published'); const { data, error } = await query; if (error) throw error; return (data || []).map(page => ({ ...page, sections: (page.cms_sections || []).sort((a, b) => a.position - b.position) })); }
     const pages = sqlite.prepare(`SELECT * FROM cms_pages ${includeUnpublished ? '' : "WHERE status='published'"} ORDER BY updated_at DESC`).all(); const sections = sqlite.prepare('SELECT * FROM cms_sections ORDER BY position').all(); return pages.map(page => ({ ...page, show_in_navigation: Boolean(page.show_in_navigation), sections: sections.filter(section => section.page_id === page.id).map(section => ({ ...section, content: JSON.parse(section.content || '{}') })) }));
@@ -35,8 +35,7 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
   app.get('/api/cms/admin/navigation', requireAdmin, permission('navigation.edit'), async (_req, res) => { try { res.json(await listNavigation()); } catch (error) { res.status(500).json({ error: 'Unable to load navigation.' }); } });
   app.put('/api/cms/navigation', requireSameOrigin, requireAdmin, permission('navigation.edit'), async (req, res) => { try { const items = Array.isArray(req.body) ? req.body.map(cleanNavigation) : []; const ordered = [...items].sort((a, b) => (a.parent_index === null ? -1 : 0) - (b.parent_index === null ? -1 : 0)); if (useSupabase) { const removed = await supabase.from('cms_navigation').delete().neq('id', 0); if (removed.error) throw removed.error; const ids = new Map(); for (const item of ordered) { const parentId = item.parent_index === null ? null : ids.get(item.parent_index) || null; const result = await supabase.from('cms_navigation').insert({ label: item.label, href: item.href, parent_id: parentId, position: item.position, is_visible: item.is_visible }).select('id').single(); if (result.error) throw result.error; ids.set(items.indexOf(item), result.data.id); } } else { sqlite.prepare('DELETE FROM cms_navigation').run(); const ids = new Map(); const insert = sqlite.prepare('INSERT INTO cms_navigation (label,href,parent_id,position,is_visible,page_id) VALUES (?,?,?,?,?,?)'); ordered.forEach(item => { const parentId = item.parent_index === null ? null : ids.get(item.parent_index) || null; const result = insert.run(item.label, item.href, parentId, item.position, item.is_visible ? 1 : 0, null); ids.set(items.indexOf(item), result.lastInsertRowid); }); } res.json(await listNavigation()); } catch (error) { res.status(400).json({ error: error.message || 'Unable to save navigation.' }); } });
 
-  // Media Library: external URLs and YouTube links are stored as media_items without consuming storage.
-  app.post('/api/media/url', requireSameOrigin, requireAdmin, async (req, res) => {
+  app.post('/api/media/url', requireSameOrigin, requireAdmin, permission('media.upload'), async (req, res) => {
     try {
       const url = cleanMediaUrl(req.body?.url); const title = String(req.body?.title || '').trim().slice(0, 200); const description = String(req.body?.description || '').trim().slice(0, 2000); const category = String(req.body?.category || 'general').trim().slice(0, 100) || 'general'; const isYoutube = /(^|\.)youtu\.be$|(^|\.)youtube\.com$/i.test(new URL(url).hostname) || /youtube\.com|youtu\.be/i.test(url); const type = isYoutube ? 'video' : inferMediaType(url, req.body?.type); if (!title) return res.status(400).json({ error: 'Media title is required.' });
       if (useSupabase) { const { data, error } = await supabase.from('media_items').insert({ title, type, category, description, url, storage_path: null, published: true, featured: false }).select('id,title,type,category,description,url,published,featured,created_at').single(); if (error) throw error; return res.status(201).json({ ...data, source: /youtube\.com|youtu\.be/i.test(url) ? 'youtube' : 'external' }); }
@@ -44,7 +43,6 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
     } catch (error) { console.error(error); res.status(400).json({ error: error.message || 'Unable to save media URL.' }); }
   });
 
-  // Featured Video: only video media can be featured, and only one video may be featured at a time.
   app.patch('/api/media/:id/featured', requireSameOrigin, requireAdmin, permission('media.edit'), async (req, res) => {
     try {
       const id = Number(req.params.id); if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Invalid media ID.' });
@@ -55,8 +53,7 @@ export function registerAdminCmsRoutes({ app, supabase, sqlite, requireAdmin, re
         if (featured) { const clear = await supabase.from('media_items').update({ featured:false }).eq('type','video').eq('featured',true); if (clear.error) throw clear.error; }
         const saved = await supabase.from('media_items').update({ featured }).eq('id', id).select('id,title,type,category,description,url,published,featured,created_at').single(); if (saved.error) throw saved.error; return res.json(saved.data);
       }
-      const item = sqlite.prepare('SELECT id,type FROM media_items WHERE id=?').get(id); if (!item) return res.status(404).json({ error: 'Media item not found.' }); if (featured && item.type !== 'video') return res.status(400).json({ error: 'Only video media can be featured.' });
-      if (featured) sqlite.prepare("UPDATE media_items SET featured=0 WHERE type='video' AND featured=1").run(); sqlite.prepare('UPDATE media_items SET featured=? WHERE id=?').run(featured?1:0,id); return res.json(sqlite.prepare('SELECT * FROM media_items WHERE id=?').get(id));
-    } catch (error) { console.error(error); res.status(400).json({ error: error.message || 'Unable to update Featured Video.' }); }
+      const item = db.prepare('SELECT id,type FROM media_items WHERE id=?').get(id); if (!item) return res.status(404).json({ error: 'Media item not found.' }); if (featured && item.type !== 'video') return res.status(400).json({ error: 'Only video media can be featured.' }); if (featured) db.prepare("UPDATE media_items SET featured=0 WHERE type='video' AND featured=1").run(); db.prepare('UPDATE media_items SET featured=? WHERE id=?').run(featured ? 1 : 0, id); res.json(db.prepare('SELECT * FROM media_items WHERE id=?').get(id));
+    } catch (error) { console.error(error); res.status(400).json({ error: error.message || 'Unable to update featured media.' }); }
   });
 }
