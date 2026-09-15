@@ -12,6 +12,7 @@ export const ADMIN_PERMISSIONS = Object.freeze([
   'identity.view','identity.edit',
   'site.view','site.edit',
   'content.homepage.edit','content.about.edit','content.services.edit','content.links.edit','content.classes.edit','content.gallery.edit',
+  'events.view','events.create','events.edit','events.delete',
   'media.view','media.upload','media.edit','media.delete',
   'comments.view','comments.moderate','live.view','live.edit','theme.view','theme.edit',
   'pages.view','pages.create','pages.edit','pages.delete','navigation.edit','site.publish',
@@ -24,7 +25,7 @@ const ALL_CONTENT_EDIT_PERMISSIONS = [
 
 export const ROLE_PERMISSIONS = Object.freeze({
   [ADMIN_ROLES.SUPER_ADMIN]: [...ADMIN_PERMISSIONS],
-  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', ...ALL_CONTENT_EDIT_PERMISSIONS, 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
+  [ADMIN_ROLES.CONTENT_EDITOR]: ['site.view', ...ALL_CONTENT_EDIT_PERMISSIONS, 'events.view', 'events.create', 'events.edit', 'events.delete', 'pages.view', 'pages.create', 'pages.edit', 'navigation.edit'],
   [ADMIN_ROLES.MEDIA_MANAGER]: ['media.view', 'media.upload', 'media.edit', 'media.delete'],
   [ADMIN_ROLES.LIVE_MANAGER]: ['comments.view', 'comments.moderate', 'live.view', 'live.edit'],
   [ADMIN_ROLES.CUSTOM]: []
