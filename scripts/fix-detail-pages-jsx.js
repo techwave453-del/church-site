@@ -15,7 +15,6 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
   const service=Array.isArray(church?.services)?church.services.find(s=>slugify(s?.title)===slugify(key)):null;
   const[mobileMenu,setMobileMenu]=useState(false);
   const menuHandler=onMenu||(()=>setMobileMenu(true));
-  const headerLogo=resolveHeaderLogo(church);
 
   let heroContent=null;
   if(key==='media'){
@@ -86,21 +85,21 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
     </section>
   ) : null;
 
+  const logo=resolveHeaderLogo(church);
   return (
     <div className={'detailPage detailPage-'+key+(key==='media'?' is-media-hub':'')}>
-      <header className="detailHeader">
-        <div className="detailHeaderBrandRow">
-          <div className="detailHeaderInner">
-            <a className="detailBrand" href="/?entered=1#home" aria-label="Home">
-              {headerLogo&&<img className="detailBrandLogo" src={headerLogo} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>}
-              <span><strong>{church?.name||church?.churchName||'Church'}</strong><small>{church?.tagline||''}</small></span>
-            </a>
-            <button className="detailMobileTrigger" type="button" onClick={menuHandler} aria-label="Open menu"><Menu size={23}/></button>
+      <header>
+        <button className="brand" type="button" onClick={()=>{window.location.hash='home'}} aria-label={`${church?.name||church?.churchName||'Church'} home`}>
+          {logo?<img className="brandLogo" src={logo} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>:<span className="mark">✧</span>}
+          <span><b>{church?.name||church?.churchName||'Church'}</b><small>{church?.tagline||''}</small></span>
+        </button>
+        <button className="icon mobile-menu-trigger" type="button" onClick={menuHandler} aria-label="Open menu"><Menu size={24}/></button>
+        <nav className="navLinks" aria-label="Main navigation">
+          <div className="navActions">
+            <button className="icon menuIcon" type="button" onClick={menuHandler} aria-label="Open menu"><Menu size={25}/></button>
+            <button className="icon header-search" type="button" onClick={()=>{window.location.href='/?entered=1#home'}} aria-label="Search"><Search size={21}/></button>
           </div>
-        </div>
-        <div className="detailHeaderNavRow">
-          <SiteNav church={church} onMenu={menuHandler} activePath={'detail/'+key}/>
-        </div>
+        </nav>
       </header>
       <main>
         {heroContent}
@@ -108,11 +107,11 @@ const replacement = String.raw`function DetailPage({church,type,onBack,onMenu}){
         {ctaContent}
       </main>
       {key!=='media'&&<footer className="detailFooter"><strong>{church?.name||church?.churchName||'Church'}</strong><span>{church?.footerTagline||church?.tagline||''}</span></footer>}
-      <MobileMenu open={mobileMenu} onClose={()=>setMobileMenu(false)}/>
+      {mobileMenu&&<div className="drawer"><div className="drawerTop"><b>Menu</b><button className="close" type="button" onClick={()=>setMobileMenu(false)} aria-label="Close menu">×</button></div><nav aria-label="Mobile navigation"></nav></div>}
     </div>
   );
 }
 `;
 
 fs.writeFileSync(path, source.slice(0, start) + replacement + source.slice(end), 'utf8');
-console.log('Normalized DetailPages.jsx render structure for Vite.');
+console.log('Normalized DetailPages.jsx to use the canonical homepage header.');
