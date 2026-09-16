@@ -9,6 +9,11 @@ source = source.replace(
   "featured:x.type==='video'&&(x.featured===true||x.featured===1||x.featured==='1'||String(x.featured).toLowerCase()==='true')"
 );
 
+// Public Media must respect the server-authoritative published flag.
+const oldLegacy = "const legacy=items.map(x=>({";
+const newLegacy = "const legacy=items.filter(x=>x&&x.published!==false).map(x=>({";
+if (source.includes(oldLegacy)) source = source.replace(oldLegacy, newLegacy);
+
 // The public Featured Message must use only an explicitly featured video from
 // /api/media. Never fall back to the media catalog, the first video, or the
 // first media item, because those sources may contain the Live Service stream.
@@ -40,4 +45,4 @@ if (source.includes('\\nconst featured=explicitFeatured')) {
 }
 
 fs.writeFileSync(path, source);
-console.log('Stabilized public Featured Message to use only the explicitly featured media item.');
+console.log('Stabilized public Featured Message to use only explicitly featured and published media.');
